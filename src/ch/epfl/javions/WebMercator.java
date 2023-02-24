@@ -1,5 +1,10 @@
 package ch.epfl.javions;
 
+/**
+ * @project Javions
+ * @author @franklintra
+ */
+
 public class WebMercator {
     private WebMercator() {}
 
