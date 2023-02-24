@@ -2,16 +2,14 @@ package ch.epfl.javions;
 
 
 /**
- * @project ${PROJECT_NAME}
  * @author @franklintra
+ * @project ${PROJECT_NAME}
  */
 
-public class GeoPos {
-    private int longitudeT32;
-    private int latitudeT32;
-    public GeoPos(int longitudeT32, int latitudeT32) {
-        this.longitudeT32 = longitudeT32;
-        this.latitudeT32 = latitudeT32;
+public record GeoPos(int longitudeT32, int latitudeT32) {
+
+    public GeoPos {
+        isValidLatitudeT32(latitudeT32);
     }
 
     /**
@@ -19,7 +17,7 @@ public class GeoPos {
      * @return true iff the latitude is valid.
      * @throws IllegalArgumentException if the latitude is not valid.
      */
-    public static boolean isValidLatitudeT32(int latitudeT32) throws IllegalArgumentException{
+    public static boolean isValidLatitudeT32(int latitudeT32) throws IllegalArgumentException {
         if (latitudeT32 >= -Math.scalb(1, 30) && latitudeT32 <= Math.scalb(1, 30)) {
             return true;
         } else {
@@ -31,21 +29,25 @@ public class GeoPos {
      * @return the longitude in radians.
      */
     public double longitude() {
-        return Units.convertTo(longitudeT32, Units.Angle.RADIAN);
+        return Units.convertFrom(longitudeT32, Units.Angle.T32);
     }
 
     /**
      * @return the latitude in radians.
      */
     public double latitude() {
-        return Units.convertTo(latitudeT32, Units.Angle.RADIAN);
+        return Units.convertFrom(latitudeT32, Units.Angle.T32);
     }
 
-    public int longitudeT32() {
-        return longitudeT32;
-    }
-    public int latitudeT32() {
-        return latitudeT32;
+    /**
+     * @return the textual representation of longitude and latitude to Degree
+     */
+    @Override
+    public String toString() {
+        return "(" +
+                Units.convert(longitudeT32, Units.Angle.T32, Units.Angle.DEGREE) +
+                "°, " + Units.convert(latitudeT32, Units.Angle.T32, Units.Angle.DEGREE) +
+                "°)";
     }
     //todo: probably will need to add setters to update the positions according to the real-time data in the future
 }
