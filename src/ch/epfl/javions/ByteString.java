@@ -14,6 +14,36 @@ public final class ByteString {
     public ByteString(byte[] bytes) {
         this.data = bytes.clone();
     }
+
+    /**
+     * Does a structural comparison of the two byte strings.
+     * @param o: the object to compare to
+     * @return : true if the two byte strings are equal, false otherwise
+     */
+    public boolean equals(Object o) {
+        if (!(o instanceof ByteString)) {
+            return false;
+        }
+        return java.util.Arrays.equals(data, ((ByteString) o).data);
+    }
+
+    /**
+     * Allow the data to be printed in hexadecimal format
+     * @return : the string representation of the byte string
+     */
+    public String toString() {
+        HexFormat hf = HexFormat.of().withUpperCase();
+        return hf.formatHex(data);
+    }
+
+    /**
+     * Allow to use the byte string as a key in a hash map for example
+     * @return : the hash code of the byte string
+     */
+    public int hashCode() {
+        return java.util.Arrays.hashCode(data);
+    }
+
     public static ByteString ofHexadecimalString(String hexString) {
         if (hexString.length() % 2 != 0) {
             throw new IllegalArgumentException("Hex string must have an even number of characters");
@@ -30,7 +60,7 @@ public final class ByteString {
     }
     public int byteAt(int index) {
         Objects.checkIndex(index, data.length);
-        return data[index];
+        return data[index] & 0xFF; // This is to make sure that the byte is unsigned
     }
     public long bytesInRange(int fromIndex, int toIndex) {
         Objects.checkFromToIndex(fromIndex, toIndex, data.length);
