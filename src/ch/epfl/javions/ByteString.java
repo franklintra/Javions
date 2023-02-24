@@ -4,12 +4,11 @@ import java.util.HexFormat;
 import java.util.Objects;
 
 /**
- * @project ${PROJECT_NAME}
+ * @project Javions
  * @author @franklintra
  */
 
 public final class ByteString {
-    //FIXME : THIS IS STILL TO BE FIXED
     private final byte[] data;
     public ByteString(byte[] bytes) {
         this.data = bytes.clone();

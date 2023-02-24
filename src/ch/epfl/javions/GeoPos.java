@@ -3,13 +3,14 @@ package ch.epfl.javions;
 
 /**
  * @author @franklintra
- * @project ${PROJECT_NAME}
+ * @project Javions
  */
 
 public record GeoPos(int longitudeT32, int latitudeT32) {
-
     public GeoPos {
-        isValidLatitudeT32(latitudeT32);
+        if (!isValidLatitudeT32(latitudeT32)) {
+            throw new IllegalArgumentException("Latitude is not valid: " + latitudeT32);
+        }
     }
 
     /**
@@ -18,11 +19,7 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
      * @throws IllegalArgumentException if the latitude is not valid.
      */
     public static boolean isValidLatitudeT32(int latitudeT32) throws IllegalArgumentException {
-        if (latitudeT32 >= -Math.scalb(1, 30) && latitudeT32 <= Math.scalb(1, 30)) {
-            return true;
-        } else {
-            throw new IllegalArgumentException("Latitude is not valid: " + latitudeT32);
-        }
+        return (-Math.pow(2, 30) <= latitudeT32) && (latitudeT32 <= Math.pow(2, 30));
     }
 
     /**
@@ -51,3 +48,4 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
     }
     //todo: probably will need to add setters to update the positions according to the real-time data in the future
 }
+
