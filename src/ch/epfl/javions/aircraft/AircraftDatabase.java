@@ -24,13 +24,13 @@ public final class AircraftDatabase {
      * @throws IOException if the database cannot be read
      */
     public AircraftData get(IcaoAddress address) throws IOException {
-        String d = getClass().getResource("/aircraft.zip").getFile();
+        String d = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile(); //Added an extra null check to avoid NullPointerException
         try (ZipFile zipFile = new ZipFile(d);
              InputStream inputStream = zipFile.getInputStream(zipFile.getEntry(filename)); //todo: will maybe need to add + ".csv" to the filename depending on the format of the path
              Reader streamReader = new InputStreamReader(inputStream, UTF_8);
              BufferedReader bufferedReader = new BufferedReader(streamReader))
         {
-            String line = "";
+            String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.split(",")[0].compareTo(address.toString()) > 0) {
                     break; //Interrupts the loop if the current address is greater than the address we're looking for (because the database is sorted)
