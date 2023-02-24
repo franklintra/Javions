@@ -1,11 +1,16 @@
 package ch.epfl.javions;
 
 import java.util.HexFormat;
-import java.util.IllegalFormatException;
 import java.util.Objects;
 
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
+
 public final class ByteString {
-    private byte[] data;
+    //FIXME : THIS IS STILL TO BE FIXED
+    private final byte[] data;
     public ByteString(byte[] bytes) {
         this.data = bytes.clone();
     }
@@ -36,5 +41,6 @@ public final class ByteString {
             result <<= 8;
             result |= b & 0xFF;
         }
+        return result;
     }
 }

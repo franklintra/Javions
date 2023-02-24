@@ -1,5 +1,10 @@
 package ch.epfl.javions;
 
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
+
 public class Preconditions {
     private Preconditions() {}
 
@@ -7,7 +12,7 @@ public class Preconditions {
      * @param shouldBeTrue the condition to check
      * @throws IllegalArgumentException if the condition is not met
      */
-    void checkArgument(boolean shouldBeTrue) throws IllegalArgumentException {
+    public static void checkArgument(boolean shouldBeTrue) throws IllegalArgumentException {
         if (!shouldBeTrue) {
             throw new IllegalArgumentException("Condition not met");
         }

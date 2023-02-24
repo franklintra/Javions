@@ -1,8 +1,11 @@
 package ch.epfl.javions;
-
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
 
 class GeoPosTest {
     private static final double DELTA = 1e-7;

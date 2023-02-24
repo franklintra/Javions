@@ -1,5 +1,11 @@
 package ch.epfl.javions;
 
+
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
+
 public class GeoPos {
     private int longitudeT32;
     private int latitudeT32;
@@ -9,7 +15,7 @@ public class GeoPos {
     }
 
     /**
-     * @param latitudeT32
+     * @param latitudeT32: the current latitude in T32 format
      * @return true iff the latitude is valid.
      * @throws IllegalArgumentException if the latitude is not valid.
      */
@@ -34,4 +40,12 @@ public class GeoPos {
     public double latitude() {
         return Units.convertTo(latitudeT32, Units.Angle.RADIAN);
     }
+
+    public int longitudeT32() {
+        return longitudeT32;
+    }
+    public int latitudeT32() {
+        return latitudeT32;
+    }
+    //todo: probably will need to add setters to update the positions according to the real-time data in the future
 }

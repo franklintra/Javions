@@ -1,6 +1,12 @@
 package ch.epfl.javions;
 
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
+
 public final class Units {
+    //FIXME: THIS IS STILL TO BE FIXED
     /**
      * Private constructor to prevent instantiation.
      * Everything is static and is pretty self-explanatory.
