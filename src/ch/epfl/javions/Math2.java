@@ -1,5 +1,10 @@
 package ch.epfl.javions;
 
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
+
 public final class Math2 {
     private Math2() {}
 

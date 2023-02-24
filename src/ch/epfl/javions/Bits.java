@@ -1,12 +1,15 @@
 package ch.epfl.javions;
 
-import java.util.Objects;
+/**
+ * @project ${PROJECT_NAME}
+ * @author @franklintra
+ */
 
 public class Bits {
     private Bits() {}
 
     public static int extractUInt(long value, int start, int size) {
-        //FIXME : This probably doesn't work properly but let's see + use checkIndex() and checkFromIndexSize()
+        //FIXME: THIS IS STILL TO BE FIXED
         if (size <= 0 || size >= 32) {
             throw new IllegalArgumentException("Invalid size: " + size);
         }
