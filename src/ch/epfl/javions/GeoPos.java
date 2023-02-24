@@ -48,4 +48,5 @@ public class GeoPos {
         return latitudeT32;
     }
     //todo: probably will need to add setters to update the positions according to the real-time data in the future
+
 }
