@@ -16,7 +16,9 @@ public class AircraftRegistration {
         }
         throw new IllegalArgumentException("Invalid registration: " + registration);
     }
-
+    public String string() {
+        return registration;
+    }
     @Override
     public String toString() {
         return "Registration{" + registration + '}';

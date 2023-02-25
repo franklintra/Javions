@@ -16,7 +16,9 @@ public class AircraftTypeDesignator {
         }
         throw new IllegalArgumentException("Invalid registration: " + typeDesignator);
     }
-
+    public String string() {
+        return typeDesignator;
+    }
     @Override
     public String toString() {
         return "AircraftTypeDesignator{" + typeDesignator + '}';

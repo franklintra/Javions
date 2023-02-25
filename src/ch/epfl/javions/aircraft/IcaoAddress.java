@@ -17,10 +17,12 @@ public class IcaoAddress {
         throw new IllegalArgumentException("Invalid ICAO address: " + address);
     }
 
+    public String string() {
+        return address;
+    }
+
     @Override
     public String toString() {
-        return "IcaoAddress{" +
-                "address='" + address + '\'' +
-                '}';
+        return "ICAO address: " + address;
     }
 }

@@ -17,6 +17,9 @@ public class AircraftDescription {
         throw new IllegalArgumentException("Invalid registration: " + description);
     }
 
+    public String string() {
+        return description;
+    }
     @Override
     public String toString() {
         return "Description: " + description;
