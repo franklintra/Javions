@@ -23,7 +23,7 @@ class Crc24Test {
         int c;
         byte[] mAndC;
         byte[] mONly;
-        System.out.println("Testing CRC24");
+        assertEquals(messages.length, expectedCrcs.length); // just to be sure if the user changes the testing data
         for (int i = 0; i < messages.length; i++){
             c = Integer.parseInt(expectedCrcs[i], 16);
             mAndC = HexFormat.of().parseHex(messages[i] + expectedCrcs[i]);
@@ -31,7 +31,7 @@ class Crc24Test {
 
             mONly = HexFormat.of().parseHex(messages[i]);
             assertEquals(c, calculator.crc(mONly));
-            System.out.println(i+1+"/"+messages.length+"Testing message: " + messages[i] + " with expected CRC: " + expectedCrcs[i]);
+            System.out.println(i+1+"/6: "+ (calculator.crc(mONly)==c ? "OK" : "FAIL"));
         }
     }
 }
