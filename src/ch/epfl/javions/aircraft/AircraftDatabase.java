@@ -12,6 +12,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public final class AircraftDatabase {
     private final String filename;
+    /**
+     * Creates a new AircraftDatabase object.
+     * @param filename the path to the database file
+     */
     public AircraftDatabase(String filename) {
         Objects.requireNonNull(filename);
         this.filename = filename;

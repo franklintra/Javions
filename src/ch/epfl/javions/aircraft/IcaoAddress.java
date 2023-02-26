@@ -10,6 +10,10 @@ public class IcaoAddress {
     private final String address;
     private static final Pattern REGEX = Pattern.compile("[0-9A-F]{6}");
 
+    /**
+     * The constructor of the IcaoAddress class
+     * @param address ICAO address
+     */
     public IcaoAddress(String address) {
         if (REGEX.matcher(address).matches()) {
             this.address = address;
@@ -17,10 +21,16 @@ public class IcaoAddress {
         throw new IllegalArgumentException("Invalid ICAO address: " + address);
     }
 
+    /**
+     * @return the ICAO address of the aircraft as a string
+     */
     public String string() {
         return address;
     }
 
+    /**
+     * @return the ICAO address of the aircraft as a string formatted (default when sout-ing the object)
+     */
     @Override
     public String toString() {
         return "ICAO address: " + address;
