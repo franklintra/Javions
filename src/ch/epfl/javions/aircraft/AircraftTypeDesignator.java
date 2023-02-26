@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
  * @project Javions
  */
 public class AircraftTypeDesignator {
-    private final String typeDesignator;
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9]{2,4}");
+    private final String typeDesignator;
 
     /**
      * The constructor of the AircraftTypeDesignator class

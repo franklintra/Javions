@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
  * @project Javions
  */
 public class AircraftDescription {
-    private final String description;
     private static final Pattern REGEX = Pattern.compile("[ABDGHLPRSTV-][0123468][EJPT-]");
+    private final String description;
 
     /**
      * The constructor of the AircraftDescription class

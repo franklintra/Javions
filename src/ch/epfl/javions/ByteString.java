@@ -14,6 +14,18 @@ public final class ByteString {
         this.data = bytes.clone();
     }
 
+    public static ByteString ofHexadecimalString(String hexString) {
+        if (hexString.length() % 2 != 0) {
+            throw new IllegalArgumentException("Hex string must have an even number of characters");
+        }
+        if (!hexString.matches("[0-9a-fA-F]+")) {
+            throw new NumberFormatException("Only hexadecimal characters are allowed");
+        }
+        HexFormat hf = HexFormat.of().withUpperCase();
+        byte[] bytes = hf.parseHex(hexString);
+        return new ByteString(bytes);
+    }
+
     /**
      * Does a structural comparison of the two byte strings.
      * @param o: the object to compare to
@@ -43,17 +55,6 @@ public final class ByteString {
         return java.util.Arrays.hashCode(data);
     }
 
-    public static ByteString ofHexadecimalString(String hexString) {
-        if (hexString.length() % 2 != 0) {
-            throw new IllegalArgumentException("Hex string must have an even number of characters");
-        }
-        if (!hexString.matches("[0-9a-fA-F]+")) {
-            throw new NumberFormatException("Only hexadecimal characters are allowed");
-        }
-        HexFormat hf = HexFormat.of().withUpperCase();
-        byte[] bytes = hf.parseHex(hexString);
-        return new ByteString(bytes);
-    }
     public int size() {
         return data.length;
     }

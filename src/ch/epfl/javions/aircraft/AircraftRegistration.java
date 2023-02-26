@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
  * @project Javions
  */
 public class AircraftRegistration {
-    private final String registration;
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9 .?/_+-]+");
+    private final String registration;
 
     /**
      * The constructor of the AircraftRegistration class

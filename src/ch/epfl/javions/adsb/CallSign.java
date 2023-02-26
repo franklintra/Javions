@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
  * @project Javions
  */
 public class CallSign {
-    private final String callSign;
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9 ]{0,8}");
+    private final String callSign;
 
     public CallSign(String description) {
         if (REGEX.matcher(description).matches() || description.equals("")) {

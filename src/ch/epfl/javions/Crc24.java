@@ -6,31 +6,14 @@ package ch.epfl.javions;
  */
 public final class Crc24 {
     public static final int GENERATOR = 0xFFF409; // This is the default generator used to generate the CRC
-    public final int generator; // This is the generator used to generate the CRC given by the user
-    private static int[] buildTable; // This is the table used to optimize the algorithm (see instruction set 2.4.4)
     private final static boolean optimized = true; // This is used to switch between the optimized and unoptimized version of the algorithm for testing purposes
+    private static int[] buildTable; // This is the table used to optimize the algorithm (see instruction set 2.4.4)
+    public final int generator; // This is the generator used to generate the CRC given by the user
 
 
     public Crc24(int generator) {
         this.generator = generator;
         buildTable = buildTable();
-    }
-
-    /**
-     * This returns the crc of a byte array using a table (optimized version or unoptimized according to config (optimized variable)).
-     * @param bytes the bytes to calculate the crc for
-     * @return the crc
-     */
-    public int crc(byte[] bytes) {
-        if (!optimized) { // non optimized version
-            return crc_bitwise(bytes, generator); // this uses the unoptimized bitwise algorithm
-        }
-        //Optimized version of the bitwise algorithm using a table as described in the instruction set 2.4.4
-        int crc = 0;
-        for (byte b : bytes) {
-            crc = (crc << 8) ^ buildTable[((crc >> 16) ^ (b & 0xff)) & 0xff]; // todo: understand this line better (written by @franklintra)
-        }
-        return crc & 0xffffff;
     }
 
     /**
@@ -49,6 +32,23 @@ public final class Crc24 {
                     crc ^= generator;
                 }
             }
+        }
+        return crc & 0xffffff;
+    }
+
+    /**
+     * This returns the crc of a byte array using a table (optimized version or unoptimized according to config (optimized variable)).
+     * @param bytes the bytes to calculate the crc for
+     * @return the crc
+     */
+    public int crc(byte[] bytes) {
+        if (!optimized) { // non optimized version
+            return crc_bitwise(bytes, generator); // this uses the unoptimized bitwise algorithm
+        }
+        //Optimized version of the bitwise algorithm using a table as described in the instruction set 2.4.4
+        int crc = 0;
+        for (byte b : bytes) {
+            crc = (crc << 8) ^ buildTable[((crc >> 16) ^ (b & 0xff)) & 0xff];
         }
         return crc & 0xffffff;
     }

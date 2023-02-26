@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
  * @project Javions
  */
 public class IcaoAddress {
-    private final String address;
     private static final Pattern REGEX = Pattern.compile("[0-9A-F]{6}");
+    private final String address;
 
     /**
      * The constructor of the IcaoAddress class
