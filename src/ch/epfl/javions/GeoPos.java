@@ -3,6 +3,7 @@ package ch.epfl.javions;
 
 /**
  * @author @franklintra
+ * @author @chukla
  * @project Javions
  */
 

@@ -10,10 +10,23 @@ import java.util.Objects;
 
 public final class ByteString {
     private final byte[] data;
+
+    /**
+     * The constructor of the ByteString class
+     * @param bytes the bytes to be stored in the byte string
+     */
     public ByteString(byte[] bytes) {
-        this.data = bytes.clone();
+        byte[] temp = new byte[bytes.length];
+        for (int i=0; i<bytes.length; ++i) {
+            temp[i] = bytes[i];
+        }
+        this.data = temp;
     }
 
+    /**
+     * @param hexString the hex string to be converted to a byte string
+     * @return the byte string corresponding to the hex string
+     */
     public static ByteString ofHexadecimalString(String hexString) {
         if (hexString.length() % 2 != 0) {
             throw new IllegalArgumentException("Hex string must have an even number of characters");
@@ -55,13 +68,28 @@ public final class ByteString {
         return java.util.Arrays.hashCode(data);
     }
 
+    /**
+     * @return the size of the byte string
+     */
+
     public int size() {
         return data.length;
     }
+
+    /**
+     * @param index the index of the byte to be returned
+     * @return the byte at the given index
+     */
     public int byteAt(int index) {
         Objects.checkIndex(index, data.length);
         return data[index] & 0xFF; // This is to make sure that the byte is unsigned
     }
+
+    /**
+     * @param fromIndex the index of the first byte to be returned
+     * @param toIndex the index of the last byte to be returned
+     * @return the bytes in the range [fromIndex, toIndex[
+     */
     public long bytesInRange(int fromIndex, int toIndex) {
         Objects.checkFromToIndex(fromIndex, toIndex, data.length);
         byte[] bytes = new byte[toIndex - fromIndex];
