@@ -11,6 +11,7 @@ public enum WakeTurbulenceCategory {
      * @param s string to be converted to a WakeTurbulenceCategory
      * @return the WakeTurbulenceCategory corresponding to the string
      */
+
     public static WakeTurbulenceCategory of(String s) {
         return switch (s) {
             case "L" -> LIGHT;
