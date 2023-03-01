@@ -6,7 +6,7 @@ package ch.epfl.javions;
  */
 
 public class Preconditions {
-    private Preconditions() {}
+    private Preconditions() {} // Prevents instantiation
 
     /**
      * @param shouldBeTrue the condition to check

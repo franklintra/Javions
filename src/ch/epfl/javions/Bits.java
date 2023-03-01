@@ -6,7 +6,7 @@ package ch.epfl.javions;
  */
 
 public class Bits {
-    private Bits() {}
+    private Bits() {} // Prevents instantiation
 
     /**
      * @param value the value to extract from

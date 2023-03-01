@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class WakeTurbulenceCategoryTest {
+class WakeTurbulenceCategoryTest {
 
     /**
      * Checks that WakeTurbulenceCategory.of() returns the correct value for each string

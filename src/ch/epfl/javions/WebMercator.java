@@ -6,7 +6,7 @@ package ch.epfl.javions;
  */
 
 public class WebMercator {
-    private WebMercator() {}
+    private WebMercator() {} // Prevents instantiation
 
     /**
      * @param zoomLevel the zoom level

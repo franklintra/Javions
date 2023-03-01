@@ -6,7 +6,7 @@ package ch.epfl.javions;
  */
 
 public final class Math2 {
-    private Math2() {}
+    private Math2() {} // Prevents instantiation
 
     /**
      * @param min inclusive

@@ -26,6 +26,10 @@ public class CallSign {
         throw new IllegalArgumentException("Invalid registration: " + description);
     }
 
+    /**
+     * @return the call sign
+     */
+
     public String string() {
         return callSign;
     }

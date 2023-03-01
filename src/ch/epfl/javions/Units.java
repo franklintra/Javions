@@ -12,7 +12,7 @@ public final class Units {
      * Private constructor to prevent instantiation.
      * Everything is static and is pretty self-explanatory.
      */
-    private Units() {}
+    private Units() {} // Prevents instantiation
 
     /**
      * @param value value to be converted
