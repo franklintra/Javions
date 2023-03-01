@@ -9,10 +9,10 @@ public final class Units {
     public static final double CENTI = 1e-2;
     public static final double KILO = 1e3;
     /**
-     * Private constructor to prevent instantiation.
+     * All constructors are private to prevent instantiation.
      * Everything is static and is pretty self-explanatory.
      */
-    private Units() {} // Prevents instantiation
+    private Units() {}
 
     /**
      * @param value value to be converted
@@ -52,7 +52,7 @@ public final class Units {
         public static final double TURN = 2*Math.PI*RADIAN;
         public static final double DEGREE = TURN/360;
         public static final double T32 = TURN/Math.scalb(1, 32);
-        private Angle() {} // This constructor is private to prevent instantiation
+        private Angle() {}
 
     }
 
@@ -64,7 +64,7 @@ public final class Units {
         public static final double SECOND = 1.0;
         public static final double MINUTE = 60*SECOND;
         public static final double HOUR = 60*MINUTE;
-        private Time() {} // This constructor is private to prevent instantiation
+        private Time() {}
     }
 
     /** Length units.
@@ -78,7 +78,7 @@ public final class Units {
         public static final double FOOT = INCH*12;
         public static final double KILOMETER = KILO*METER;
         public static final double NAUTICAL_MILE = METER*1852;
-        private Length() {} // This constructor is private to prevent instantiation
+        private Length() {}
     }
 
     /** Speed units.
@@ -88,6 +88,6 @@ public final class Units {
     public static class Speed {
         public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;
         public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
-        private Speed() {} // This constructor is private to prevent instantiation
+        private Speed() {}
     }
 }
