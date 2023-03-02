@@ -3,7 +3,7 @@ package ch.epfl.javions.aircraft;
 import java.util.Objects;
 
 /**
- * @author @franklintra
+ * @author @franklintra, @chukla
  * @project Javions
  */
 public record AircraftData(AircraftRegistration registration, AircraftTypeDesignator typeDesignator, String model, AircraftDescription description, WakeTurbulenceCategory wakeTurbulenceCategory) {
@@ -21,4 +21,16 @@ public record AircraftData(AircraftRegistration registration, AircraftTypeDesign
         Objects.requireNonNull(description);
         Objects.requireNonNull(wakeTurbulenceCategory);
     }
+
+    /**
+     * @return the registration of the aircraft as a string
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AircraftData that = (AircraftData) o;
+        return registration.equals(that.registration);
+    }
+
 }

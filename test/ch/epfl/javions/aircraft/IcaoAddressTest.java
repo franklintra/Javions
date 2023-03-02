@@ -1,8 +1,6 @@
 package ch.epfl.javions.aircraft;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 
 

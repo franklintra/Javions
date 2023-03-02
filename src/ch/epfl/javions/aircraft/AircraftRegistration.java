@@ -5,7 +5,7 @@ import ch.epfl.javions.Preconditions;
 import java.util.regex.Pattern;
 
 /**
- * @author @franklintra
+ * @author @franklintra, @chukla
  * @project Javions
  */
 public class AircraftRegistration {
@@ -34,5 +34,13 @@ public class AircraftRegistration {
     @Override
     public String toString() {
         return "Registration{" + registration + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AircraftRegistration that = (AircraftRegistration) o;
+        return string().equals(that.string());
     }
 }
