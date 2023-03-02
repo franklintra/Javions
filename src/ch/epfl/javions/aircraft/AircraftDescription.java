@@ -1,5 +1,7 @@
 package ch.epfl.javions.aircraft;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -15,10 +17,8 @@ public class AircraftDescription {
      * @param description aircraft description
      */
     public AircraftDescription(String description) {
-        if (REGEX.matcher(description).matches() || description.equals("")) {
-            this.description = description;
-        }
-        throw new IllegalArgumentException("Invalid registration: " + description);
+        Preconditions.checkArgument(REGEX.matcher(description).matches() || description.equals(""));
+        this.description = description;
     }
     /**
      * @return the description of the aircraft as a string

@@ -1,5 +1,7 @@
 package ch.epfl.javions.aircraft;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -15,10 +17,8 @@ public class AircraftRegistration {
      * @param registration ICAO aircraft registration
      */
     public AircraftRegistration(String registration) {
-        if (REGEX.matcher(registration).matches()) {
-            this.registration = registration;
-        }
-        throw new IllegalArgumentException("Invalid registration: " + registration);
+        Preconditions.checkArgument(REGEX.matcher(registration).matches());
+        this.registration = registration;
     }
 
     /**

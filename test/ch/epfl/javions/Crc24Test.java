@@ -31,7 +31,7 @@ class Crc24Test {
 
             mONly = HexFormat.of().parseHex(messages[i]);
             assertEquals(c, calculator.crc(mONly));
-            System.out.println(i+1+"/6: "+ (calculator.crc(mONly)==c ? "OK" : "FAIL"));
+            //System.out.println(i+1+"/6: "+ (calculator.crc(mONly)==c ? "OK" : "FAIL"));
         }
     }
 }

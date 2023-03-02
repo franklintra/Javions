@@ -26,9 +26,7 @@ public final class ByteString {
      * @return the byte string corresponding to the hex string
      */
     public static ByteString ofHexadecimalString(String hexString) {
-        if (hexString.length() % 2 != 0) {
-            throw new IllegalArgumentException("Hex string must have an even number of characters");
-        }
+        Preconditions.checkArgument(hexString.length()%2 == 0);
         if (!hexString.matches("[0-9a-fA-F]+")) {
             throw new NumberFormatException("Only hexadecimal characters are allowed");
         }

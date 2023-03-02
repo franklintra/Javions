@@ -16,9 +16,7 @@ public final class Math2 {
      * @throws IllegalArgumentException if the bounds are not valid.
      */
     public static int clamp (int min, int value, int max) throws IllegalArgumentException {
-        if (min > max) {
-            throw new IllegalArgumentException("Invalid bounds: min=" + min + ", max=" + max);
-        }
+        Preconditions.checkArgument(min <= max);
         return Math.max(min, Math.min(value, max));
     }
 

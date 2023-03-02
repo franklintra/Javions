@@ -1,5 +1,7 @@
 package ch.epfl.javions.aircraft;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -15,10 +17,8 @@ public class AircraftTypeDesignator {
      * @param typeDesignator ICAO aircraft type designator
      */
     public AircraftTypeDesignator(String typeDesignator) {
-        if (REGEX.matcher(typeDesignator).matches() || typeDesignator.equals("")) {
-            this.typeDesignator = typeDesignator;
-        }
-        throw new IllegalArgumentException("Invalid registration: " + typeDesignator);
+        Preconditions.checkArgument(REGEX.matcher(typeDesignator).matches() || typeDesignator.equals(""));
+        this.typeDesignator = typeDesignator;
     }
 
     /**
