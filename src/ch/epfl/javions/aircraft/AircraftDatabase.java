@@ -30,7 +30,7 @@ public final class AircraftDatabase {
     public AircraftData get(IcaoAddress address) throws IOException {
         String d = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
         try (ZipFile zipFile = new ZipFile(d);
-             InputStream inputStream = zipFile.getInputStream(zipFile.getEntry(filename)); //todo: will maybe need to add + ".csv" to the filename depending on the format of the path
+             InputStream inputStream = zipFile.getInputStream(zipFile.getEntry(filename));
              Reader streamReader = new InputStreamReader(inputStream, UTF_8);
              BufferedReader bufferedReader = new BufferedReader(streamReader))
         {

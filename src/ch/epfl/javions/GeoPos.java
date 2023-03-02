@@ -45,6 +45,5 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
                 "°, " + Units.convert(latitudeT32, Units.Angle.T32, Units.Angle.DEGREE) +
                 "°)";
     }
-    //todo: probably will need to add setters to update the positions according to the real-time data in the future
 }
 
