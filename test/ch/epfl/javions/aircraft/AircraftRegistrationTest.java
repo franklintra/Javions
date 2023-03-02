@@ -9,13 +9,11 @@ class AircraftRegistrationTest {
     @Test
     void testValidRegistration() {
         AircraftRegistration reg = new AircraftRegistration("HB-JDC");
-        assertEquals("N12345", reg.string());
+        assertEquals("HB-JDC", reg.string());
     }
 
     @Test
     void testInvalidRegistration() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            AircraftRegistration reg = new AircraftRegistration("$%&^*");
-        });
+        assertThrows(IllegalArgumentException.class, () -> new AircraftRegistration("$%&^*"));
     }
 }

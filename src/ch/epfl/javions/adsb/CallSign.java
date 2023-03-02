@@ -1,5 +1,7 @@
 package ch.epfl.javions.adsb;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -13,17 +15,15 @@ public class CallSign {
     private final String callSign;
 
     /**
-     * Constructs a new CallSign object with the given description.
+     * Constructs a new CallSign object with the given callSign.
      *
-     * @param description a string describing the call sign
-     * @throws IllegalArgumentException if the description is not valid according to the regex pattern
+     * @param callSign a string describing the call sign
+     * @throws IllegalArgumentException if the callSign is not valid according to the regex pattern
      */
 
-    public CallSign(String description) {
-        if (REGEX.matcher(description).matches() || description.equals("")) {
-            this.callSign = description;
-        }
-        throw new IllegalArgumentException("Invalid registration: " + description);
+    public CallSign(String callSign) {
+        Preconditions.checkArgument(REGEX.matcher(callSign).matches() || callSign.equals(""));
+        this.callSign = callSign;
     }
 
     /**

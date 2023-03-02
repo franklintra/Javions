@@ -1,5 +1,7 @@
 package ch.epfl.javions.aircraft;
 
+import ch.epfl.javions.Preconditions;
+
 import java.util.regex.Pattern;
 
 /**
@@ -15,10 +17,8 @@ public class IcaoAddress {
      * @param address ICAO address
      */
     public IcaoAddress(String address) {
-        if (REGEX.matcher(address).matches()) {
-            this.address = address;
-        }
-        throw new IllegalArgumentException("Invalid ICAO address: " + address);
+        Preconditions.checkArgument(REGEX.matcher(address).matches());
+        this.address = address;
     }
 
     /**
