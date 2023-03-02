@@ -6,12 +6,16 @@ package ch.epfl.javions;
  * @project Javions
  */
 public final class Crc24 {
-    public static final int GENERATOR = 0xFFF409; // This is the default generator used to generate the CRC
+    public static final int GENERATOR = 0xFFF409; // This is a default generator used to generate the CRC
     private final static boolean optimized = true; // This is used to switch between the optimized and unoptimized version of the algorithm for testing purposes
     private static int[] buildTable; // This is the table used to optimize the algorithm (see instruction set 2.4.4)
     public final int generator; // This is the generator used to generate the CRC given by the user
 
 
+    /**
+     * This constructor builds the table for the given generator to use in the optimized algorithm
+     * @param generator the generator to use
+     */
     public Crc24(int generator) {
         this.generator = generator;
         buildTable = buildTable();

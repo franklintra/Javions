@@ -17,9 +17,7 @@ public final class ByteString {
      */
     public ByteString(byte[] bytes) {
         byte[] temp = new byte[bytes.length];
-        for (int i=0; i<bytes.length; ++i) {
-            temp[i] = bytes[i];
-        }
+        System.arraycopy(bytes, 0, temp, 0, bytes.length);
         this.data = temp;
     }
 
