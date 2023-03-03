@@ -38,10 +38,10 @@ public final class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         Objects.requireNonNull(address);
-        String d = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
-        d = URLDecoder.decode(d, UTF_8);
+        String zipPath = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
+        zipPath = URLDecoder.decode(zipPath, UTF_8);
 
-        try (ZipFile zipFile = new ZipFile(new File(d))) {
+        try (ZipFile zipFile = new ZipFile(new File(zipPath))) {
             List<? extends ZipEntry> zipEntries = zipFile.stream().toList();
 
             for (ZipEntry z: zipEntries) {
