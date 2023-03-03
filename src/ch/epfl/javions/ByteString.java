@@ -24,6 +24,7 @@ public final class ByteString {
     /**
      * @param hexString the hex string to be converted to a byte string
      * @return the byte string corresponding to the hex string
+     * @throws IllegalArgumentException if the hex string is not valid
      */
     public static ByteString ofHexadecimalString(String hexString) {
         Preconditions.checkArgument(hexString.length()%2 == 0);

@@ -8,6 +8,11 @@ package ch.epfl.javions;
  */
 
 public record GeoPos(int longitudeT32, int latitudeT32) {
+    /**
+     * @param longitudeT32: the current longitude in T32 format
+     * @param latitudeT32: the current latitude in T32 format
+     * @throws IllegalArgumentException if the longitude or latitude is not valid.
+     */
     public GeoPos {
         Preconditions.checkArgument(isValidLatitudeT32(latitudeT32));
     }

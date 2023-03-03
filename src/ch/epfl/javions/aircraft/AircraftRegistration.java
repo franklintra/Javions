@@ -15,6 +15,7 @@ public class AircraftRegistration {
     /**
      * The constructor of the AircraftRegistration class
      * @param registration ICAO aircraft registration
+     * @throws IllegalArgumentException if the registration is not valid
      */
     public AircraftRegistration(String registration) {
         Preconditions.checkArgument(REGEX.matcher(registration).matches());

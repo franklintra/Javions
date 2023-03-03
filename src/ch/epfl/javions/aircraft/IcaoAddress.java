@@ -15,6 +15,7 @@ public class IcaoAddress {
     /**
      * The constructor of the IcaoAddress class
      * @param address ICAO address
+     * @throws IllegalArgumentException if the address is not valid
      */
     public IcaoAddress(String address) {
         Preconditions.checkArgument(REGEX.matcher(address).matches());

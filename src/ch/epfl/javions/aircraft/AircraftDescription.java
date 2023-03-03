@@ -15,6 +15,7 @@ public class AircraftDescription {
     /**
      * The constructor of the AircraftDescription class
      * @param description aircraft description
+     * @throws IllegalArgumentException if the description is not valid
      */
     public AircraftDescription(String description) {
         Preconditions.checkArgument(REGEX.matcher(description).matches() || description.equals(""));

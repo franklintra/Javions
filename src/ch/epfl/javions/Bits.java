@@ -17,7 +17,6 @@ public class Bits {
      * @throws IndexOutOfBoundsException if the range is invalid
      */
     public static int extractUInt(long value, int start, int size) {
-        //FIXME: THIS IS STILL TO BE FIXED
         Preconditions.checkArgument(size > 0 && size < 32);
         if (start < 0 || start + size > 64) {
             throw new IndexOutOfBoundsException("Invalid range: start=" + start + ", size=" + size);
