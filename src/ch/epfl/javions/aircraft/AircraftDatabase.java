@@ -3,8 +3,6 @@ package ch.epfl.javions.aircraft;
 //import jdk.internal.icu.impl.Punycode;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.Objects;

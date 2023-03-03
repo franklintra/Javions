@@ -1,6 +1,5 @@
 package ch.epfl.javions.aircraft;
 
-import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

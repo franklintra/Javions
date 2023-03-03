@@ -28,7 +28,7 @@ class AircraftDataTest {
 
 
         // Test equality of data1 and data2
-        Assertions.assertTrue(data1.equals(data2));
+        Assertions.assertEquals(data1, data2);
 
     }
 

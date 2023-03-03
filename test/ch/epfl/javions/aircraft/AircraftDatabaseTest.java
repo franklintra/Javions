@@ -10,7 +10,7 @@ class AircraftDatabaseTest {
     /**
      * The database used for the tests
      */
-    private static AircraftDatabase db;
+    private static final AircraftDatabase db;
 
     static {
         try {
