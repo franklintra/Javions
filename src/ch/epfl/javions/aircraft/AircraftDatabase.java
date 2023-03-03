@@ -38,10 +38,10 @@ public final class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         Objects.requireNonNull(address);
-        String d = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
-        d = URLDecoder.decode(d, UTF_8);
+        String zipPath = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
+        zipPath = URLDecoder.decode(zipPath, UTF_8);
 
-        try (ZipFile zipFile = new ZipFile(new File(d))) {
+        try (ZipFile zipFile = new ZipFile(new File(zipPath))) {
             List<? extends ZipEntry> zipEntries = zipFile.stream().toList();
 
             for (ZipEntry z: zipEntries) {
@@ -51,9 +51,9 @@ public final class AircraftDatabase {
                         BufferedReader bufferedReader = new BufferedReader(streamReader)
                 )
                 {
-                    String line = bufferedReader.readLine();
-                    while (line != null) {
-                        if (line.split(",", -1)[0].compareTo(address.toString()) > 0) {
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        if (line.split(",", -1)[0].compareTo(address.string()) > 0) {
                             break; //Interrupts the loop if the current address is greater than the address we're looking for (because the database is sorted)
                         }
                         if (line.startsWith(address.string())) {
@@ -66,7 +66,6 @@ public final class AircraftDatabase {
                                     WakeTurbulenceCategory.of(data[5])
                             );
                         }
-                        line = bufferedReader.readLine();
                     }
                 }
             }
