@@ -1,8 +1,11 @@
 package ch.epfl.javions.aircraft;
 
+//import jdk.internal.icu.impl.Punycode;
+
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
@@ -37,12 +40,8 @@ public final class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         Objects.requireNonNull(address);
-        URI d;
-        try {
-            d = Objects.requireNonNull(getClass().getResource(filename)).toURI();
-        } catch (URISyntaxException ignored) {
-            return null;
-        }
+        String d = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
+        d = URLDecoder.decode(d, UTF_8);
 
         try (ZipFile zipFile = new ZipFile(new File(d))) {
             List<? extends ZipEntry> zipEntries = zipFile.stream().toList();
@@ -56,11 +55,11 @@ public final class AircraftDatabase {
                 {
                     String line = bufferedReader.readLine();
                     while (line != null) {
-                        if (line.split(",")[0].compareTo(address.toString()) > 0) {
+                        if (line.split(",", -1)[0].compareTo(address.toString()) > 0) {
                             break; //Interrupts the loop if the current address is greater than the address we're looking for (because the database is sorted)
                         }
                         if (line.startsWith(address.string())) {
-                            String[] data = line.split(",");
+                            String[] data = line.split(",", -1);
                             return new AircraftData(
                                     new AircraftRegistration(data[1]),
                                     new AircraftTypeDesignator(data[2]),
