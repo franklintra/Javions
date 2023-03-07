@@ -32,6 +32,7 @@ public final class PowerComputer {
      * @return number of samples read and written to the batch
      * @throws IOException if input or output error occurs
      * @throws IllegalArgumentException if the size of the batch doesn't match the required size
+     * fixme : this method is not working properly yet. Still need to fix it. (lookup instructions)
      */
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
