@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @project Javions
  */
 
+@SuppressWarnings("unused")
 class Crc24Test {
     /**
      * Test the CRC with all given examples from the instruction set

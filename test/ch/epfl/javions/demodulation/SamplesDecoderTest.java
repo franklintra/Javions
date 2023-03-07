@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author @franklintra
  * @project Javions
  */
+@SuppressWarnings("unused")
 class SamplesDecoderTest {
     @Test
     void testSampleIsNotNull() {

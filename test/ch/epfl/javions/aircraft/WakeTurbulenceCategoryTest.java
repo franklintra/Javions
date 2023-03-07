@@ -5,12 +5,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
+@SuppressWarnings("unused")
 class WakeTurbulenceCategoryTest {
-
     /**
      * Checks that WakeTurbulenceCategory.of() returns the correct value for each string
      */
-
     @Test
     void of() {
         assertEquals(WakeTurbulenceCategory.LIGHT, WakeTurbulenceCategory.of("L"));

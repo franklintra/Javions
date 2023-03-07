@@ -3,6 +3,7 @@ package ch.epfl.javions.aircraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("unused")
 class AircraftDataTest {
 
     /**

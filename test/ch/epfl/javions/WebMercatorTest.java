@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings("unused")
 class WebMercatorTest {
 
     private static final double DELTA = 1e-7;
