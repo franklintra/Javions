@@ -24,12 +24,12 @@ public final class AircraftDatabase {
      * @param filename the name of the database file
      * @throws IOException if the database file could not be read
      */
-    public AircraftDatabase(String filename) throws IOException {
+    public AircraftDatabase(String filename) {
         Objects.requireNonNull(filename);
         this.filename = filename;
-        if (getClass().getResource(filename) == null) {
-            throw new IOException("Could not read database file: " + filename);
-        }
+        //if (getClass().getResource(filename) == null) {
+        //    throw new IOException("Could not read database file: " + filename);
+        //}
     }
 
     /**
@@ -76,6 +76,6 @@ public final class AircraftDatabase {
         } catch (IOException e) {
             throw new IOException("Could not read database file: " + filename);
         }
-        throw new IOException("No aircraft found for address: " + address.string());
+       return null;
     }
 }

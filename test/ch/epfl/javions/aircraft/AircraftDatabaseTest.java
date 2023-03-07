@@ -4,21 +4,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AircraftDatabaseTest {
 
     /**
      * The database used for the tests
      */
-    private static final AircraftDatabase db;
-
-    static {
-        try {
-            db = new AircraftDatabase("/aircraft.zip");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final AircraftDatabase db = new AircraftDatabase("/aircraft.zip");
 
     /**
      * Checks that AircraftDatabase.get() returns the correct AircraftData for a given IcaoAddress
@@ -41,11 +38,11 @@ class AircraftDatabaseTest {
     }
 
     /**
-     * Checks that AircraftDatabase.get() throws an IOException when the IcaoAddress is not in the database
+     * Checks that AircraftDatabase.get() returns null when the IcaoAddress does not exist
      */
     @Test
-    void testGetNonExistingAddress() {
-        Assertions.assertThrows(IOException.class, () -> db.get(new IcaoAddress("123456")));
+    void testGetNonExistingAddress() throws IOException {
+        assertNull(db.get(new IcaoAddress("123456")));
     }
 
 
@@ -59,18 +56,11 @@ class AircraftDatabaseTest {
     }
 
     /**
-     * Checks that AircraftDatabase.get() throws an IOException when the file is not found
-     */
-    @Test
-    void testGetNonExistingFile() {
-        Assertions.assertThrows(IOException.class, () -> new AircraftDatabase("non-existing.txt"));
-    }
-
-    /**
      * Checks that AircraftDatabase.get() throws a NullPointerException when the file is null
      */
     @Test
     void testNullFile() {
         Assertions.assertThrows(NullPointerException.class, () -> new AircraftDatabase(null));
     }
+
 }

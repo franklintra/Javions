@@ -2,6 +2,7 @@ package ch.epfl.javions.aircraft;
 
 import ch.epfl.javions.Preconditions;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -34,5 +35,17 @@ public class AircraftDescription {
     @Override
     public String toString() {
         return "Description: " + description;
+    }
+
+    /**
+     * @param o The object to compare with
+     * @return True if the two objects are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AircraftDescription that = (AircraftDescription) o;
+        return description.equals(that.description);
     }
 }

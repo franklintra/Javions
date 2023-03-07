@@ -18,7 +18,7 @@ public final class PowerComputer {
 
     public PowerComputer(InputStream stream, int batchSize) {
         this.batchSize = batchSize;
-        Preconditions.checkArgument(batchSize % 8 == 0 && batchSize > 0, "Batch size must be a multiple of 8 and strictly positive");
+        Preconditions.checkArgument(batchSize % 8 == 0 && batchSize > 0);
 
         decoder = new SamplesDecoder(stream, batchSize);
         sampleBuffer = new short[batchSize];
@@ -27,7 +27,7 @@ public final class PowerComputer {
     public int readBatch(int[] batch) throws IOException {
         int samplesRead = decoder.readBatch(sampleBuffer);
 
-        Preconditions.checkArgument(samplesRead == sampleBuffer.length, "Batch size must be equal to the size of a lot");
+        Preconditions.checkArgument(samplesRead == sampleBuffer.length);
 
 
         return samplesRead;

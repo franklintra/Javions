@@ -2,10 +2,11 @@ package ch.epfl.javions.aircraft;
 
 import ch.epfl.javions.Preconditions;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * @author @franklintra
+ * @author @franklintra, @chukla
  * @project Javions
  */
 public class AircraftTypeDesignator {
@@ -22,6 +23,8 @@ public class AircraftTypeDesignator {
         this.typeDesignator = typeDesignator;
     }
 
+
+
     /**
      * @return the type designator of the aircraft as a string
      */
@@ -35,5 +38,17 @@ public class AircraftTypeDesignator {
     @Override
     public String toString() {
         return "AircraftTypeDesignator{" + typeDesignator + '}';
+    }
+
+    /**
+     * @param o The object to compare with
+     * @return True if the two objects are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AircraftTypeDesignator that = (AircraftTypeDesignator) o;
+        return typeDesignator.equals(that.typeDesignator);
     }
 }
