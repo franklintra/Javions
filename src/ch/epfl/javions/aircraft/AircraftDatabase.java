@@ -41,6 +41,7 @@ public final class AircraftDatabase {
         String zipPath = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
         zipPath = URLDecoder.decode(zipPath, UTF_8);
 
+        out :
         try (ZipFile zipFile = new ZipFile(new File(zipPath))) {
             List<? extends ZipEntry> zipEntries = zipFile.stream().toList();
 
@@ -53,8 +54,8 @@ public final class AircraftDatabase {
                 {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
-                        if (line.split(",", -1)[0].compareTo(address.string()) > 0) {
-                            break; //Interrupts the loop if the current address is greater than the address we're looking for (because the database is sorted)
+                        if ((line.split(",", -1)[0]).compareTo(address.string()) > 0) { // fixme right there @KrishChawla there is a mistake
+                            break out; //Interrupts the loop if the current address is greater than the address we're looking for (because the database is sorted)
                         }
                         if (line.startsWith(address.string())) {
                             String[] data = line.split(",", -1);
