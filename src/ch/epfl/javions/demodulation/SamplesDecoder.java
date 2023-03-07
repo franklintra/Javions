@@ -35,7 +35,7 @@ public final class SamplesDecoder {
 
     /**
      * Reads a batch of samples from the input stream
-     * @param batch the array of shorts that will contain the samples / cannot be null
+     * @param batch the array of shorts that will contain the samples / cannot be null TODO: project description dont say that so no test made for that case
      * @return the number of samples read and actually stored in the batch (if the end of the stream is reached, it will be less than the batch size)
      * @throws IOException if an I/O error occurs
      * @throws IllegalArgumentException if the size of the batch doesn't match the required size
