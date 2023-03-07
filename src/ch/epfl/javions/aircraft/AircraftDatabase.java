@@ -27,9 +27,6 @@ public final class AircraftDatabase {
     public AircraftDatabase(String filename) {
         Objects.requireNonNull(filename);
         this.filename = filename;
-        //if (getClass().getResource(filename) == null) {
-        //    throw new IOException("Could not read database file: " + filename);
-        //}
     }
 
     /**
