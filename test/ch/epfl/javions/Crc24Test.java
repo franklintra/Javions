@@ -3,36 +3,63 @@ package ch.epfl.javions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HexFormat;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * @author @franklintra
- * @project Javions
- */
-
-@SuppressWarnings("unused")
 class Crc24Test {
-    /**
-     * Test the CRC with all given examples from the instruction set
-     */
-    @Test
-    void crc() {
-        Crc24 calculator = new Crc24(Crc24.GENERATOR);
-        String[] messages = new String[]{"8D392AE499107FB5C00439", "8D4D2286EA428867291C08", "8D3950C69914B232880436", "8D4B17E399893E15C09C21", "8D4B18F4231445F2DB63A0", "8D495293F82300020049B8"};
-        String[] expectedCrcs = new String[]{"035DB8", "EE2EC6", "BC63D3", "9FC014", "DEEB82", "111203"};
-        int c;
-        byte[] mAndC;
-        byte[] mONly;
-        assertEquals(messages.length, expectedCrcs.length); // just to be sure if the user changes the testing data
-        for (int i = 0; i < messages.length; i++){
-            c = Integer.parseInt(expectedCrcs[i], 16);
-            mAndC = HexFormat.of().parseHex(messages[i] + expectedCrcs[i]);
-            assertEquals(0, calculator.crc(mAndC));
 
-            mONly = HexFormat.of().parseHex(messages[i]);
-            assertEquals(c, calculator.crc(mONly));
-            //System.out.println(i+1+"/6: "+ (calculator.crc(mONly)==c ? "OK" : "FAIL"));
+    private static final HexFormat HEX_FORMAT = HexFormat.of();
+    private static final List<String> ADSB_MESSAGES = List.of(
+            "8D392AE499107FB5C00439035DB8",
+            "8D39DD4158B511FDC118E1A835FE",
+            "8D346083F8230006004BB862B42C",
+            "8D506CA358B982DBAD9595A23761",
+            "8D3CDD2158AF85CA4125E4620E46",
+            "8D39CE6B990D91126808450C6A94",
+            "8D49411499113AA890044A80894B",
+            "8D4CA4EEEA466867791C0845193E",
+            "8D484C5058353646A147292758A9",
+            "8D47BA78EA4C4864013C084ABCAA",
+            "8D0A009C9908673B1808408A5B0D");
+
+    @Test
+    void crc24CrcWorksOnAdsbMessages() {
+        var crc24 = new Crc24(Crc24.GENERATOR);
+
+        // Pass full messages with valid CRCs, then check that result is 0.
+        for (var m : ADSB_MESSAGES) {
+            var bs = HEX_FORMAT.parseHex(m);
+            assertEquals(0, crc24.crc(bs));
+        }
+
+        // Pass messages without CRC, then check for equality.
+        for (var m : ADSB_MESSAGES) {
+            var actualCrc = crc24.crc(HEX_FORMAT.parseHex(m.substring(0, m.length() - 6)));
+            var expectedCrc = HexFormat.fromHexDigits(m.substring(m.length() - 6));
+            assertEquals(expectedCrc, actualCrc);
+        }
+    }
+
+    @Test
+    void crc24CrcWorksWithDifferentGenerator() {
+        var crc24_FACE51 = new Crc24(0xFACE51);
+        var actual_FACE51 = crc24_FACE51.crc(HEX_FORMAT.parseHex(ADSB_MESSAGES.get(0)));
+        var expected_FACE51 = 3677528;
+        assertEquals(expected_FACE51, actual_FACE51);
+
+        var crc24_F00DAB = new Crc24(0xF00DAB);
+        var actual_F00DAB = crc24_F00DAB.crc(HEX_FORMAT.parseHex(ADSB_MESSAGES.get(0)));
+        var expected_F00DAB = 16093840;
+        assertEquals(expected_F00DAB, actual_F00DAB);
+    }
+
+    @Test
+    void crc24CrcWorksWithZeroOnlyMessage() {
+        var crc24 = new Crc24(Crc24.GENERATOR);
+        for (int i = 0; i < 10; i += 1) {
+            var m = new byte[i];
+            assertEquals(0, crc24.crc(m));
         }
     }
 }

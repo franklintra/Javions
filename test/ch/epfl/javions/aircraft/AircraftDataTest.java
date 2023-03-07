@@ -1,36 +1,31 @@
 package ch.epfl.javions.aircraft;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("unused")
+import static org.junit.jupiter.api.Assertions.*;
+
 class AircraftDataTest {
-
-    /**
-     * Checks that AircraftData.equals() returns true when two AircraftData objects are equal
-     */
     @Test
-    void testAircraftDataEquals() {
-        AircraftData data1 = new AircraftData(
-                new AircraftRegistration("ABC123"),
-                new AircraftTypeDesignator("A320"),
-                "Airbus A320",
-                new AircraftDescription("L2J"),
-                WakeTurbulenceCategory.MEDIUM
-        );
-
-        AircraftData data2 = new AircraftData(
-                new AircraftRegistration("ABC123"),
-                new AircraftTypeDesignator("A320"),
-                "Airbus A320",
-                new AircraftDescription("L2J"),
-                WakeTurbulenceCategory.MEDIUM
-        );
-
-
-        // Test equality of data1 and data2
-        Assertions.assertEquals(data1, data2);
-
+    void aircraftDataConstructorThrowsWithNullAttribute() {
+        var registration = new AircraftRegistration("HB-JAV");
+        var typeDesignator = new AircraftTypeDesignator("B738");
+        var model = "Boeing 737-800";
+        var description = new AircraftDescription("L2J");
+        var wakeTurbulenceCategory = WakeTurbulenceCategory.LIGHT;
+        assertThrows(NullPointerException.class, () -> {
+            new AircraftData(null, typeDesignator, model, description, wakeTurbulenceCategory);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            new AircraftData(registration, null, model, description, wakeTurbulenceCategory);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            new AircraftData(registration, typeDesignator, null, description, wakeTurbulenceCategory);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            new AircraftData(registration, typeDesignator, model, null, wakeTurbulenceCategory);
+        });
+        assertThrows(NullPointerException.class, () -> {
+            new AircraftData(registration, typeDesignator, model, description, null);
+        });
     }
-
 }
