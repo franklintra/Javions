@@ -4,10 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class PowerComputerTest {
-    @Test
-    void temp() {
-        System.out.println("@Franklin do your magic here");
-        assertEquals(1, 1);
-    }
 }

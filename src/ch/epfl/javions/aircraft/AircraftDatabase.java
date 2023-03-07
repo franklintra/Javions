@@ -22,7 +22,7 @@ public final class AircraftDatabase {
      * The constructor of the AircraftDatabase class
      *
      * @param filename the name of the database file
-     * @throws IOException if the database file could not be read
+     * @throws NullPointerException if the database file could not be read
      */
     public AircraftDatabase(String filename) {
         Objects.requireNonNull(filename);
@@ -60,7 +60,6 @@ public final class AircraftDatabase {
                             break nextZip; //Interrupts the loop and go to the next zip file if the current address is greater than the address we're looking for (because the database is sorted)
                         }
                         if (line.startsWith(address.string())) {
-                            System.out.println(z.getName());
                             String[] data = line.split(",", -1);
                             return new AircraftData(
                                     new AircraftRegistration(data[1]),
