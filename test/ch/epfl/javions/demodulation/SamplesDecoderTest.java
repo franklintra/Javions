@@ -47,7 +47,7 @@ class SamplesDecoderTest {
     }
 
     @Test
-    void specialCaseStreamEndReached() throws IOException {
+    void specialCaseStreamEndReached() throws IOException { //fixme this test is not working (it doesn't test with right value bcs a program not implementing the special case would pass)
         InputStream fixedSizeInputStream = new ByteArrayInputStream(new byte[]{0, 1, 0, 1, 0, 1, 0, 1, 0});
         short[] buffer = new short[10];
         SamplesDecoder decoder = new SamplesDecoder(fixedSizeInputStream, 10);

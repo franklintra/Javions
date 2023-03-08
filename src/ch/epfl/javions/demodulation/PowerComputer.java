@@ -17,7 +17,7 @@ public final class PowerComputer {
     private final SamplesDecoder decoder;
     private final short[] sampleBuffer; // this is the buffer that will contain the samples read from the input stream.
     private final int[] last8Samples = new int[8]; // this is the buffer that will contain the last 8 samples used to calculate the power
-    private int bufferIndex = 0; // this is the index of the oldest sample in the buffer / default is 0
+    private int last8Index = 0; // this is the index of the oldest sample in the buffer / default is 0
     private final int batchSize;
 
     public PowerComputer(InputStream stream, int batchSize) {
@@ -37,17 +37,6 @@ public final class PowerComputer {
     }
 
     /**
-     * This method is used to set the index of the oldest sample in the buffer
-     * @param newIndex the new index of the oldest sample in the buffer
-     * @return the value calculated by the method and set as to bufferIndex
-     */
-    private int setBufferIndex(int newIndex) {
-        bufferIndex = base8Mod(newIndex);
-        return bufferIndex;
-    }
-
-
-    /**
      * Reads a batch of samples from the input stream / necessary to calculate a batch of power samples
      * @param batch the array of shorts that will contain the samples
      * @return number of samples read and written to the batch
@@ -57,25 +46,34 @@ public final class PowerComputer {
      */
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
+        int bufferIndex = 2;
         int written = 0;
         decoder.readBatch(sampleBuffer);
+        System.out.println(Arrays.toString(sampleBuffer));
         //put latest data in last8Samples
-        for (int i = 0; i < 8; i += 1) {
-            last8Samples[i] = sampleBuffer[i];
-        }
+        last8Samples[6] = sampleBuffer[0];
+        last8Samples[7] = sampleBuffer[1];
 
-        for (int i = 0; i < batchSize; i++) {
-            if (base8Mod(i) == 0) {
+        for (int i = 2; i < batchSize+batchSize+2; i+=2) {
+            if (Math.floorMod(i, batchSize) == 0 && i != 0) {
                 decoder.readBatch(sampleBuffer); //decode new data only if needed
+                bufferIndex = 0; //fixme check if this is 2 or 0
+                System.out.println(Arrays.toString(sampleBuffer));
             }
-            int evenIndexes = last8Samples[base8Mod(bufferIndex-6)] - last8Samples[base8Mod(bufferIndex-4)] + last8Samples[base8Mod(bufferIndex-2)] - last8Samples[base8Mod(bufferIndex)];
-            int oddIndexes = last8Samples[base8Mod(bufferIndex-5)] - last8Samples[base8Mod(bufferIndex-3)] + last8Samples[base8Mod(bufferIndex-1)] - last8Samples[base8Mod(bufferIndex+1)];
-            System.out.println(bufferIndex + " : " + Arrays.toString(last8Samples));
-            batch[i] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
+            int evenIndexes = last8Samples[base8Mod(last8Index -6)] - last8Samples[base8Mod(last8Index -4)] + last8Samples[base8Mod(last8Index -2)] - last8Samples[base8Mod(last8Index)];
+            int oddIndexes = last8Samples[base8Mod(last8Index -5)] - last8Samples[base8Mod(last8Index -3)] + last8Samples[base8Mod(last8Index -1)] - last8Samples[base8Mod(last8Index +1)];
+            //Warning : this is for debugging purposes only
+            //System.out.println(last8Index + " : " + Arrays.toString(last8Samples));
+            //System.out.println(Arrays.toString(sampleBuffer));
+            //System.out.println(last8Samples[base8Mod(bufferIndex-6)] + "-" + last8Samples[base8Mod(bufferIndex-4)] + "+" + last8Samples[base8Mod(bufferIndex-2)] + "-" + last8Samples[base8Mod(bufferIndex)] + " = " + evenIndexes);
+            //System.out.println(last8Samples[base8Mod(bufferIndex-5)] + "-" + last8Samples[base8Mod(bufferIndex-3)] + "+" + last8Samples[base8Mod(bufferIndex-1)] + "-" + last8Samples[base8Mod(bufferIndex+1)] + " = " + oddIndexes);
+            batch[i/2 - 1] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
 
             // turnover latest data in last8Samples
-            last8Samples[bufferIndex] = sampleBuffer[bufferIndex];
-            setBufferIndex(bufferIndex+1);
+            last8Samples[last8Index] = sampleBuffer[Math.floorMod(bufferIndex, sampleBuffer.length)];
+            last8Samples[base8Mod(last8Index +1)] = sampleBuffer[Math.floorMod(bufferIndex+1, sampleBuffer.length)];
+            last8Index = base8Mod(last8Index +2);
+            bufferIndex = Math.floorMod(bufferIndex +2, sampleBuffer.length);
         }
         return written;
     }
