@@ -48,7 +48,7 @@ public final class SamplesDecoder {
             //buffer[i] is a two bytes number that represents a sample ([0] and [1])
             //we need to apply the transformation described in the project statement to get the sample
             int sample = (((buffer[i+1] & 0xF) << 8) | (buffer[i] & 0xFF)) - 2048;
-            batch[i] = (short) sample;
+            batch[i/2] = (short) sample;
         }
         return data;
     }

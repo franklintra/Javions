@@ -11,7 +11,7 @@ import java.io.InputStream;
  */
 
 public final class PowerWindow {
-    private InputStream stream;
+    private final InputStream stream;
     private final int windowSize;
     private final int[] evenWindow;
     private final int[] oddWindow;
@@ -76,7 +76,7 @@ public final class PowerWindow {
         if (isFull()) {
             throw new IOException("Window is full");
         }
-        position++;
+        position += 1;
     }
 
     /**
