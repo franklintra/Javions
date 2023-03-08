@@ -50,6 +50,6 @@ public final class SamplesDecoder {
             int sample = (((buffer[i+1] & 0xF) << 8) | (buffer[i] & 0xFF)) - 2048;
             batch[i/2] = (short) sample;
         }
-        return data;
+        return stream.read() == -1 ? data/2 : batchSize;
     }
 }
