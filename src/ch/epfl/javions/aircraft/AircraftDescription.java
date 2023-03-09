@@ -48,4 +48,4 @@ public class AircraftDescription {
         AircraftDescription that = (AircraftDescription) o;
         return description.equals(that.description);
     }
-}
+    }
