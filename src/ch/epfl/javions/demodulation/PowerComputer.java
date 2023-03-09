@@ -4,7 +4,6 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * @author @franklintra
@@ -49,7 +48,6 @@ public final class PowerComputer {
         int bufferIndex = 2;
         int written = 0;
         decoder.readBatch(sampleBuffer);
-        System.out.println(Arrays.toString(sampleBuffer));
         //put latest data in last8Samples
         last8Samples[6] = sampleBuffer[0];
         last8Samples[7] = sampleBuffer[1];
@@ -57,16 +55,12 @@ public final class PowerComputer {
         for (int i = 2; i < batchSize+batchSize+2; i+=2) {
             if (Math.floorMod(i, batchSize) == 0 && i != 0) {
                 decoder.readBatch(sampleBuffer); //decode new data only if needed
-                bufferIndex = 0; //fixme check if this is 2 or 0
-                System.out.println(Arrays.toString(sampleBuffer));
+                bufferIndex = 0;
             }
             int evenIndexes = last8Samples[base8Mod(last8Index -6)] - last8Samples[base8Mod(last8Index -4)] + last8Samples[base8Mod(last8Index -2)] - last8Samples[base8Mod(last8Index)];
             int oddIndexes = last8Samples[base8Mod(last8Index -5)] - last8Samples[base8Mod(last8Index -3)] + last8Samples[base8Mod(last8Index -1)] - last8Samples[base8Mod(last8Index +1)];
-            //Warning : this is for debugging purposes only
-            //System.out.println(last8Index + " : " + Arrays.toString(last8Samples));
-            //System.out.println(Arrays.toString(sampleBuffer));
-            //System.out.println(last8Samples[base8Mod(bufferIndex-6)] + "-" + last8Samples[base8Mod(bufferIndex-4)] + "+" + last8Samples[base8Mod(bufferIndex-2)] + "-" + last8Samples[base8Mod(bufferIndex)] + " = " + evenIndexes);
-            //System.out.println(last8Samples[base8Mod(bufferIndex-5)] + "-" + last8Samples[base8Mod(bufferIndex-3)] + "+" + last8Samples[base8Mod(bufferIndex-1)] + "-" + last8Samples[base8Mod(bufferIndex+1)] + " = " + oddIndexes);
+            //System.out.println("Last8Index : "+last8Index + " : " + Arrays.toString(last8Samples));
+            //System.out.println("SampleDecoder : "+Arrays.toString(sampleBuffer));
             batch[i/2 - 1] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
 
             // turnover latest data in last8Samples
@@ -74,6 +68,7 @@ public final class PowerComputer {
             last8Samples[base8Mod(last8Index +1)] = sampleBuffer[Math.floorMod(bufferIndex+1, sampleBuffer.length)];
             last8Index = base8Mod(last8Index +2);
             bufferIndex = Math.floorMod(bufferIndex +2, sampleBuffer.length);
+            written++;
         }
         return written;
     }

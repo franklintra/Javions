@@ -33,7 +33,7 @@ class SamplesDecoderTest {
     @Test
     void assertThrowsReadBatch() {
         assertThrows(IllegalArgumentException.class, () -> {
-            FileInputStream stream = new FileInputStream(Objects.requireNonNull(getClass().getResource("/samples.bin")).getFile());
+            InputStream stream = getClass().getResourceAsStream("/samples.bin");
             SamplesDecoder decoder = new SamplesDecoder(stream, 10);
             short[] batch = new short[11];
             decoder.readBatch(batch);

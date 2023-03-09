@@ -2,9 +2,8 @@ package ch.epfl.javions.demodulation;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Objects;
+import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +20,7 @@ class PowerComputerTest {
      */
     @Test
     void testFirst10ValuesReadBatch() throws IOException {
-        FileInputStream stream = new FileInputStream(Objects.requireNonNull(getClass().getResource("/samples.bin")).getFile());
+        InputStream stream = getClass().getResourceAsStream("/samples.bin");
         int batchSize = 8;
         PowerComputer decoder = new PowerComputer(stream, batchSize);
         int[] batch = new int[batchSize];
