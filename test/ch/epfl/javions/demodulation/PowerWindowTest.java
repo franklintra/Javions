@@ -10,6 +10,12 @@ import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
+/**
+ * @author @chukla
+ * @project Javions
+ */
+
 class PowerWindowTest {
     byte[] bytes = {1, 2, 3, 4, 5};
     InputStream stream = new ByteArrayInputStream(bytes);
