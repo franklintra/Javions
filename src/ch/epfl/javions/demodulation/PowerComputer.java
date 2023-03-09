@@ -59,8 +59,6 @@ public final class PowerComputer {
             }
             int evenIndexes = last8Samples[base8Mod(last8Index -6)] - last8Samples[base8Mod(last8Index -4)] + last8Samples[base8Mod(last8Index -2)] - last8Samples[base8Mod(last8Index)];
             int oddIndexes = last8Samples[base8Mod(last8Index -5)] - last8Samples[base8Mod(last8Index -3)] + last8Samples[base8Mod(last8Index -1)] - last8Samples[base8Mod(last8Index +1)];
-            //System.out.println("Last8Index : "+last8Index + " : " + Arrays.toString(last8Samples));
-            //System.out.println("SampleDecoder : "+Arrays.toString(sampleBuffer));
             batch[i/2 - 1] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
 
             // turnover latest data in last8Samples
