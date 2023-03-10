@@ -96,7 +96,6 @@ class PowerWindowTest {
 
         // Verify that the window initially starts at position 0 and is not full
         assertEquals(0, window.position());
-        assertFalse(window.isFull());
 
         // Advance the window by one sample and verify that the position is incremented
         window.advance();

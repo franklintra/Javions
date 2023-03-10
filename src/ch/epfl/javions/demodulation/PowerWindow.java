@@ -76,7 +76,7 @@ public final class PowerWindow {
      * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
-        return samplesLeft > 0 && windowFirstFill >= windowSize; //todo: understand why its samplesLeft > 0 and not >= 0 (probably when we decrement)
+        return samplesLeft > 0; //todo: understand why its samplesLeft > 0 and not >= 0 (probably when we decrement)
     }
 
     /**
