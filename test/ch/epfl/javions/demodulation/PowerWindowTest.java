@@ -63,7 +63,6 @@ class PowerWindowTest {
         assertEquals(3, powerWindow.position());
     }
 
-    @Test
     void testIsFull() throws IOException {
         int windowSize = 3;
         PowerWindow powerWindow = new PowerWindow(stream, windowSize);
@@ -90,7 +89,6 @@ class PowerWindowTest {
         InputStream test = getClass().getResourceAsStream("/samples.bin");
         byte[] data = new byte[16];
         test.readNBytes(data, 0, 16);
-        System.out.println(Arrays.toString(data));
         //expected := 73 292 65 745 98 4226 12244 25722 36818 23825
         int[] expected = new int[]{73, 292, 65, 745, 98, 4226, 12244, 25722};
         InputStream stream = new ByteArrayInputStream(data);

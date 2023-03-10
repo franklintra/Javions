@@ -4,7 +4,6 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * @author @franklintra
@@ -14,6 +13,7 @@ import java.util.Arrays;
 
 public final class PowerWindow {
     private static final int batchSize = (int) Math.scalb(1, 16);
+    //private static final int batchSize = 800;
     private final PowerComputer computer;
     private final int windowSize;
     private final int[] evenWindow;
@@ -68,7 +68,7 @@ public final class PowerWindow {
         return position;
     }
 
-    private long positionInArray() {
+    private long positionInArray(long position) {
         return position % batchSize;
     }
 
@@ -76,7 +76,7 @@ public final class PowerWindow {
      * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
-        return samplesLeft >= 0 && windowFirstFill >= windowSize;
+        return samplesLeft > 0 && windowFirstFill >= windowSize; //todo: understand why its samplesLeft > 0 and not >= 0 (probably when we decrement)
     }
 
     /**
@@ -106,11 +106,11 @@ public final class PowerWindow {
         //System.out.println("Window index: "+ baseWindowMod(windowOldestIndex));
         //System.out.println(evenWindow[0] + " " + evenWindow[1] + " " + evenWindow[2] + " " + evenWindow[3]);
         if (batchIndex%2 == 0) {
-            window[baseWindowMod(windowOldestIndex++)] = evenWindow[(int) (positionInArray()-1)];
+            window[baseWindowMod(windowOldestIndex++)] = evenWindow[(int) (positionInArray(position-1))];
         } else {
-            window[baseWindowMod(windowOldestIndex++)] = oddWindow[(int) (positionInArray()-1)];
+            window[baseWindowMod(windowOldestIndex++)] = oddWindow[(int) (positionInArray(position-1))];
         }
-        System.out.println("Window: "+ Arrays.toString(window));
+        //System.out.println("Window: "+ Arrays.toString(window));
     }
 
    /**
