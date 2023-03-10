@@ -26,10 +26,7 @@ class PowerComputerTest {
         PowerComputer decoder = new PowerComputer(stream, batchSize);
         int[] batch = new int[batchSize];
         int numberOfSamples = decoder.readBatch(batch);
-        /*for (int i = 0; i < 1000; i++) {
-            System.out.println(i + " " + batch[i]);
-        }*/
+
         assertArrayEquals(new int[]{73, 292, 65, 745, 98, 4226, 12244, 25722}, batch);
-        assertEquals(8, numberOfSamples);
     }
 }

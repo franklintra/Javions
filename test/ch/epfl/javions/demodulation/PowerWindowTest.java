@@ -27,6 +27,9 @@ class PowerWindowTest {
         assertNotNull(powerWindow);
     }
 
+    /**
+     * Tests that the constructor throws an IllegalArgumentException when the window size is 0 or greater than 2^16.
+     */
     @Test
     void testInvalidWindowSize() {
         int windowSize = 0;
@@ -39,6 +42,9 @@ class PowerWindowTest {
         assertThrows(IllegalArgumentException.class, () -> new PowerWindow(stream, windowSize));
     }
 
+    /**
+     * Tests that the constructor throws an IllegalArgumentException when the stream is null.
+     */
     @Test
     void testSize() throws IOException {
         int windowSize = 5;
@@ -111,4 +117,5 @@ class PowerWindowTest {
     @Test
     public void testAdvanceBy() {
     }
+
 }

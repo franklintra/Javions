@@ -13,7 +13,6 @@ import java.io.InputStream;
 
 public final class PowerWindow {
     private static final int batchSize = (int) Math.scalb(1, 16);
-    //private static final int batchSize = 800;
     private final PowerComputer computer;
     private final int windowSize;
     private final int[] evenWindow;
@@ -44,6 +43,12 @@ public final class PowerWindow {
         readBatch();
     }
 
+    /**
+     * This method is used to calculate the modulus of a number with the size of the window
+     *
+     * @param index the number to calculate the modulus of
+     * @return the modulus of the number base windowSize
+     */
     private int baseWindowMod(int index) {
         return Math.floorMod(index, windowSize);
     }
@@ -57,6 +62,9 @@ public final class PowerWindow {
         batchIndex++;
     }
 
+    /**
+     * @return the size of the window
+     */
     public int size() {
         return windowSize;
     }
@@ -68,6 +76,9 @@ public final class PowerWindow {
         return position;
     }
 
+    /**
+     * @return the position of the oldest sample in the window
+     */
     private long positionInArray(long position) {
         return position % batchSize;
     }
@@ -103,14 +114,13 @@ public final class PowerWindow {
         if (samplesLeft < 0) {
             readBatch();
         }
-        //System.out.println("Window index: "+ baseWindowMod(windowOldestIndex));
-        //System.out.println(evenWindow[0] + " " + evenWindow[1] + " " + evenWindow[2] + " " + evenWindow[3]);
+
         if (batchIndex%2 == 0) {
             window[baseWindowMod(windowOldestIndex++)] = evenWindow[(int) (positionInArray(position-1))];
         } else {
             window[baseWindowMod(windowOldestIndex++)] = oddWindow[(int) (positionInArray(position-1))];
         }
-        //System.out.println("Window: "+ Arrays.toString(window));
+
     }
 
    /**
