@@ -58,6 +58,9 @@ public final class PowerComputer {
                 lastCounter = decoder.readBatch(sampleBuffer); //decode new data only if needed
                 bufferIndex = 0;
             }
+            if (lastCounter == 0) {
+                return written;
+            }
             int evenIndexes = last8Samples[base8Mod((bufferIndex - 2) - 6)] - last8Samples[base8Mod((bufferIndex - 2) - 4)] + last8Samples[base8Mod((bufferIndex - 2) - 2)] - last8Samples[base8Mod((bufferIndex - 2))];
             int oddIndexes = last8Samples[base8Mod((bufferIndex - 2) - 5)] - last8Samples[base8Mod((bufferIndex - 2) - 3)] + last8Samples[base8Mod((bufferIndex - 2) - 1)] - last8Samples[base8Mod((bufferIndex - 2) + 1)];
             batch[i / 2 - 1] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
@@ -67,6 +70,7 @@ public final class PowerComputer {
             last8Samples[base8Mod((bufferIndex - 2) + 1)] = sampleBuffer[Math.floorMod(bufferIndex + 1, sampleBuffer.length)];
             bufferIndex = Math.floorMod(bufferIndex + 2, sampleBuffer.length);
             written++;
+            lastCounter -= 2;
         }
         return written;
     }

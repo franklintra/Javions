@@ -4,6 +4,7 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * @author @franklintra
@@ -12,13 +13,17 @@ import java.io.InputStream;
  */
 
 public final class PowerWindow {
-    private final InputStream stream;
-//    private final PowerComputer computer; /todo : instruction says to create powercomputer object
+    private static final int batchSize = (int) Math.scalb(1, 16);
+    private final PowerComputer computer;
     private final int windowSize;
     private final int[] evenWindow;
     private final int[] oddWindow;
-    private final int[] window;
-    private int position = 0;
+    private final int[] window; //we will consider the window as a circular array
+    private int windowOldestIndex;
+    private int windowFirstFill = 0;
+    private long position = 0;
+    private int samplesLeft;
+    private int batchIndex = -1;
 
     /**
      * Constructs a new PowerWindow object with the given stream and window size.
@@ -29,26 +34,27 @@ public final class PowerWindow {
      * @throws IllegalArgumentException if the window size is not in the range [1, 2^16]
      */
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
-        Preconditions.checkArgument(0 < windowSize && windowSize <= Math.scalb(1, 16));
+        Preconditions.checkArgument(0 < windowSize && windowSize <= batchSize);
         this.windowSize = windowSize;
-//        this.computer = new PowerComputer(stream, windowSize);
-        evenWindow = new int[windowSize];
-        oddWindow = new int[windowSize];
-        this.stream = stream;
+        this.computer = new PowerComputer(stream, batchSize);
+        evenWindow = new int[batchSize];
+        oddWindow = new int[batchSize];
         window = new int[windowSize];
-        prefetch();
+        windowOldestIndex = windowSize - 1;
+        readBatch();
     }
 
-    /**
-     * Prefetches the first windowSize samples from the stream.
-     *
-     * @throws IOException if the stream cannot be read
-     */
-    private void prefetch() throws IOException {
-        for (int i = 0; i < windowSize; i++) { //todo : what if there are two succeeding even numbers?
-            evenWindow[i] = stream.read();
-            oddWindow[i] = stream.read();
+    private int baseWindowMod(int index) {
+        return Math.floorMod(index, windowSize);
+    }
+
+    private void readBatch() throws IOException {
+        if (batchIndex%2 == 0 || batchIndex == -1) {
+            samplesLeft = computer.readBatch(evenWindow);
+        } else {
+            samplesLeft = computer.readBatch(oddWindow);
         }
+        batchIndex++;
     }
 
     public int size() {
@@ -62,11 +68,15 @@ public final class PowerWindow {
         return position;
     }
 
+    private long positionInArray() {
+        return position % batchSize;
+    }
+
     /**
      * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
-        return position >= windowSize;
+        return samplesLeft >= 0 && windowFirstFill >= windowSize;
     }
 
     /**
@@ -75,20 +85,10 @@ public final class PowerWindow {
      * @throws IndexOutOfBoundsException if the position is out of bounds
      */
     public int get(int position) {
-        int mergedLength = evenWindow.length + oddWindow.length;
-        if (position < mergedLength && position < windowSize) {
-            int[] merged = new int[mergedLength];
-            int i = 0;
-            for (int j = 0; j < evenWindow.length; j++) {
-                merged[i++] = evenWindow[j];
-                if (j < oddWindow.length) {
-                    merged[i++] = oddWindow[j];
-                }
-            }
-            return merged[position + this.position];
-        } else {
+        if ((position < 0) || (position >= windowSize)) {
             throw new IndexOutOfBoundsException("Position " + position + " is out of bounds.");
         }
+        return window[baseWindowMod(windowOldestIndex + position)];
     }
 
     /**
@@ -97,24 +97,33 @@ public final class PowerWindow {
      * @throws IOException if the stream cannot be read / if the window is full
      */
     public void advance() throws IOException {
-        if (isFull()) {
-            throw new IOException("Window is full");
-        }
         position++;
+        samplesLeft--;
+        windowFirstFill++;
+        if (samplesLeft < 0) {
+            readBatch();
+        }
+        //System.out.println("Window index: "+ baseWindowMod(windowOldestIndex));
+        //System.out.println(evenWindow[0] + " " + evenWindow[1] + " " + evenWindow[2] + " " + evenWindow[3]);
+        if (batchIndex%2 == 0) {
+            window[baseWindowMod(windowOldestIndex++)] = evenWindow[(int) (positionInArray()-1)];
+        } else {
+            window[baseWindowMod(windowOldestIndex++)] = oddWindow[(int) (positionInArray()-1)];
+        }
+        System.out.println("Window: "+ Arrays.toString(window));
     }
 
    /**
      * Advances the window by the given number of samples by reading the next samples from the stream.
      *
-     * @param i the number of samples to advance by
+     * @param n the number of samples to advance by
      * @throws IOException              if the stream cannot be read / if the window is full
      * @throws IllegalArgumentException if the number of samples to advance by is negative
      */
-    public void advanceBy(int i) throws IOException {
-        Preconditions.checkArgument(i >= 0);
-        if (isFull()) {
-            throw new IOException("Window is full");
+    public void advanceBy(int n) throws IOException {
+        Preconditions.checkArgument(n >= 0);
+        for (int i = 0; i < n; i++) {
+            advance();
         }
-        position += i;
     }
 }
