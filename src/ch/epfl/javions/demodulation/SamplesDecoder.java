@@ -45,12 +45,15 @@ public final class SamplesDecoder {
         Preconditions.checkArgument(batch.length == batchSize); //throws IllegalArgumentException if the size of the batch doesn't match the required size
         int data = stream.readNBytes(buffer, 0, 2 * batchSize);
         //if the number of bytes data is not equal to 2*batchSize, then we have reached the end of the stream
+        int bytesRead = stream.available();
+
+
         for (int i = 0; i < buffer.length; i+=2) {
             //buffer[i] is a two bytes number that represents a sample ([0] and [1])
             //we need to apply the transformation described in the project statement to get the sample
             int sample = (((buffer[i+1] & 0xF) << 8) | (buffer[i] & 0xFF)) - 2048;
             batch[i/2] = (short) sample;
         }
-        return data/2; //fixme : need to return something else if the end of the stream is reached
+        return (int) Math.floor(data/2); //fixme : need to return something else if the end of the stream is reached
     }
 }
