@@ -3,61 +3,90 @@ package ch.epfl.javions.demodulation;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * @author @franklintra
- * @project Javions
- */
-@SuppressWarnings("unused")
 class SamplesDecoderTest {
-    /**
-     * Tests that the first 10 values obtained from SamplesDecoder are [-3 8 -9 -8 -5 -8 -12 -16 -23 -9] for the samples.bin file.
-     * @throws IOException if the file cannot be read
-     * @throws IllegalArgumentException if the path is null (file not found)
-     */
-    @Test
-    void testFirst10ValuesReadBatch() throws IOException {
-        FileInputStream stream = new FileInputStream(Objects.requireNonNull(getClass().getResource("/samples.bin")).getFile());
-        SamplesDecoder decoder = new SamplesDecoder(stream, 10);
-        short[] batch = new short[10];
-        decoder.readBatch(batch);
-        assertArrayEquals(batch, new short[]{-3, 8, -9, -8, -5, -8, -12, -16, -23, -9});
+    private static final int SAMPLES_COUNT = 1 << 12;
+    private static final int BIAS = 1 << 11;
+
+    private static byte[] getSampleBytes() {
+        var sampleBytes = new byte[SAMPLES_COUNT * Short.BYTES];
+        var sampleBytesBuffer = ByteBuffer.wrap(sampleBytes)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .asShortBuffer();
+
+        for (int i = 0; i < SAMPLES_COUNT; i += 1)
+            sampleBytesBuffer.put((short) i);
+        return sampleBytes;
     }
 
     @Test
-    void assertThrowsReadBatch() {
+    void samplesDecoderConstructorThrowsWithInvalidBatchSize() {
+        var stream = new ByteArrayInputStream(new byte[0]);
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new SamplesDecoder(stream, -1));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new SamplesDecoder(stream, 0));
+    }
+
+    @Test
+    void samplesDecoderConstructorThrowsWithNullStream() {
+        assertThrows(
+                NullPointerException.class,
+                () -> new SamplesDecoder(null, 1));
+    }
+
+    @Test
+    void samplesDecoderReadBatchThrowsOnInvalidBatchSize() {
         assertThrows(IllegalArgumentException.class, () -> {
-            InputStream stream = getClass().getResourceAsStream("/samples.bin");
-            SamplesDecoder decoder = new SamplesDecoder(stream, 10);
-            short[] batch = new short[11];
-            decoder.readBatch(batch);
-        });
-        assertThrows(IOException.class, () -> {
-            FileInputStream stream = new FileInputStream(String.valueOf(getClass().getResource("/doesntexist.bin")));
-            SamplesDecoder decoder = new SamplesDecoder(stream, 10);
-            short[] batch = new short[10];
-            decoder.readBatch(batch);
+            try (var byteStream = new ByteArrayInputStream(getSampleBytes())) {
+                var batchSize = 1024;
+                var actualSamples = new short[batchSize - 1];
+                var samplesDecoder = new SamplesDecoder(byteStream, batchSize);
+                samplesDecoder.readBatch(actualSamples);
+            }
         });
     }
 
     @Test
-    void specialCaseStreamEndReached() throws IOException { //fixme this test is not working (it doesn't test with right value bcs a program not implementing the special case would pass)
-        InputStream fixedSizeInputStream = new ByteArrayInputStream(new byte[]{0, 1, 0, 1, 0, 1, 0, 1, 0});
-        short[] buffer = new short[10];
-        SamplesDecoder decoder = new SamplesDecoder(fixedSizeInputStream, 10);
-        int data = decoder.readBatch(buffer);
-        assertEquals(4, data);
+    void samplesDecoderReadBatchCorrectlyReadsSamples() throws IOException {
+        try (var byteStream = new ByteArrayInputStream(getSampleBytes())) {
+            var expectedSamples = new short[SAMPLES_COUNT];
+            for (int i = 0; i < SAMPLES_COUNT; i += 1)
+                expectedSamples[i] = (short) (i - BIAS);
+
+            var actualSamples = new short[SAMPLES_COUNT];
+            var samplesDecoder = new SamplesDecoder(byteStream, actualSamples.length);
+            var readSamples = samplesDecoder.readBatch(actualSamples);
+            assertEquals(SAMPLES_COUNT, readSamples);
+            assertArrayEquals(expectedSamples, actualSamples);
+        }
     }
 
     @Test
-    void assertThrowsExceptionConstructor() {
-        assertThrows(NullPointerException.class, () -> new SamplesDecoder(null, 10));
-        assertThrows(IllegalArgumentException.class, () -> new SamplesDecoder(new FileInputStream(Objects.requireNonNull(getClass().getResource("/samples.bin")).getFile()), -1));
+    void samplesDecoderWorksWithDifferentBatchSizes() throws IOException {
+        var expectedSamples = new short[SAMPLES_COUNT];
+        for (int i = 0; i < SAMPLES_COUNT; i += 1)
+            expectedSamples[i] = (short) (i - BIAS);
+
+        for (var batchSize = 1; batchSize < SAMPLES_COUNT; batchSize *= 2) {
+            try (var byteStream = new ByteArrayInputStream(getSampleBytes())) {
+                var samplesDecoder = new SamplesDecoder(byteStream, batchSize);
+                var actualSamples = new short[SAMPLES_COUNT];
+                var batch = new short[batchSize];
+                for (var i = 0; i < SAMPLES_COUNT / batchSize; i += 1) {
+                    var samplesRead = samplesDecoder.readBatch(batch);
+                    assertEquals(batchSize, samplesRead);
+                    System.arraycopy(batch, 0, actualSamples, i * batchSize, batchSize);
+                }
+                assertArrayEquals(expectedSamples, actualSamples);
+            }
+        }
     }
 }

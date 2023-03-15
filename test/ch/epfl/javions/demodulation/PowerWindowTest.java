@@ -1,121 +1,151 @@
 package ch.epfl.javions.demodulation;
 
-
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
-/**
- * @author @chukla
- * @project Javions
- */
-
 class PowerWindowTest {
-    byte[] bytes = {1, 2, 3, 4, 5};
-    InputStream stream = new ByteArrayInputStream(bytes);
+    private static final int BATCH_SIZE = 1 << 16;
+    private static final int BATCH_SIZE_BYTES = bytesForPowerSamples(BATCH_SIZE);
+    private static final int STANDARD_WINDOW_SIZE = 1200;
+    private static final int BIAS = 1 << 11;
 
-    @Test
-    void testValidInput() throws IOException {
-        int windowSize = 3;
-        PowerWindow powerWindow = new PowerWindow(stream, windowSize);
-        assertNotNull(powerWindow);
-    }
-
-    /**
-     * Tests that the constructor throws an IllegalArgumentException when the window size is 0 or greater than 2^16.
-     */
-    @Test
-    void testInvalidWindowSize() {
-        int windowSize = 0;
-        assertThrows(IllegalArgumentException.class, () -> new PowerWindow(stream, windowSize));
+    private static int bytesForPowerSamples(int powerSamplesCount) {
+        return powerSamplesCount * 2 * Short.BYTES;
     }
 
     @Test
-    void testWindowSizeOutOfRange() {
-        int windowSize = (int) Math.pow(2, 16) + 1;
-        assertThrows(IllegalArgumentException.class, () -> new PowerWindow(stream, windowSize));
-    }
-
-    /**
-     * Tests that the constructor throws an IllegalArgumentException when the stream is null.
-     */
-    @Test
-    void testSize() throws IOException {
-        int windowSize = 5;
-        PowerWindow powerWindow = new PowerWindow(stream, windowSize);
-        assertEquals(windowSize, powerWindow.size());
+    void powerWindowConstructorThrowsWithInvalidWindowSize() throws IOException {
+        try (var s = InputStream.nullInputStream()) {
+            assertThrows(IllegalArgumentException.class, () -> new PowerWindow(s, 0));
+            assertThrows(IllegalArgumentException.class, () -> new PowerWindow(s, -1));
+            assertThrows(IllegalArgumentException.class, () -> new PowerWindow(s, (1 << 16) + 1));
+        }
     }
 
     @Test
-    void testPosition() throws IOException {
-        int windowSize = 3;
-        PowerWindow powerWindow = new PowerWindow(stream, windowSize);
-
-        assertEquals(0, powerWindow.position()); // position is initially 0
-
-        powerWindow.advance();
-        assertEquals(1, powerWindow.position());
-
-        powerWindow.advance();
-        assertEquals(2, powerWindow.position());
-
-        powerWindow.advance();
-        assertEquals(3, powerWindow.position());
-    }
-
-    void testIsFull() throws IOException {
-        int windowSize = 3;
-        PowerWindow powerWindow = new PowerWindow(stream, windowSize);
-
-        assertFalse(powerWindow.isFull()); // window is not full initially
-
-        powerWindow.advance();
-        assertFalse(powerWindow.isFull());
-
-        powerWindow.advance();
-        assertFalse(powerWindow.isFull());
-
-        powerWindow.advance();
-        assertTrue(powerWindow.isFull());
-
+    void powerWindowSizeReturnsWindowSize() throws IOException {
+        try (var s = InputStream.nullInputStream()) {
+            for (var i = 1; i <= 1 << 16; i <<= 1) {
+                var w = new PowerWindow(s, i);
+                assertEquals(i, w.size());
+            }
+        }
     }
 
     @Test
-    void testGetMethod() {
+    void powerWindowPositionIsCorrectlyUpdatedByAdvance() throws IOException {
+        var batches16 = new byte[BATCH_SIZE_BYTES * 16];
+        try (var s = new ByteArrayInputStream(batches16)) {
+            var w = new PowerWindow(s, STANDARD_WINDOW_SIZE);
+            var expectedPos = 0L;
+
+            assertEquals(expectedPos, w.position());
+
+            w.advance();
+            expectedPos += 1;
+            assertEquals(expectedPos, w.position());
+
+            w.advanceBy(BATCH_SIZE);
+            expectedPos += BATCH_SIZE;
+            assertEquals(expectedPos, w.position());
+
+            w.advanceBy(BATCH_SIZE - 1);
+            expectedPos += BATCH_SIZE - 1;
+            assertEquals(expectedPos, w.position());
+
+            w.advance();
+            expectedPos += 1;
+            assertEquals(expectedPos, w.position());
+        }
     }
 
     @Test
-    void testAdvance() throws IOException {
-        InputStream test = getClass().getResourceAsStream("/samples.bin");
-        byte[] data = new byte[16];
-        test.readNBytes(data, 0, 16);
-        //expected := 73 292 65 745 98 4226 12244 25722 36818 23825
-        int[] expected = new int[]{73, 292, 65, 745, 98, 4226, 12244, 25722};
-        InputStream stream = new ByteArrayInputStream(data);
-        PowerWindow window = new PowerWindow(stream, 3);
+    void powerWindowAdvanceByCanAdvanceOverSeveralBatches() throws IOException {
+        var bytes = bytesForZeroSamples(16);
 
-        // Verify that the window initially starts at position 0 and is not full
-        assertEquals(0, window.position());
+        var batchesToSkipOver = 2;
+        var inBatchOffset = 37;
+        var offset = batchesToSkipOver * BATCH_SIZE + inBatchOffset;
+        var sampleBytes = Base64.getDecoder().decode(PowerComputerTest.SAMPLES_BIN_BASE64);
+        System.arraycopy(sampleBytes, 0, bytes, bytesForPowerSamples(offset), sampleBytes.length);
 
-        // Advance the window by one sample and verify that the position is incremented
-        window.advance();
-        assertEquals(1, window.position());
-        assertEquals(73, window.get(2));
-        window.advance();
-        assertEquals(292, window.get(2));
-        window.advance();
-        assertEquals(65, window.get(2));
-        assertEquals(3, window.position());
+        try (var s = new ByteArrayInputStream(bytes)) {
+            var w = new PowerWindow(s, STANDARD_WINDOW_SIZE);
+            w.advanceBy(inBatchOffset);
+            w.advanceBy(batchesToSkipOver * BATCH_SIZE);
+            var expected = Arrays.copyOfRange(PowerComputerTest.POWER_SAMPLES, 0, STANDARD_WINDOW_SIZE);
+            var actual = new int[STANDARD_WINDOW_SIZE];
+            for (var i = 0; i < STANDARD_WINDOW_SIZE; i += 1) actual[i] = w.get(i);
+            assertArrayEquals(expected, actual);
+        }
     }
 
     @Test
-    public void testAdvanceBy() {
+    void powerWindowIsFullWorks() throws IOException {
+        var twoBatchesPlusOneWindowBytes =
+                bytesForPowerSamples(BATCH_SIZE * 2 + STANDARD_WINDOW_SIZE);
+        var twoBatchesPlusOneWindow = new byte[twoBatchesPlusOneWindowBytes];
+        try (var s = new ByteArrayInputStream(twoBatchesPlusOneWindow)) {
+            var w = new PowerWindow(s, STANDARD_WINDOW_SIZE);
+            assertTrue(w.isFull());
+
+            w.advanceBy(BATCH_SIZE);
+            assertTrue(w.isFull());
+
+            w.advanceBy(BATCH_SIZE);
+            assertTrue(w.isFull());
+
+            w.advance();
+            assertFalse(w.isFull());
+        }
     }
 
+    @Test
+    void powerWindowGetWorksOnGivenSamples() throws IOException {
+        try (var sampleStream = PowerComputerTest.getSamplesStream()) {
+            var windowSize = 100;
+            var w = new PowerWindow(sampleStream, windowSize);
+            for (var offset = 0; offset < 100; offset += 1) {
+                var expected = Arrays.copyOfRange(PowerComputerTest.POWER_SAMPLES, offset, offset + windowSize);
+                var actual = new int[windowSize];
+                for (var i = 0; i < windowSize; i += 1) actual[i] = w.get(i);
+                assertArrayEquals(expected, actual);
+                w.advance();
+            }
+        }
+    }
+
+    @Test
+    void powerWindowGetWorksAcrossBatches() throws IOException {
+        byte[] bytes = bytesForZeroSamples(2);
+        var firstBatchSamples = STANDARD_WINDOW_SIZE / 2 - 13;
+        var offset = BATCH_SIZE_BYTES - bytesForPowerSamples(firstBatchSamples);
+        var sampleBytes = Base64.getDecoder().decode(PowerComputerTest.SAMPLES_BIN_BASE64);
+        System.arraycopy(sampleBytes, 0, bytes, offset, sampleBytes.length);
+        try (var s = new ByteArrayInputStream(bytes)) {
+            var w = new PowerWindow(s, STANDARD_WINDOW_SIZE);
+            w.advanceBy(BATCH_SIZE - firstBatchSamples);
+            for (int i = 0; i < STANDARD_WINDOW_SIZE; i += 1)
+                assertEquals(PowerComputerTest.POWER_SAMPLES[i], w.get(i));
+        }
+    }
+
+    private static byte[] bytesForZeroSamples(int batchesCount) {
+        var bytes = new byte[BATCH_SIZE_BYTES * batchesCount];
+
+        var msbBias = BIAS >> Byte.SIZE;
+        var lsbBias = BIAS & ((1 << Byte.SIZE) - 1);
+        for (var i = 0; i < bytes.length; i += 2) {
+            bytes[i] = (byte) lsbBias;
+            bytes[i + 1] = (byte) msbBias;
+        }
+        return bytes;
+    }
 }
