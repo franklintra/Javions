@@ -249,6 +249,8 @@ class PowerComputerTest {
             var powerComputer = new PowerComputer(samplesStream, batch.length);
             var read = powerComputer.readBatch(batch);
             assertEquals(batch.length, read);
+            System.out.println(Arrays.toString(batch));
+            System.out.println(Arrays.toString(POWER_SAMPLES));
             assertArrayEquals(POWER_SAMPLES, batch);
         }
     }
@@ -267,6 +269,8 @@ class PowerComputerTest {
                     assertEquals(batchSize, read);
                     System.arraycopy(batch, 0, actualSamples, i * batchSize, batchSize);
                 }
+                System.out.println(Arrays.toString(expectedSamples));
+                System.out.println(Arrays.toString(actualSamples));
                 assertArrayEquals(expectedSamples, actualSamples);
             }
         }
