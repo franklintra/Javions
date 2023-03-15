@@ -269,8 +269,6 @@ class PowerComputerTest {
                     assertEquals(batchSize, read);
                     System.arraycopy(batch, 0, actualSamples, i * batchSize, batchSize);
                 }
-                System.out.println(Arrays.toString(expectedSamples));
-                System.out.println(Arrays.toString(actualSamples));
                 assertArrayEquals(expectedSamples, actualSamples);
             }
         }
