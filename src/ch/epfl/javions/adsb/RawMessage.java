@@ -1,5 +1,6 @@
 package ch.epfl.javions.adsb;
 
+import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
 import ch.epfl.javions.Preconditions;
@@ -25,9 +26,8 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public
     static RawMessage of(long timeStampNs, byte[] bytes) {
-        Crc24 crc = new Crc24(Crc24.GENERATOR); // FIXME: 3/14/2023 check if this is correct and generator
+        Crc24 crc = new Crc24(Crc24.GENERATOR);
         return crc.crc(bytes) != 0 ? null : new RawMessage(timeStampNs, new ByteString(bytes));
-
     }
 
     /**
@@ -47,21 +47,17 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @param payload the payload of the message
      * @return the type code of the message
      */
-    static int typeCode(long payload) { // FIXME: 3/14/2023 check if this is correct
-        // Bit mask to extract the 5 MSB of a 56-bit long integer
-        long msbMask = 0b11111_000000000000000000000000000000000000000000000000000L;
-        // Apply the bit mask to the payload and shift the result to the right
-        // by 51 bits to obtain the 5 MSB as an integer value
-        return (int) ((payload & msbMask) >>> 51);
+    static int typeCode(long payload) {
+        return Bits.extractUInt(payload, 51, 5);
     }
 
     /**
-     * Returns the downlink format of the message.
+     * Returns the time stamp of the message.
      *
-     * @return the downlink format of the message
+     * @return the time stamp of the message
      */
     public int downLinkFormat() {
-        return  bytes.byteAt(0) & 0b11111000;
+        return Bits.extractUInt(bytes.byteAt(0), 3, 5);
     }
 
     /**
@@ -69,8 +65,8 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      *
      * @return the ICAO address of the message
      */
-    public IcaoAddress IcaoAddress() {
-    return new IcaoAddress(Long.toString(bytes.bytesInRange(1,3)));
+    public IcaoAddress icaoAddress() {
+        return new IcaoAddress(Long.toHexString(bytes.bytesInRange(1,4)).toUpperCase());
     }
 
     /**
@@ -79,7 +75,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the payload of the message
      */
     public long payload() {
-        return bytes.bytesInRange(4, 10);
+        return bytes.bytesInRange(4, 11);
     }
 
     /**
