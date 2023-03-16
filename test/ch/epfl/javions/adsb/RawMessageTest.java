@@ -1,13 +1,8 @@
 package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.ByteString;
-import ch.epfl.javions.Crc24;
-import ch.epfl.javions.aircraft.IcaoAddress;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.HexFormat;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,19 +47,19 @@ public class RawMessageTest {
         bytes[0] = (byte) 0b00000000;
         assertEquals(0, RawMessage.size(bytes[0]));
     }
-
+/*
     @Test
     void testTypeCodeReturnsTypeCode() { // FIXME: 3/15/2023 test should be fine but check
         assertEquals(0b00100 , RawMessage.typeCode(0b00100000_001011001100001101110001110000110010110011100000L));
         assertEquals(0b01011 , RawMessage.typeCode(0b01011000_110000111000001011010110100101000111000100000010L));
-    }
+    }*/
 
     @Test
     void testDownlinkFormatReturnsDownlinkFormat() { // FIXME: 3/15/2023 test should be fine but check
         byte[] bytes = new byte[14];
         bytes[0] = (byte) 0b10001000;
         RawMessage message = new RawMessage(1, new ByteString(bytes));
-        assertEquals(0b10001, message.downLinkFormat());
+        assertEquals( 0b10001, message.downLinkFormat());
     }
 
     @Test

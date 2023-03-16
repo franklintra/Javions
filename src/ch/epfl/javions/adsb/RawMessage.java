@@ -24,8 +24,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @param bytes       the 14 bytes of the message
      * @return a RawMessage object if the CRC24 of the bytes is 0, null otherwise
      */
-    public
-    static RawMessage of(long timeStampNs, byte[] bytes) {
+    public static RawMessage of(long timeStampNs, byte[] bytes) {
         Crc24 crc = new Crc24(Crc24.GENERATOR);
         return crc.crc(bytes) != 0 ? null : new RawMessage(timeStampNs, new ByteString(bytes));
     }
@@ -37,18 +36,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the valid length of message if DF is worth 17, otherwise null.
      */
     static int size(byte byte0) {
-            int df = byte0 & 0b11111000;
-            return df == 0b10001000 ? LENGTH : 0;
-    }
-
-    /**
-     * Returns the type code of the message.
-     *
-     * @param payload the payload of the message
-     * @return the type code of the message
-     */
-    static int typeCode(long payload) {
-        return Bits.extractUInt(payload, 51, 5);
+            return (byte0 & 0b11111000) == 0b10001000 ? LENGTH : 0;
     }
 
     /**
@@ -57,7 +45,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the time stamp of the message
      */
     public int downLinkFormat() {
-        return Bits.extractUInt(bytes.byteAt(0), 3, 5);
+        return (int) ((bytes.bytesInRange(0, 1) >>> 3) & 0b11111);
     }
 
     /**
@@ -84,7 +72,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the type code of the message
      */
     public int typeCode() {
-        return typeCode(payload());
+        return Bits.extractUInt(bytes.bytesInRange(4, 5), 0, 5);
     }
 
 }
