@@ -31,8 +31,11 @@ public final class AdsbDemodulator {
         return null;
     }
 
-    private boolean getBitAt(long position) {
-        return false; // todo: return the bit at a position. to be used in the next method
+    private Short getBitAt(long position) {
+       int i = (int) position;
+       int p1 = powerWindow.get(80 + 10 * i); // center of first 0.5 us period
+        int p2 = powerWindow.get(85 + 10 * i); // center of second 0.5 us period
+        return (short) (p1 < p2 ? 0 : 1);
     }
 
     private byte[] getBytes() {
