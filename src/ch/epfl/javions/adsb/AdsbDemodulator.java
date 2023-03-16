@@ -9,6 +9,7 @@ import java.util.HexFormat;
 
 public final class AdsbDemodulator {
 
+    private static int windowSize = 1200;
     private final InputStream samplesStream; // the stream of samples to be demodulated
     private final PowerWindow powerWindow; // the power window used to demodulate the ADS-B messages
 
@@ -20,25 +21,14 @@ public final class AdsbDemodulator {
     public AdsbDemodulator(InputStream samplesStream) throws IOException {
         this.samplesStream = samplesStream;
         try {
-            this.powerWindow = new PowerWindow(samplesStream, 1200);
+            this.powerWindow = new PowerWindow(samplesStream, windowSize);
         } catch (IOException e) {
             throw new IOException("Error while getting the data", e);
         }
     }
 
     private ByteString getBits() {
-        short[] window = new short[1200];
-        for (int i = 0; i < 1200; i++) {
-            window[i] = (short) powerWindow.get(i);
-        }
-        //convert window to a hex string
-        byte[] bytes = new byte[window.length*2];
-        for (int i = 0; i < window.length; i++) {
-            bytes[2*i] = (byte) (window[i] >> 8);
-            bytes[2*i+1] = (byte) window[i];
-        }
-        System.out.println(ByteString.ofHexadecimalString(HexFormat.of().formatHex(bytes).toUpperCase()).toString());
-        return ByteString.ofHexadecimalString(HexFormat.of().formatHex(bytes).toUpperCase());
+        return null;
     }
 
     /**
@@ -48,8 +38,17 @@ public final class AdsbDemodulator {
      */
     public RawMessage nextMessage() throws IOException {
         RawMessage message = null;
+        int[] sums = new int[3];
+        int index = -1;
         while (true) {
-            if (powerWindow.get(0)+powerWindow.get(10)+powerWindow.get(35)+powerWindow.get(45) > 2*(powerWindow.get(5)+powerWindow.get(15)+ powerWindow.get(20)+powerWindow.get(25)+powerWindow.get(30)+powerWindow.get(40))) {
+            index++;
+            sums[index % 3] = powerWindow.get(0)+powerWindow.get(10)+powerWindow.get(35)+powerWindow.get(45);
+            if (sums[index%3] <= sums[(index+1)%3] || sums[index%3] <= sums[(index+2)%3]) {
+                powerWindow.advanceBy(windowSize);
+                continue;
+            }
+            if (sums[index] > 2*(powerWindow.get(5)+powerWindow.get(15)+ powerWindow.get(20)+powerWindow.get(25)+powerWindow.get(30)+powerWindow.get(40))) {
+                powerWindow.advanceBy(2); // this is to go forward 1/4 microsecond
                 message = new RawMessage(1L, getBits());
                 powerWindow.advanceBy(10); // fixme : advance by message bits (i don't remember how long it is)
                 return message;
