@@ -27,10 +27,6 @@ public final class AdsbDemodulator {
         }
     }
 
-    private ByteString getBits() {
-        return null;
-    }
-
     private short getBitAt(long position) {
        int i = (int) position;
        int p1 = powerWindow.get(80 + 10 * i); // center of first 0.5 us period
