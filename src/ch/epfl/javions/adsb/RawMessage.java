@@ -35,7 +35,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @param byte0 the first byte of the message
      * @return the valid length of message if DF is worth 17, otherwise null.
      */
-    static int size(byte byte0) {
+    public static int size(byte byte0) {
             return (byte0 & 0b11111000) == 0b10001000 ? LENGTH : 0;
     }
 
@@ -73,6 +73,10 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public int typeCode() {
         return Bits.extractUInt(bytes.bytesInRange(4, 5), 0, 5);
-    }
+    } // fixme check the values in extractUInt
 
+    public static int typeCode(long payload) {
+        //System.out.println(Integer.toBinaryString(Bits.extractUInt(payload, 0, 5)));
+        return Bits.extractUInt(payload, 0, 5); // check the values in extractUInt
+    }
 }

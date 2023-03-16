@@ -22,7 +22,7 @@ public class Bits {
             throw new IndexOutOfBoundsException("Invalid range: start=" + start + ", size=" + size);
         }
         long mask = (1L << size) - 1;
-        return (int) ((value >>> start) & mask);
+        return (int) ((value>>start) & mask);
     }
 
     /**
