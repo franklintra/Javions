@@ -45,7 +45,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the time stamp of the message
      */
     public int downLinkFormat() {
-        return (int) ((bytes.bytesInRange(0, 1) >>> 3) & 0b11111);
+        return (int) ((bytes.byteAt(0) >>> 3) & 0b11111);
     }
 
     /**
@@ -72,11 +72,10 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the type code of the message
      */
     public int typeCode() {
-        return Bits.extractUInt(bytes.bytesInRange(4, 5), 0, 5);
-    } // fixme check the values in extractUInt
+        return typeCode(payload());
+    }
 
     public static int typeCode(long payload) {
-        //System.out.println(Integer.toBinaryString(Bits.extractUInt(payload, 0, 5)));
-        return Bits.extractUInt(payload, 0, 5); // check the values in extractUInt
+        return Bits.extractUInt (payload, 51, 5);
     }
 }

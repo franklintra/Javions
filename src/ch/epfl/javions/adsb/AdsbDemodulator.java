@@ -31,7 +31,7 @@ public final class AdsbDemodulator {
         return null;
     }
 
-    private Short getBitAt(long position) {
+    private short getBitAt(long position) {
        int i = (int) position;
        int p1 = powerWindow.get(80 + 10 * i); // center of first 0.5 us period
         int p2 = powerWindow.get(85 + 10 * i); // center of second 0.5 us period
@@ -56,8 +56,8 @@ public final class AdsbDemodulator {
         while (powerWindow.isFull()) {
             if (sumAt(0) >= sumAt(-1) && sumAt(0) >= sumAt(1)) { //  superieur a +1 et -1
                 int ev = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
-                if ( sumAt(0) >= 2*ev) {
-                    if (false) { // todo : check if the df is 17
+                if (sumAt(0) >= 2*ev) {
+                    if ((getBitAt(0)*16 + getBitAt(1)*8 + getBitAt(2)*4 + getBitAt(3)*2+getBitAt(4))==17) { // this checks that the df is 17
                         //decodage
                         // decode and return everything
                         powerWindow.advanceBy(windowSize);
