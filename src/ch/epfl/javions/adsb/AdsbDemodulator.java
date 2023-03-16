@@ -10,7 +10,6 @@ import java.util.HexFormat;
 public final class AdsbDemodulator {
 
     private final static int windowSize = 1200;
-    private final InputStream samplesStream; // the stream of samples to be demodulated
     private final PowerWindow powerWindow; // the power window used to demodulate the ADS-B messages
 
     /**
@@ -19,7 +18,6 @@ public final class AdsbDemodulator {
      * @throws IOException if an error occurs while reading the stream
      */
     public AdsbDemodulator(InputStream samplesStream) throws IOException {
-        this.samplesStream = samplesStream;
         try {
             this.powerWindow = new PowerWindow(samplesStream, windowSize);
         } catch (IOException e) {
@@ -27,15 +25,19 @@ public final class AdsbDemodulator {
         }
     }
 
-    private short getBitAt(long position) {
+    private char getBitAt(long position) {
        int i = (int) position;
        int p1 = powerWindow.get(80 + 10 * i); // center of first 0.5 us period
         int p2 = powerWindow.get(85 + 10 * i); // center of second 0.5 us period
-        return (short) (p1 < p2 ? 0 : 1);
+        return (char) (p1 < p2 ? 0 : 1);
     }
 
     private byte[] getBytes() {
-        return null; // todo: give the bytes from the current window
+        byte[] bytes = new byte[120];
+        for (int i = 0; i < 120 ; i++) {
+            bytes[i] = (byte) getBitAt(i);
+        }
+        return bytes.clone();
     }
 
     private int sumAt(int i) {
@@ -54,14 +56,16 @@ public final class AdsbDemodulator {
                 int ev = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
                 if (sumAt(0) >= 2*ev) {
                     if ((getBitAt(0)*16 + getBitAt(1)*8 + getBitAt(2)*4 + getBitAt(3)*2+getBitAt(4))==17) { // this checks that the df is 17
-                        //decodage
-                        // decode and return everything
+                        String string = HexFormat.of().formatHex(getBytes()).toUpperCase();
+                        System.out.println(string);
+                        message = new RawMessage(0L, ByteString.ofHexadecimalString(string));
                         powerWindow.advanceBy(windowSize);
+                        return message;
                     }
                 }
             }
             powerWindow.advance();
         }
-        return null;
+        return message;
     }
 }
