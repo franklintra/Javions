@@ -10,7 +10,6 @@ import java.io.InputStream;
  * @author @chukla
  * @project Javions
  */
-
 public final class PowerWindow {
     private static final int batchSize = (int) Math.scalb(1, 16);
     private final PowerComputer computer;
@@ -18,12 +17,10 @@ public final class PowerWindow {
     private final int[] evenWindow;
     private final int[] oddWindow;
     private final int[] window; //we will consider the window as a circular array
-    private int windowOldestIndex;
-    private int windowFirstFill = 0;
+    private long windowOldestIndex = 0;
     private long position = 0;
-    private int samplesLeft;
-    private int batchIndex = -1;
-
+    private int batchIndex = 0;
+    private int samplesCalculated;
     /**
      * Constructs a new PowerWindow object with the given stream and window size.
      *
@@ -39,8 +36,8 @@ public final class PowerWindow {
         evenWindow = new int[batchSize];
         oddWindow = new int[batchSize];
         window = new int[windowSize];
-        windowOldestIndex = windowSize - 1;
         readBatch();
+        advanceBy(windowSize);
     }
 
     /**
@@ -49,17 +46,18 @@ public final class PowerWindow {
      * @param index the number to calculate the modulus of
      * @return the modulus of the number base windowSize
      */
-    private int baseWindowMod(int index) {
+    private int baseWindowMod(long index) {
         return Math.floorMod(index, windowSize);
     }
 
     private void readBatch() throws IOException {
-        if (batchIndex%2 == 0 || batchIndex == -1) {
-            samplesLeft = computer.readBatch(evenWindow);
+        // odd when batchIndex is 0, even when batchIndex is 1 (because batchIndex is incremented at the end of the method)
+        if (batchIndex % 2 == 0) {
+            samplesCalculated = computer.readBatch(oddWindow);
         } else {
-            samplesLeft = computer.readBatch(oddWindow);
+            samplesCalculated = computer.readBatch(evenWindow);
         }
-        batchIndex++;
+        batchIndex = (batchIndex + 1) % 2;
     }
 
     /**
@@ -73,21 +71,15 @@ public final class PowerWindow {
      * @return the current position of the window
      */
     public long position() {
-        return position;
+        return position - windowSize;
     }
 
-    /**
-     * @return the position of the oldest sample in the window
-     */
-    private long positionInArray(long position) {
-        return position % batchSize;
-    }
 
     /**
      * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
-        return samplesLeft > 0; //todo: understand why its samplesLeft > 0 and not >= 0 (probably when we decrement)
+        return position % batchSize <= samplesCalculated;
     }
 
     /**
@@ -108,22 +100,20 @@ public final class PowerWindow {
      * @throws IOException if the stream cannot be read / if the window is full
      */
     public void advance() throws IOException {
-        position++;
-        samplesLeft--;
-        windowFirstFill++;
-        if (samplesLeft < 0) {
+        //samplesLeft--;
+        if (position % batchSize == 0 && position != 0) {
             readBatch();
         }
-
-        if (batchIndex%2 == 0) {
-            window[baseWindowMod(windowOldestIndex++)] = evenWindow[(int) (positionInArray(position-1))];
+        if (batchIndex % 2 == 0) {
+            window[baseWindowMod(windowOldestIndex)] = evenWindow[(int) ((position) % (batchSize))];
         } else {
-            window[baseWindowMod(windowOldestIndex++)] = oddWindow[(int) (positionInArray(position-1))];
+            window[baseWindowMod(windowOldestIndex)] = oddWindow[(int) ((position) % batchSize)];
         }
-
+        windowOldestIndex++;
+        position++;
     }
 
-   /**
+    /**
      * Advances the window by the given number of samples by reading the next samples from the stream.
      *
      * @param n the number of samples to advance by
@@ -135,5 +125,17 @@ public final class PowerWindow {
         for (int i = 0; i < n; i++) {
             advance();
         }
+    }
+
+    /**
+     * This method is used to print beautifully the window as an array shape
+     */
+    @SuppressWarnings("unused")
+    public void printArray() {
+        System.out.print("[");
+        for (int i = 0; i < windowSize; i++) {
+            System.out.printf("%d, ", window[baseWindowMod(windowOldestIndex + i)]);
+        }
+        System.out.printf("]%n");
     }
 }

@@ -4,7 +4,6 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * @author @franklintra
@@ -53,6 +52,6 @@ public final class SamplesDecoder {
             int sample = (((buffer[i+1] & 0xF) << 8) | (buffer[i] & 0xFF)) - 2048;
             batch[i/2] = (short) sample;
         }
-        return (int) Math.floor(data/2);
+        return data/2;
     }
 }

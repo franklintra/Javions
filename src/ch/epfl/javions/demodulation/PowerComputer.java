@@ -17,13 +17,12 @@ public final class PowerComputer {
     private final short[] sampleBuffer; // this is the buffer that will contain the samples read from the input stream.
     private final int[] last8Samples = new int[8]; // this is the buffer that will contain the last 8 samples used to calculate the power
     private final int batchSize;
-    private boolean isWriting = false;
 
     public PowerComputer(InputStream stream, int batchSize) {
         Preconditions.checkArgument(batchSize > 0 && batchSize % 8 == 0);
         this.batchSize = batchSize;
-        this.decoder = new SamplesDecoder(stream, batchSize);
-        this.sampleBuffer = new short[batchSize];
+        this.decoder = new SamplesDecoder(stream, 2*batchSize);
+        this.sampleBuffer = new short[2*batchSize];
     }
 
     /**
@@ -44,28 +43,18 @@ public final class PowerComputer {
      */
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
-        if (!isWriting) {
-            decoder.readBatch(sampleBuffer); //read first batch of samples
-            last8Samples[0] = sampleBuffer[0];
-            last8Samples[1] = sampleBuffer[1];
-        }
-        int written = 0;
-        int bufferIndex = 2;
+        int read = decoder.readBatch(sampleBuffer);
+        int last8Index = 0;
 
-        for (int i = 0; i < batchSize ; i += 1) {
-            if (Math.floorMod(bufferIndex, batchSize) == 0) {
-                decoder.readBatch(sampleBuffer); //decode new data only if needed
-            }
-            int evenIndexes = last8Samples[base8Mod(bufferIndex - 6)] - last8Samples[base8Mod(bufferIndex - 4)] + last8Samples[base8Mod(bufferIndex - 2)] - last8Samples[base8Mod((bufferIndex))];
-            int oddIndexes = last8Samples[base8Mod(bufferIndex - 5)] - last8Samples[base8Mod(bufferIndex - 3)] + last8Samples[base8Mod(bufferIndex - 1)] - last8Samples[base8Mod((bufferIndex + 1))];
-            batch[i] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
+        for (int i = 0; i < read / 2; i++) {
             // turnover latest data in last8Samples
-            last8Samples[base8Mod(bufferIndex)] = sampleBuffer[bufferIndex];
-            last8Samples[base8Mod(bufferIndex + 1)] = sampleBuffer[bufferIndex + 1];
-            bufferIndex = Math.floorMod(bufferIndex + 2, batchSize);
-            written++;
+            last8Samples[base8Mod(last8Index)] = sampleBuffer[2*i];
+            last8Samples[base8Mod(last8Index+1)] = sampleBuffer[2*i+1];
+            int evenIndexes = last8Samples[base8Mod(last8Index - 6)] - last8Samples[base8Mod(last8Index - 4)] + last8Samples[base8Mod(last8Index - 2)] - last8Samples[base8Mod((last8Index))];
+            int oddIndexes = last8Samples[base8Mod(last8Index - 5)] - last8Samples[base8Mod(last8Index - 3)] + last8Samples[base8Mod(last8Index - 1)] - last8Samples[base8Mod((last8Index + 1))];
+            batch[i] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
+            last8Index = Math.floorMod(last8Index + 2, 8);
         }
-        isWriting = true;
-        return written;
+        return read/2;
     }
 }
