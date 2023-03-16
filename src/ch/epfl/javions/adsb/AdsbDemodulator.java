@@ -51,7 +51,7 @@ public final class AdsbDemodulator {
         while (true) {
             if (powerWindow.get(0)+powerWindow.get(10)+powerWindow.get(35)+powerWindow.get(45) > 2*(powerWindow.get(5)+powerWindow.get(15)+ powerWindow.get(20)+powerWindow.get(25)+powerWindow.get(30)+powerWindow.get(40))) {
                 message = new RawMessage(1L, getBits());
-                powerWindow.advance();
+                powerWindow.advanceBy(10); // fixme : advance by message bits (i don't remember how long it is)
                 return message;
             }
             else {
