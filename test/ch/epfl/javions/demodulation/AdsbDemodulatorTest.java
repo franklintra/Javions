@@ -1,5 +1,6 @@
-package ch.epfl.javions.adsb;
+package ch.epfl.javions.demodulation;
 
+import ch.epfl.javions.adsb.RawMessage;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
