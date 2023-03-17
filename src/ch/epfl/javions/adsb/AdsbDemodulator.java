@@ -63,7 +63,6 @@ public final class AdsbDemodulator {
                 if (sumAt(0) >= 2*ev) {
                     if ((getBitAt(0)*16 + getBitAt(1)*8 + getBitAt(2)*4 + getBitAt(3)*2+getBitAt(4))==17) { // this checks that the df is 17
                         message = RawMessage.of(powerWindow.position()*100, getBytes());
-                        previous = sumAt(0);
                         if (message != null) {
                             powerWindow.advanceBy(windowSize);
                             return message;
@@ -71,6 +70,7 @@ public final class AdsbDemodulator {
                     }
                 }
             }
+            previous = sumAt(0);
             powerWindow.advance();
         }
         return message;
