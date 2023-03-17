@@ -62,7 +62,7 @@ public final class AdsbDemodulator {
                 int ev = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
                 if (sumAt(0) >= 2*ev) {
                     if ((getBitAt(0)*16 + getBitAt(1)*8 + getBitAt(2)*4 + getBitAt(3)*2+getBitAt(4))==17) { // this checks that the df is 17
-                        message = RawMessage.of(0, getBytes());
+                        message = RawMessage.of(powerWindow.position()*100, getBytes());
                         previous = sumAt(0);
                         if (message != null) {
                             powerWindow.advanceBy(windowSize);

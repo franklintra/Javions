@@ -1,6 +1,5 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import org.junit.jupiter.api.Test;
 
@@ -72,12 +71,5 @@ public class RawMessageTest {
 
         RawMessage message = new RawMessage(1, new ByteString(bytes));
         assertEquals("ICAO address: ABCDEF", message.icaoAddress().toString());
-    }
-
-    @Test
-    void test() {
-        long l = 0b11011000110000111000001011010110100101000111000100000010L;
-        System.out.println(l);
-        System.out.println(Integer.toBinaryString(Bits.extractUInt(l, (int) (Math.log(l)/Math.log(2))-4, 5)));
     }
 }
