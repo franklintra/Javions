@@ -45,7 +45,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return the time stamp of the message
      */
     public int downLinkFormat() {
-        return (int) ((bytes.byteAt(0) >>> 3) & 0b11111);
+        return ((bytes.byteAt(0) >>> 3) & 0b11111);
     }
 
     /**

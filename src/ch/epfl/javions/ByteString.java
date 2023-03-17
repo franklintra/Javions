@@ -10,6 +10,7 @@ import java.util.Objects;
 
 public final class ByteString {
     private final byte[] data;
+    private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
 
     /**
      * The constructor of the ByteString class
@@ -53,8 +54,7 @@ public final class ByteString {
      * @return : the string representation of the byte string
      */
     public String toString() {
-        HexFormat hf = HexFormat.of().withUpperCase();
-        return hf.formatHex(data);
+        return HEX_FORMAT.formatHex(data);
     }
 
     /**

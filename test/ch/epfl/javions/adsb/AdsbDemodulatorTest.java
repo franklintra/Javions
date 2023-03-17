@@ -39,16 +39,6 @@ class AdsbDemodulatorTest {
         }
     }
 
-    @Test
-    public void testNextMessageWithValidInputStream() throws IOException {
-        byte[] samples = {}; // add valid samples here
-        InputStream inputStream = new ByteArrayInputStream(samples);
-        AdsbDemodulator adsbDemodulator = new AdsbDemodulator(inputStream);
-
-        RawMessage rawMessage = adsbDemodulator.nextMessage();
-        assertNotNull(rawMessage);
-    }
-
 
     @Test
     public void testNextMessageWithEndOfStream() throws IOException {
@@ -59,4 +49,26 @@ class AdsbDemodulatorTest {
         assertNull(rawMessage);
     }
 
+    @Test
+    void testFirstFiveMessages() throws IOException {
+        String[] expectedFive = new String[]{"RawMessage[timeStampNs=8096200, bytes=8D4B17E5F8210002004BB8B1F1AC]", "RawMessage[timeStampNs=75898000, bytes=8D49529958B302E6E15FA352306B]", "RawMessage[timeStampNs=100775400, bytes=8D39D300990CE72C70089058AD77]", "RawMessage[timeStampNs=116538700, bytes=8D4241A9601B32DA4367C4C3965E]", "RawMessage[timeStampNs=129268900, bytes=8D4B1A00EA0DC89E8F7C0857D5F5]"};
+        String[] firstFive = new String[5];
+        String f = "samples_20230304_1442.bin";
+        int counter = 5;
+        try (InputStream s = getClass().getResourceAsStream("/samples_20230304_1442.bin")) {
+            AdsbDemodulator d = new AdsbDemodulator(s);
+            RawMessage m;
+            for (int i = 0; i < 5; i++) {
+                firstFive[i] = d.nextMessage().toString();
+            }
+            while ((m = d.nextMessage()) != null) {
+                counter++;
+                //System.out.println(m);
+            }
+        }
+        for (int i = 0; i < 5; i++) {
+            assertEquals(expectedFive[i], firstFive[i]);
+        }
+        System.out.println("nombre de message =" + counter);
+    }
 }

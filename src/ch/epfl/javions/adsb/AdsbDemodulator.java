@@ -1,11 +1,9 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.ByteString;
 import ch.epfl.javions.demodulation.PowerWindow;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HexFormat;
 
 public final class AdsbDemodulator {
 
@@ -25,17 +23,24 @@ public final class AdsbDemodulator {
         }
     }
 
-    private char getBitAt(long position) {
-       int i = (int) position;
-       int p1 = powerWindow.get(80 + 10 * i); // center of first 0.5 us period
+    private int getBitAt(int i) {
+        int p1 = powerWindow.get(80 + 10 * i); // center of first 0.5 us period
         int p2 = powerWindow.get(85 + 10 * i); // center of second 0.5 us period
-        return (char) (p1 < p2 ? 0 : 1);
+        return (p1 < p2 ? 0 : 1);
     }
 
+    private byte getByte(int i) {
+        byte b = 0;
+        for (int j = 0; j < 8; j++) {
+            b = (byte) (b<<1);
+            b = (byte) (b + getBitAt(i*8+j));
+        }
+        return b;
+    }
     private byte[] getBytes() {
-        byte[] bytes = new byte[120];
-        for (int i = 0; i < 120 ; i++) {
-            bytes[i] = (byte) getBitAt(i);
+        byte[] bytes = new byte[14];
+        for (int i = 0; i < 14 ; i++) {
+            bytes[i] = getByte(i);
         }
         return bytes.clone();
     }
@@ -51,16 +56,18 @@ public final class AdsbDemodulator {
      */
     public RawMessage nextMessage() throws IOException {
         RawMessage message = null;
+        int previous = 0;
         while (powerWindow.isFull()) {
-            if (sumAt(0) >= sumAt(-1) && sumAt(0) >= sumAt(1)) {
+            if (sumAt(0) >= previous && sumAt(0) >= sumAt(1)) {
                 int ev = powerWindow.get(5) + powerWindow.get(15) + powerWindow.get(20) + powerWindow.get(25) + powerWindow.get(30) + powerWindow.get(40);
                 if (sumAt(0) >= 2*ev) {
                     if ((getBitAt(0)*16 + getBitAt(1)*8 + getBitAt(2)*4 + getBitAt(3)*2+getBitAt(4))==17) { // this checks that the df is 17
-                        String string = HexFormat.of().formatHex(getBytes()).toUpperCase();
-                        System.out.println(string);
-                        message = new RawMessage(0L, ByteString.ofHexadecimalString(string));
-                        powerWindow.advanceBy(windowSize);
-                        return message;
+                        message = RawMessage.of(0, getBytes());
+                        previous = sumAt(0);
+                        if (message != null) {
+                            powerWindow.advanceBy(windowSize);
+                            return message;
+                        }
                     }
                 }
             }
