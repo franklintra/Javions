@@ -8,17 +8,17 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  * @author @franklintra
  * @project Javions
  */
-public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category, CallSign string) {
+public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category, CallSign callSign) {
     /**
      * Checks that the parameters are not null and that the time stamp is positive.
      * @param timeStampNs the time stamp in nanoseconds
      * @param icaoAddress the ICAO string of the aircraft
      * @param category the category of the aircraft
-     * @param string the call sign of the aircraft
+     * @param callSign the call sign of the aircraft
      */
     public AircraftIdentificationMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
-        if (string == null || icaoAddress == null) {
+        if (callSign == null || icaoAddress == null) {
             throw new NullPointerException("One of the parameters is null");
         }
     }
