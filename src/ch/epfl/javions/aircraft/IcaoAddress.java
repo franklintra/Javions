@@ -8,18 +8,11 @@ import java.util.regex.Pattern;
  * @author @franklintra
  * @project Javions
  */
-public class IcaoAddress {
+public record IcaoAddress(String address) {
     private static final Pattern REGEX = Pattern.compile("[0-9A-F]{6}");
-    private final String address;
 
-    /**
-     * The constructor of the IcaoAddress class
-     * @param address ICAO address
-     * @throws IllegalArgumentException if the address is not valid
-     */
-    public IcaoAddress(String address) {
+    public IcaoAddress {
         Preconditions.checkArgument(REGEX.matcher(address).matches());
-        this.address = address;
     }
 
     /**
@@ -36,12 +29,4 @@ public class IcaoAddress {
     public String toString() {
         return "ICAO address: " + address;
     }
-    /*
-    @Override
-    public boolean equals(Object other) {
-        if (other instanceof IcaoAddress) {
-            return address.equals(((IcaoAddress) other).address);
-        }
-        return false;
-    }*/
 }
