@@ -36,4 +36,12 @@ public class IcaoAddress {
     public String toString() {
         return "ICAO address: " + address;
     }
+    /*
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof IcaoAddress) {
+            return address.equals(((IcaoAddress) other).address);
+        }
+        return false;
+    }*/
 }
