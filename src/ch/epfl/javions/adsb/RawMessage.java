@@ -49,9 +49,9 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     }
 
     /**
-     * Returns the ICAO address of the message.
+     * Returns the ICAO string of the message.
      *
-     * @return the ICAO address of the message
+     * @return the ICAO string of the message
      */
     public IcaoAddress icaoAddress() {
         String address = Long.toHexString(bytes.bytesInRange(1,4)).toUpperCase();

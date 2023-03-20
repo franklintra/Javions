@@ -30,9 +30,9 @@ public final class AircraftDatabase {
     }
 
     /**
-     * Returns the aircraft data for the given ICAO address.
+     * Returns the aircraft data for the given ICAO string.
      *
-     * @param address the ICAO address of the aircraft
+     * @param address the ICAO string of the aircraft
      * @return the aircraft data
      * @throws IOException if the database file could not be read
      */
@@ -54,7 +54,7 @@ public final class AircraftDatabase {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
                         if ((line.split(",", -1)[0]).compareTo(address.string()) > 0) {
-                            break nextZip; //Interrupts the loop and go to the next zip file if the current address is greater than the address we're looking for (because the database is sorted)
+                            break nextZip; //Interrupts the loop and go to the next zip file if the current string is greater than the string we're looking for (because the database is sorted)
                         }
                         if (line.startsWith(address.string())) {
                             String[] data = line.split(",", -1);

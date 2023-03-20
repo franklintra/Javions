@@ -8,7 +8,7 @@ import java.util.Objects;
  */
 public record AircraftData(AircraftRegistration registration, AircraftTypeDesignator typeDesignator, String model, AircraftDescription description, WakeTurbulenceCategory wakeTurbulenceCategory) {
     /**
-     * @param registration ICAO aircraft registration
+     * @param registration ICAO aircraft string
      * @param typeDesignator ICAO aircraft type designator
      * @param model aircraft model
      * @param description aircraft string
