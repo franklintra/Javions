@@ -30,9 +30,4 @@ public record CallSign(String callSign) {
     public String string() {
         return callSign;
     }
-
-    @Override
-    public String toString() {
-        return "CallSign: " + callSign;
-    }
 }

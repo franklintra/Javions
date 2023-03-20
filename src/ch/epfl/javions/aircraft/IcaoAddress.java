@@ -21,12 +21,4 @@ public record IcaoAddress(String address) {
     public String string() {
         return address;
     }
-
-    /**
-     * @return the ICAO address of the aircraft as a string formatted (default when sout-ing the object)
-     */
-    @Override
-    public String toString() {
-        return "ICAO address: " + address;
-    }
 }

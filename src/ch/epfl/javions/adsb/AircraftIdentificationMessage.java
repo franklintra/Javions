@@ -32,7 +32,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         for (int i = 0; i < 7; i++) {
             callSignString.insert(0, (char) (Bits.extractUInt(longBytes, i * 6, 6)));
         }
-        CallSign callSign = new CallSign(callSignString.toString());
+        CallSign callSign = new CallSign("A");
         return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category, callSign);
     }
 }

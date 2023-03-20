@@ -8,18 +8,16 @@ import java.util.regex.Pattern;
  * @author @franklintra, @chukla
  * @project Javions
  */
-public class AircraftRegistration {
+public record AircraftRegistration(String registration) {
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9 .?/_+-]+");
-    private final String registration;
 
     /**
      * The constructor of the AircraftRegistration class
      * @param registration ICAO aircraft registration
      * @throws IllegalArgumentException if the registration is not valid
      */
-    public AircraftRegistration(String registration) {
+    public AircraftRegistration {
         Preconditions.checkArgument(REGEX.matcher(registration).matches());
-        this.registration = registration;
     }
 
     /**
@@ -27,21 +25,5 @@ public class AircraftRegistration {
      */
     public String string() {
         return registration;
-    }
-
-    /**
-     * @return the registration of the aircraft as a string formatted (default when sout-ing the object)
-     */
-    @Override
-    public String toString() {
-        return "Registration{" + registration + '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AircraftRegistration that = (AircraftRegistration) o;
-        return string().equals(that.string());
     }
 }

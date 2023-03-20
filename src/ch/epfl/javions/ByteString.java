@@ -42,6 +42,7 @@ public final class ByteString {
      * @param o: the object to compare to
      * @return : true if the two byte strings are equal, false otherwise
      */
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof ByteString)) {
             return false;
