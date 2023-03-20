@@ -4,6 +4,8 @@ import ch.epfl.javions.Bits;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
+import java.util.Arrays;
+
 /**
  * @author @franklintra
  * @project Javions
@@ -34,19 +36,25 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         } else if (i == 32) {
             return ' ';
         } else {
-            throw new IllegalArgumentException("The integer is not in the range of our custom characters table");
+            return 'a';
         }
     }
 
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         //fixme : check how extractUInt works exactly (is start from the left or the right? ) and does it decode right to left or left to right?
         Preconditions.checkArgument(rawMessage.downLinkFormat() == 17);
-        int category = (14 - (Bits.extractUInt(rawMessage.payload(),51,5))<<4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
-        StringBuilder callSignString = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
-            callSignString.insert(0, getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)));
+        if (Arrays.asList(1, 2, 3, 4).contains((Bits.extractUInt(rawMessage.payload(),51,5)))) {
+            int category = (14 - (Bits.extractUInt(rawMessage.payload(), 51, 5)) << 4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
+            StringBuilder callSignString = new StringBuilder();
+            for (int i = 0; i < 8; i++) {
+                if (getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)) == 'a') {
+                    return null;
+                }
+                callSignString.insert(0, getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)));
+            }
+            CallSign callSign = new CallSign(callSignString.toString().stripTrailing());
+            return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category, callSign);
         }
-        CallSign callSign = new CallSign(callSignString.toString().stripTrailing());
-        return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category, callSign);
+        return null; // todo: ask assistant if this is ok. It returns null if the category is not 1,2,3 or 4 which is not explicitly stated in the assignment
     }
 }

@@ -24,7 +24,7 @@ public class CprDecoder {
      * @param mostRecent - 0 if the most recent message is even, 1 if the most recent message is odd
      * @return the decoded aircraft position
      */
-    public GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
+    public static GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
         Preconditions.checkArgument(mostRecent == 0 || mostRecent == 1);
         int[] nLat = {60, 59};
         int[] nLong = new int[2];
@@ -55,6 +55,11 @@ public class CprDecoder {
             actualLat[0] = (int) (sigmaLat[0] * (latZone[0] + y0));
             actualLat[1] = (int) (sigmaLat[1] * (latZone[1] + y1));
         }
+        if (Units.convert(actualLat[0], Units.Angle.TURN, Units.Angle.DEGREE) < -90 || Units.convert(actualLat[0], Units.Angle.TURN, Units.Angle.DEGREE) > 90 ||
+                Units.convert(actualLat[1], Units.Angle.TURN, Units.Angle.DEGREE) < -90 || Units.convert(actualLat[1], Units.Angle.TURN, Units.Angle.DEGREE) > 90) {
+            return null;
+        }
+
         return new GeoPos(
                 (int) Units.convert(actualLong[mostRecent], Units.Angle.TURN, Units.Angle.T32),
                 (int) Units.convert(actualLat[mostRecent], Units.Angle.TURN, Units.Angle.T32)
