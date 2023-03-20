@@ -1,9 +1,11 @@
 package ch.epfl.javions.adsb;
 
+import ch.epfl.javions.Bits;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,12 +32,13 @@ public class AircraftIdentificationMessageTest {
             var demodulator = new AdsbDemodulator(s);
             RawMessage m;
             while ((m = demodulator.nextMessage()) != null) {
-                A = AircraftIdentificationMessage.of(m);
-                if (counter < 5) {
+                //check if the typecode of the message is 1, 2, 3 or 4
+                if (counter < 5 && (Arrays.asList(1, 2, 3, 4).contains((Bits.extractUInt(m.payload() , 51, 5) )))) {
+                    A = AircraftIdentificationMessage.of(m);
                     System.out.println(A + "\n" + firstFiveIdMessagesExpected[counter]);
-                    assertEquals(A.toString(), firstFiveIdMessagesExpected[counter]);
+                    assertEquals(firstFiveIdMessagesExpected[counter], A.toString());
+                    counter++;
                 }
-                counter++;
             }
             assertNull(demodulator.nextMessage());
         }

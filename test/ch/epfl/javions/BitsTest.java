@@ -37,6 +37,16 @@ class BitsTest {
     }
 
     @Test
+    void understandingHowBitsExtractUIntWorks() {
+        // this method extracts n bits so that the lowest weight bit of the result is the bit at index start (inclusive)
+        // for example Bits.extractUInt(0b101101110, 1, 5) returns 0b10111
+        // and Bits.extractUInt(0b101101110, 0, 5) returns 0b 1110
+        long a = 0b101101110;
+        assertEquals(0b1110, Bits.extractUInt(a, 0, 5));
+        assertEquals(0b10111, Bits.extractUInt(a, 1, 5));
+    }
+
+    @Test
     void bitsTestThrowsIfIndexIsInvalid() {
         assertThrows(IndexOutOfBoundsException.class, () -> Bits.testBit(0, -1));
         assertThrows(IndexOutOfBoundsException.class, () -> Bits.testBit(0, Long.SIZE));

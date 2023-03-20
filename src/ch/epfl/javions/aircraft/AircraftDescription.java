@@ -8,21 +8,21 @@ import java.util.regex.Pattern;
  * @author @franklintra
  * @project Javions
  */
-public record AircraftDescription(String description) {
+public record AircraftDescription(String string) {
     private static final Pattern REGEX = Pattern.compile("[ABDGHLPRSTV-][0123468][EJPT-]");
 
     /**
      * The constructor of the AircraftDescription class
-     * @param description aircraft description
-     * @throws IllegalArgumentException if the description is not valid
+     * @param string aircraft string
+     * @throws IllegalArgumentException if the string is not valid
      */
     public AircraftDescription {
-        Preconditions.checkArgument(REGEX.matcher(description).matches() || description.equals(""));
+        Preconditions.checkArgument(REGEX.matcher(string).matches() || string.equals(""));
     }
     /**
-     * @return the description of the aircraft as a string
+     * @return the string of the aircraft as a string
      */
     public String string() {
-        return description;
+        return string;
     }
 }

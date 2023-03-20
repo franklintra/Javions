@@ -11,7 +11,7 @@ public record AircraftData(AircraftRegistration registration, AircraftTypeDesign
      * @param registration ICAO aircraft registration
      * @param typeDesignator ICAO aircraft type designator
      * @param model aircraft model
-     * @param description aircraft description
+     * @param description aircraft string
      * @param wakeTurbulenceCategory aircraft wake turbulence category
      */
     public AircraftData {
