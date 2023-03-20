@@ -10,9 +10,8 @@ import java.util.regex.Pattern;
  */
 
 
-public class CallSign {
+public record CallSign(String callSign) {
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9 ]{0,8}");
-    private final String callSign;
 
     /**
      * Constructs a new CallSign object with the given callSign.
@@ -20,10 +19,8 @@ public class CallSign {
      * @param callSign a string describing the call sign
      * @throws IllegalArgumentException if the callSign is not valid according to the regex pattern
      */
-
-    public CallSign(String callSign) {
+    public CallSign {
         Preconditions.checkArgument(REGEX.matcher(callSign).matches() || callSign.equals(""));
-        this.callSign = callSign;
     }
 
     /**
