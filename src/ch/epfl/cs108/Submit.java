@@ -8,15 +8,12 @@ import java.net.http.HttpResponse;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -32,9 +29,9 @@ public final class Submit {
     // CONFIGURATION
     // -------------
     // Jeton du premier membre du groupe
-    private static final String TOKEN_1 = tokenHider.token1;
+    private static final String TOKEN_1 = TOKENS.TOKEN_1;
     // Jeton du second membre (identique au premier pour les personnes travaillant seules)
-    private static final String TOKEN_2 = tokenHider.token2;
+    private static final String TOKEN_2 = TOKENS.TOKEN_2;
     // -------------
 
     private static final String ZIP_ENTRY_NAME_PREFIX = "Javions/";
