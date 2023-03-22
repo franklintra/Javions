@@ -39,7 +39,6 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
     }
 
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
-        //fixme : check how extractUInt works exactly (is start from the left or the right? ) and does it decode right to left or left to right?
         Preconditions.checkArgument(rawMessage.downLinkFormat() == 17);
         int category = (14 - (Bits.extractUInt(rawMessage.payload(), 51, 5)) << 4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
         StringBuilder callSignString = new StringBuilder();
