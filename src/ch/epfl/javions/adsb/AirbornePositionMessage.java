@@ -18,7 +18,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     public AirbornePositionMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
         Preconditions.checkArgument(parity == 0 || parity == 1);
-        Preconditions.checkArgument(x < 0 || x >= 1 && y < 0 || y >= 1);
+        Preconditions.checkArgument(x >= 0 || x < 1 && y >= 0 || y < 1);
         if (icaoAddress == null) {
             throw new NullPointerException();
         }
@@ -66,6 +66,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
             if ((mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1)) {
+                System.out.println("Invalid value for mult100GrayCode");
                 return null;
             }
 
@@ -166,7 +167,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
         }
 
-        AirbornePositionMessage airbornePositionMessage = new AirbornePositionMessage(
+        return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
                 altitude,
@@ -174,11 +175,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 Bits.extractUInt(rawMessage.payload(), 38, 17),
                 Bits.extractUInt(rawMessage.payload(), 55, 17)
         );
-
-
-
-        return airbornePositionMessage;
     }
-
 }
 
