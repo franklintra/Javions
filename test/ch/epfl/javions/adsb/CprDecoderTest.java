@@ -1,5 +1,6 @@
 package ch.epfl.javions.adsb;
 
+import ch.epfl.javions.ByteString;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,8 @@ class CprDecoderTest {
     int[] long_CPR = new int[] {111600, 108865};
     int[] lat_CPR = new int[] {94445, 77558};
 
-    double[] normalizedLong_CPR = new double[] {long_CPR[0]*Math.pow(2, -17), long_CPR[1]*Math.pow(2, -17)};
-    double[] normalizedLat_CPR = new double[] {lat_CPR[0]*Math.pow(2, -17), lat_CPR[1]*Math.pow(2, -17)};
+    double[] normalizedLong_CPR = new double[] {Math.scalb(long_CPR[0], -17), Math.scalb(long_CPR[1], -17)};
+    double[] normalizedLat_CPR = new double[] {Math.scalb(lat_CPR[0], -17), Math.scalb(lat_CPR[1], -17)};
 
     @Test
     void throwExceptionIfMostRecentIsNot0Or1() {
@@ -26,7 +27,8 @@ class CprDecoderTest {
 
     @Test
     void returnsNullIfLatitudeIsNotBetweenMinus90And90() {
-        //todo implement
+        //this test is very complicated to make because we don't have examples of latitude and longitude that are not between -90 and 90 from local data
+        assertNull(CprDecoder.decodePosition(0.01, 0.01, 0.03, 0.03, 0));
     }
 
     @Test
@@ -41,5 +43,6 @@ class CprDecoderTest {
             assertEquals(expected[i].longitude(), actual[i].longitude(), epsilon);
             assertEquals(expected[i].latitude(), actual[i].latitude(), epsilon);
         }
+        //GeoPos actualExternal = CprDecoder.decodePosition(Math.scalb(39846, 17), Math.scalb(92095, 17), Math.scalb(125818, 17), Math.scalb(88385, 17), 0);
     }
 }
