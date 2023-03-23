@@ -23,6 +23,8 @@ class CprDecoderTest {
     @Test
     void testDecodePosition() {
         //todo implement properly
-        System.out.println(CprDecoder.decodePosition(111600, 94445*Math.pow(2, -17), 108865, 77558*Math.pow(2, -17), 0));
+        System.out.println(CprDecoder.decodePosition(111600*Math.pow(2, -17), 94445*Math.pow(2, -17), 108865*Math.pow(2, -17), 77558*Math.pow(2, -17), 0));
+        System.out.println(CprDecoder.decodePosition(111600*Math.pow(2, -17), 94445*Math.pow(2, -17), 108865*Math.pow(2, -17), 77558*Math.pow(2, -17), 1));
+
     }
 }
