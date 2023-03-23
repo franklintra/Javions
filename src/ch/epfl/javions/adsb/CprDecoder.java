@@ -32,24 +32,29 @@ public class CprDecoder {
         double actualLat; // final values
         double actualLong; // final values
 
-        { // calculate latitude zone and actual latitude
+        { // calculate latitude
             int lat = (int) Math.rint(y0 * nLat[1] - y1 * nLat[0]); // this is a temporary value used to compute latZone0 and latZone1
             int latZone = lat < 0 ? lat + nLat[mostRecent] : lat;
             actualLat = widthLat[mostRecent] * (latZone + ((mostRecent==0)?y0:y1));
         }
 
-        { // calculate number of longitude zones, longitude zone and actual longitude
+        { // calculate longitude
             double a = Math.acos(1 - (1 - Math.cos(Math.PI * 2 * widthLat[0])) / Math.pow(Math.cos(Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE)), 2)); // this is a temporary value used to compute nLong0 and nLong1
-            nLong[0] = Double.isNaN(a) ? 1 : (int) Math.floor(Math.PI * 2 / a);
-            nLong[1] = Double.isNaN(a) ? 1 : nLong[0] - 1;
+            nLong[0] = Double.isNaN(a) ? 1 : (int) Math.floor((Math.PI * 2) / a);
+            nLong[1] = nLong[0] - 1;
             double widthLong = 1d/nLong[mostRecent];
             if (nLong[mostRecent] == 1) {
                 actualLong = x0;
             }
             else {
-                int longi = (int) Math.rint(x0 * nLong[1] - x1 * nLong[0]);
-                int longZone = longi < 0 ? longi + nLong[mostRecent] : longi;
-                actualLong = (widthLong * (longZone + ((mostRecent==0)?x0:x1)));
+                int longitude = (int) Math.rint(x0 * nLong[1] - x1 * nLong[0]);
+                int longitudeZone0 = (longitude < 0 ? longitude + nLong[0] : longitude);
+                int longitudeZone1 = (longitudeZone0 < 0 ? longitudeZone0 + nLong[1] : longitudeZone0);
+                //todo : check if this is correct by asking an assistant or answer on EdStem
+                if (longitudeZone0 != longitudeZone1) {
+                    return null;
+                }
+                actualLong = (widthLong * (longitudeZone0 + ((mostRecent==0)?x0:x1)));
             }
         }
 

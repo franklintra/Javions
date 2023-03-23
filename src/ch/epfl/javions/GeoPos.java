@@ -51,4 +51,3 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
                 "°)";
     }
 }
-

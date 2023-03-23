@@ -1,6 +1,5 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.ByteString;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import org.junit.jupiter.api.Test;
@@ -54,5 +53,14 @@ class CprDecoderTest {
         double y1 = Math.scalb(77558d, -17);
         GeoPos p = CprDecoder.decodePosition(x0, y0, x1, y1, 0);
         assertEquals(new GeoPos(89192898, 552659081), p);
+    }
+
+    @Test
+    void testWithRandomValues() {
+        GeoPos a = CprDecoder.decodePosition(0.3,0.3,0.3,0.3,0);
+        GeoPos b = CprDecoder.decodePosition(0.3, 0.3, 0.3, 0.3, 1);
+        System.out.println(a + " " + "(1.8305084947496653°, 1.7999999597668648°)");
+        System.out.println(b + " " + "(1.862068958580494°, 1.8305084947496653°)");
+
     }
 }
