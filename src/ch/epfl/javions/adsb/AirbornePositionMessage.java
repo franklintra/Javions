@@ -6,14 +6,10 @@ package ch.epfl.javions.adsb;/*
  */
 
 import ch.epfl.javions.Bits;
-import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
-import jdk.jshell.spi.ExecutionControl;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity, double x,
