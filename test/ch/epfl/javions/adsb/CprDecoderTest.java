@@ -46,7 +46,7 @@ class CprDecoderTest {
     }
 
     @Test
-    void testWithEdStemValues() {
+    void testWithEdStemTeacherValues() {
         double x0 = Math.scalb(111600d, -17);
         double y0 = Math.scalb(94445d, -17);
         double x1 = Math.scalb(108865d, -17);
@@ -57,10 +57,26 @@ class CprDecoderTest {
 
     @Test
     void testWithRandomValues() {
-        GeoPos a = CprDecoder.decodePosition(0.3,0.3,0.3,0.3,0);
-        GeoPos b = CprDecoder.decodePosition(0.3, 0.3, 0.3, 0.3, 1);
-        System.out.println(a + " " + "(1.8305084947496653°, 1.7999999597668648°)");
-        System.out.println(b + " " + "(1.862068958580494°, 1.8305084947496653°)");
+        GeoPos even = CprDecoder.decodePosition(0.3,0.3,0.3,0.3,0);
+        GeoPos odd = CprDecoder.decodePosition(0.3, 0.3, 0.3, 0.3, 1);
+        assertNotNull(even);
+        assertNotNull(odd);
+        assertEquals(1.8305084947496653d, Units.convertTo(even.longitude(), Units.Angle.DEGREE), 10e-9);
+        assertEquals(1.7999999597668648d, Units.convertTo(even.latitude(), Units.Angle.DEGREE), 10e-9);
+        assertEquals(1.862068958580494d, Units.convertTo(odd.longitude(), Units.Angle.DEGREE), 10e-9);
+        assertEquals(1.8305084947496653d, Units.convertTo(odd.latitude(), Units.Angle.DEGREE), 10e-9);
+    }
 
+    @Test
+    void testWithInternetValues() {
+        //got these values from : http://airmetar.main.jp/radio/ADS-B%20Decoding%20Guide.pdf
+        GeoPos even = CprDecoder.decodePosition(0.3919, 0.7095, 0.3829, 0.5658, 0);
+        GeoPos odd = CprDecoder.decodePosition(0.3919, 0.7095, 0.3829, 0.5658, 1);
+        assertNotNull(even);
+        assertNotNull(odd);
+        assertEquals(Units.convertTo(even.latitude(), Units.Angle.DEGREE), 52.25720214843750d, 10e-4);
+        assertEquals(Units.convertTo(odd.latitude(), Units.Angle.DEGREE), 52.26578017412606d, 10e-4);
+        assertEquals(Units.convertTo(even.longitude(), Units.Angle.DEGREE), 3.91937d, 10e-4);
+        assertEquals(Units.convertTo(odd.longitude(), Units.Angle.DEGREE), 3.91937d, 10e-1);
     }
 }

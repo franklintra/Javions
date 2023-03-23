@@ -9,7 +9,6 @@ import ch.epfl.javions.Units;
  * @project Javions
  */
 public class CprDecoder {
-
     /**
      * This class is not meant to be instantiated. Hence, the constructor is private.
      */
@@ -39,11 +38,11 @@ public class CprDecoder {
         }
 
         { // calculate longitude
-            double a = Math.acos(1 - (1 - Math.cos(Math.PI * 2 * widthLat[0])) / Math.pow(Math.cos(Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE)), 2)); // this is a temporary value used to compute nLong0 and nLong1
+            double a = Math.acos(1 - (1 - Math.cos(Math.PI * 2 * widthLat[0])) / Math.pow(Math.cos(Units.convert(actualLat, Units.Angle.TURN, Units.Angle.RADIAN)), 2)); // this is a temporary value used to compute nLong0 and nLong1
             nLong[0] = Double.isNaN(a) ? 1 : (int) Math.floor((Math.PI * 2) / a);
             nLong[1] = nLong[0] - 1;
             double widthLong = 1d/nLong[mostRecent];
-            if (nLong[mostRecent] == 1) {
+            if (nLong[0] == 1) {
                 actualLong = x0;
             }
             else {
@@ -58,9 +57,7 @@ public class CprDecoder {
             }
         }
 
-        if (Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) < -90 || Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) > 90 ||
-                Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE) < -90 || Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE) > 90) {
-            //System.out.println("Invalid decoded position: " + Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) + ", " + Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE));
+        if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(actualLat, Units.Angle.TURN, Units.Angle.T32)))) {
             return null;
         }
 
