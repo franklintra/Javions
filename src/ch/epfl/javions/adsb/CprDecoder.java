@@ -35,7 +35,6 @@ public class CprDecoder {
         { // calculate latitude zone and actual latitude
             int lat = (int) Math.rint(y0 * nLat[1] - y1 * nLat[0]); // this is a temporary value used to compute latZone0 and latZone1
             int latZone = lat < 0 ? lat + nLat[mostRecent] : lat;
-            System.out.println("latZone: " + latZone);
             actualLat = widthLat[mostRecent] * (latZone + ((mostRecent==0)?y0:y1));
         }
 
@@ -56,13 +55,13 @@ public class CprDecoder {
 
         if (Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) < -90 || Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) > 90 ||
                 Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE) < -90 || Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE) > 90) {
-            System.out.println("Invalid decoded position: " + Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) + ", " + Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE));
+            //System.out.println("Invalid decoded position: " + Units.convert(actualLat, Units.Angle.TURN, Units.Angle.DEGREE) + ", " + Units.convert(actualLong, Units.Angle.TURN, Units.Angle.DEGREE));
             return null;
         }
 
         return new GeoPos(
-                (int) Units.convert(actualLong, Units.Angle.TURN, Units.Angle.T32),
-                (int) Units.convert(actualLat, Units.Angle.TURN, Units.Angle.T32)
+                (int) Math.rint(Units.convert(actualLong, Units.Angle.TURN, Units.Angle.T32)),
+                (int) Math.rint(Units.convert(actualLat, Units.Angle.TURN, Units.Angle.T32))
         );
     }
 }

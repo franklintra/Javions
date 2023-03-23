@@ -43,6 +43,16 @@ class CprDecoderTest {
             assertEquals(expected[i].longitude(), actual[i].longitude(), epsilon);
             assertEquals(expected[i].latitude(), actual[i].latitude(), epsilon);
         }
-        //GeoPos actualExternal = CprDecoder.decodePosition(Math.scalb(39846, 17), Math.scalb(92095, 17), Math.scalb(125818, 17), Math.scalb(88385, 17), 0);
+        //GeoPos actualExternal = CprDecoder.decodePosition(0.3919, 0.7095, 0.3829,0.5658, 0);
+    }
+
+    @Test
+    void testWithEdStemValues() {
+        double x0 = Math.scalb(111600d, -17);
+        double y0 = Math.scalb(94445d, -17);
+        double x1 = Math.scalb(108865d, -17);
+        double y1 = Math.scalb(77558d, -17);
+        GeoPos p = CprDecoder.decodePosition(x0, y0, x1, y1, 0);
+        assertEquals(new GeoPos(89192898, 552659081), p);
     }
 }
