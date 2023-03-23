@@ -46,33 +46,18 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
             HashMap<Integer, Integer> sortingTable = new HashMap<>();
 
-            sortingTable.put(19, 9);
-            sortingTable.put(18, 3);
-            sortingTable.put(17, 10);
-            sortingTable.put(16, 4);
-            sortingTable.put(15, 11);
-            sortingTable.put(14, 5);
-            sortingTable.put(13, 6);
-            sortingTable.put(12, 0);
-            sortingTable.put(11, 7);
-            sortingTable.put(10, 1);
-            sortingTable.put(9, 8);
-            sortingTable.put(8, 2);
+            int[] values = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
+            for (int i = 0; i < values.length; i++) {
+                sortingTable.put(19 - i, values[i]);
+            }
 
             for (Map.Entry<Integer, Integer> entry : sortingTable.entrySet()) {
                 sortedBits[entry.getValue()] = Bits.extractUInt(rawMessage.payload(), entry.getKey(), 1);
             }
 
-
             //separate into two groups, 3 bits from LSB, 9 bits from MSB
-            for (int l = 0; l < mult500GrayCode.length; l++) {
-                mult500GrayCode[l] = sortedBits[l];
-            }
-
-
-            for (int l = 0; l < mult100GrayCode.length; l++) {
-                mult100GrayCode[l] = sortedBits[l + 9];
-            }
+            System.arraycopy(sortedBits, 0, mult500GrayCode, 0, mult500GrayCode.length);
+            System.arraycopy(sortedBits, 9, mult100GrayCode, 0, mult100GrayCode.length);
 
 
             // transformation
