@@ -53,6 +53,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
         } else if (Q == 0) {
 
+            System.out.println("yalla");
             // Unscramble
             int[] sortedBits = unscramble(rawMessage);
 
@@ -156,7 +157,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
         int[] values = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
         for (int i = 0; i < values.length; i++) {
-            sortingTable.put(12 - i, values[i]);
+            sortingTable.put(47 - i, values[i]);
         }
 
         for (Map.Entry<Integer, Integer> entry : sortingTable.entrySet()) {
