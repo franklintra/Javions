@@ -23,7 +23,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         }
     }
 
-    private static char getChar(int i) {
+    private static Character getChar(int i) {
         if (i >= 1 && i <= 26) {
             return (char) ('A' + i - 1);
         } else if (i >= 48 && i <= 57) {
@@ -31,7 +31,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         } else if (i == 32) {
             return ' ';
         } else {
-            return '\u2063'; // invisible separator for error handling (invalid character)
+            return null; // null for error handling (invalid character)
         }
     }
 
@@ -41,7 +41,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         int category = (14 - (Bits.extractUInt(rawMessage.payload(), 51, 5)) << 4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
         StringBuilder callSignString = new StringBuilder();
         for (int i = 0; i < 8; i++) {
-            if (getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)) == '\u2063') {
+            if (getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)) == null) {
                 return null;
             }
             callSignString.insert(0, getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)));
