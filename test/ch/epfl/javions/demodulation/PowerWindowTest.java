@@ -10,6 +10,7 @@ import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class PowerWindowTest {
     private static final int BATCH_SIZE = 1 << 16;
     private static final int BATCH_SIZE_BYTES = bytesForPowerSamples(BATCH_SIZE);

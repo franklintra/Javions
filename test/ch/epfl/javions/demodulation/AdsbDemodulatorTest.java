@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class AdsbDemodulatorTest {
     //<editor-fold desc="Expected messages">
     private record RawMessageData(long timeStampNs, String bytes) {}
