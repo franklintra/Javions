@@ -105,4 +105,14 @@ class AirbornePositionMessageTest {
 //    void testOfWithIfInvalidAltitude() {
 //        assertNull(AirbornePositionMessage.of(new RawMessage(1, new ByteString(HexFormat.of().parseHex("8D392AE89B00009570AC00DDEBE5")))));
 //    }
+
+    @Test
+    public void AltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D,(byte) 0x39,(byte) 0x20,(byte) 0x35,(byte) 0x59, (byte) 0xB2,(byte) 0x25, (byte) 0xF0,(byte) 0x75,(byte) 0x50, (byte) 0xAD, (byte) 0xBE,(byte) 0x32, (byte) 0x8F};
+        System.out.println(AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))));
+        System.out.println();
+    }
+    @Test
+    public void AnotherAltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D, (byte) 0xAE, 0x02, (byte) 0xC8, 0x58, 0x64, (byte) 0xA5, (byte) 0xF5, (byte) 0xDD, 0x49, 0x75, (byte) 0xA1, (byte) 0xA3, (byte) 0xF5};
+        System.out.println(AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))));
+    }
 }

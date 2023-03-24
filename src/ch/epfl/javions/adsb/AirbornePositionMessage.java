@@ -45,12 +45,9 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
 
             long alt = Bits.extractUInt(rawMessage.payload(), 36, 12);
-//            long beginning = Bits.extractUInt(alt, 0, 4);
-//            long end = Bits.extractUInt(alt, 5, 7);
 
 
             long extractedBits = spliceOutBit(alt, 4);
-            System.out.println(Long.toBinaryString(extractedBits));
             altitude = (extractedBits * 25) - 1000;
 
 
@@ -67,9 +64,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
             System.arraycopy(sortedBits, 9, mult100GrayCode, 0, mult100GrayCode.length);
 
 
-            // transformation
-
-
             // 0 5 6 are invalid
             if ((mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
@@ -77,14 +71,14 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 System.out.println("Invalid value for mult100GrayCode");
                 return null;
             }
-            System.out.println("yalla2");
+
             // Swap 7 with 5
             if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) {
                 mult100GrayCode[1] = 1;
                 mult100GrayCode[2] = 1;
             }
 
-
+            // convert to decimal
             int result500beforeSwaps = grayCodeToDecimal(mult500GrayCode);
 
 
@@ -114,10 +108,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
 
         }
-
-
-
-
 
         return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
@@ -176,7 +166,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         return sortedBits;
     }
 
-
 //    public static void main(String[] args) {
 //        long l = 0b1000_0000_0000_0101_0100_0000_0000_0000_0000_0000_0000_0000_0000_0000L;
 //
@@ -186,7 +175,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 //
 //        System.out.println(Long.toBinaryString(l));
 //    }
-
 
 }
 
