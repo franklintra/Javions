@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class RawMessageTest {
     //<editor-fold desc="Test messages">
     private static final List<String> VALID_MESSAGES_DF17 = List.of(

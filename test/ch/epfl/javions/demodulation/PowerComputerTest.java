@@ -10,6 +10,7 @@ import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class PowerComputerTest {
     //<editor-fold desc="Test data">
     // The given samples.bin file, base64-encoded
