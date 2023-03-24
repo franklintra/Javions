@@ -18,7 +18,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     public AirbornePositionMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
         Preconditions.checkArgument(parity == 0 || parity == 1);
-        Preconditions.checkArgument(x >= 0 || x < 1 && y >= 0 || y < 1);
+        Preconditions.checkArgument(x >= 0 && x < 1 && y >= 0 && y < 1);
         if (icaoAddress == null) {
             throw new NullPointerException();
         }
@@ -32,12 +32,19 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         double altitude = 0;
 
         //getting 12 bits from index 36 of the 56 bits, then masking to remove but from index 4 from the right of the 12 bits
-
+        System.out.println("yalla3");
         //within rawmessage index 1, we take out bytes 4 to 10, then extract 12 bites starting from index 36
         if (Q == 1) {
 
-            int ALT = (int) ((rawMessage.payload() >> 36) & ~(1 << 4)) << 36; // FIXME: 3/23/2023 check if this mask is correct
-            altitude = -1000 + ALT * 25;
+            long mask = ~(-1L << 12);
+            double extractedBits = Bits.extractUInt(
+                    (rawMessage.payload() & mask) | ((rawMessage.payload() >>> 1) & ~mask),
+                    8,
+                    11
+            );
+
+            altitude = -1000 + (extractedBits * 25);
+            System.out.println("yalla");
         } else if (Q == 0) {
             int[] sortedBits = new int[12];
 
@@ -62,6 +69,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
             // transformation
 
+
             // 0 5 6
             if ((mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
@@ -69,7 +77,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 System.out.println("Invalid value for mult100GrayCode");
                 return null;
             }
-
+            System.out.println("yalla2");
             // Swap 7 with 5
             if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) {
                 mult100GrayCode[1] = 1;
@@ -170,11 +178,13 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
-                altitude,
-                Bits.extractUInt(rawMessage.payload(), 21, 1), // TODO: 3/23/2023 check if this is correct
-                Bits.extractUInt(rawMessage.payload(), 38, 17),
-                Bits.extractUInt(rawMessage.payload(), 55, 17)
+                altitude / 3.281f,
+                Bits.extractUInt(rawMessage.payload(), 21, 1), // TODO: 3/23/2023 check if this is correct. Update: its not
+                Bits.extractUInt(rawMessage.payload(), 38-17, 17),
+                Bits.extractUInt(rawMessage.payload(), 55-17, 17)
         );
     }
+
+
 }
 
