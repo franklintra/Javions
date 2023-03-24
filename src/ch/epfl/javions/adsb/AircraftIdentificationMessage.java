@@ -41,10 +41,11 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         int category = (14 - (Bits.extractUInt(rawMessage.payload(), 51, 5)) << 4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
         StringBuilder callSignString = new StringBuilder();
         for (int i = 0; i < 8; i++) {
-            if (getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)) == '\uFFFD') {
+            char ch = getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6));
+            if (ch == '\uFFFD') {
                 return null;
             }
-            callSignString.insert(0, getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6)));
+            callSignString.insert(0, ch);
         }
         CallSign callSign = new CallSign(callSignString.toString().stripTrailing());
         return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category, callSign);

@@ -3,10 +3,10 @@ import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.HexFormat;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,15 +41,7 @@ class AirbornePositionMessageTest {
         System.out.println(counter);
     }
 
-//    public static void main(String[] args) {
-////        RawMessage rawMessage = new RawMessage(1, new ByteString(HexFormat.of().parseHex("8D39203559B225F07550ADBE328F")));
-////        AirbornePositionMessage airbornePositionMessage = AirbornePositionMessage.of(rawMessage);
-////        System.out.println(airbornePositionMessage);
-//
-//        new AirbornePositionMessageTest().mest();
-//
-//    }
-
+    @Ignore
     public void mest() {
         int counter = 0;
         try (var s = getClass().getResourceAsStream("/samples_20230304_1442.bin")) {
@@ -109,6 +101,7 @@ class AirbornePositionMessageTest {
     @Test
     public void AltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D,(byte) 0x39,(byte) 0x20,(byte) 0x35,(byte) 0x59, (byte) 0xB2,(byte) 0x25, (byte) 0xF0,(byte) 0x75,(byte) 0x50, (byte) 0xAD, (byte) 0xBE,(byte) 0x32, (byte) 0x8F};
         System.out.println(AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))));
+        System.out.println(AirbornePositionMessage.of(RawMessage.of(0, bytes)));
         System.out.println();
     }
     @Test
