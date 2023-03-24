@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class SamplesDecoderTest {
     private static final int SAMPLES_COUNT = 1 << 12;
     private static final int BIAS = 1 << 11;

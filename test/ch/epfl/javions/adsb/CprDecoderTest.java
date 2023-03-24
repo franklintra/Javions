@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author @franklintra
  * @project Javions
  */
+@SuppressWarnings("unused")
 class CprDecoderTest {
 
     int[] long_CPR = new int[] {111600, 108865};

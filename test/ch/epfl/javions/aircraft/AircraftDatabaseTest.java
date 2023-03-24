@@ -8,6 +8,7 @@ import java.net.URLDecoder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("unused")
 class AircraftDatabaseTest {
     private AircraftDatabase getDatabase() {
         // Try to get the database from the resources

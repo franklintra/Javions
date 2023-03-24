@@ -7,6 +7,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings("unused")
 class Crc24Test {
 
     private static final HexFormat HEX_FORMAT = HexFormat.of();

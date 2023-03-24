@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author @franklintra
  * @project Javions
  */
+@SuppressWarnings("unused")
 class AircraftIdentificationMessageTest {
     String[] firstFiveBinaryIdentificationMessages = new String[]{
             "8D4D2228234994B7284800323B81",
