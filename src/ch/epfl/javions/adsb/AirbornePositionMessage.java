@@ -17,10 +17,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     public AirbornePositionMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
         Preconditions.checkArgument(parity == 0 || parity == 1);
-        Preconditions.checkArgument(x >= 0);
-        Preconditions.checkArgument(x < 1);
-        Preconditions.checkArgument(y >= 0);
-        Preconditions.checkArgument(y < 1);
+        Preconditions.checkArgument(x >= 0 && x < 1 && y >= 0 && y < 1);
         if (icaoAddress == null) {
             throw new NullPointerException();
         }
@@ -47,7 +44,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
             if ((mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1)) {
-                System.out.println("Invalid value for mult100GrayCode");
+                System.err.println("Invalid value for mult100GrayCode");
                 return null;
             }
             // Swap 7 with 5
@@ -89,6 +86,12 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         );
     }
 
+    /**
+     * This function removes the bit at index i from the long x
+     * @param x the long to remove the bit from
+     * @param i the index of the bit to remove
+     * @return the long with the bit removed
+     */
     private static long spliceOutBit(long x, int i) {
         long mask = ~(-1L << i);
         return (x & mask) | ((x >>> 1) & ~mask);
@@ -96,7 +99,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
     /**
      * Converts a gray code to decimal
-     *
      * @param grayCode the gray code to convert
      * @return the decimal value of the gray code
      */
@@ -118,6 +120,11 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         return result;
     }
 
+    /**
+     * Unscrambles the bits in the payload
+     * @param rawMessage the raw message to unscramble
+     * @return the unscrambled bits
+     */
     private static int[] unscramble(RawMessage rawMessage) {
         int[] sortedBits = new int[12];
         HashMap<Integer, Integer> sortingTable = new HashMap<>();

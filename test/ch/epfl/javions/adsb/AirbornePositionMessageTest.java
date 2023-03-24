@@ -3,7 +3,6 @@ import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -32,15 +31,13 @@ class AirbornePositionMessageTest {
             while ((m = demodulator.nextMessage()) != null && counter < 5) {
                 int typeCode = Bits.extractUInt(m.payload(), 51, 5);
                 if ((9 <= typeCode && typeCode <= 18) || (20 <= typeCode && typeCode <= 22)) {
-                    System.out.println(counter);
                     assertEquals(firstFiveIdMessagesExpected[counter], AirbornePositionMessage.of(m));
                     counter++;
                 }
             }
         }
-        System.out.println(counter);
     }
-
+/*
     @Ignore
     public void mest() {
         int counter = 0;
@@ -59,7 +56,7 @@ class AirbornePositionMessageTest {
             throw new RuntimeException(e);
         }
         System.out.println(counter);
-    }
+    }*/
 
     @Test
     void compactConstrusctorThrowsExceptionIfIcaoAddressIsNull() {
@@ -100,12 +97,12 @@ class AirbornePositionMessageTest {
 
     @Test
     public void AltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D,(byte) 0x39,(byte) 0x20,(byte) 0x35,(byte) 0x59, (byte) 0xB2,(byte) 0x25, (byte) 0xF0,(byte) 0x75,(byte) 0x50, (byte) 0xAD, (byte) 0xBE,(byte) 0x32, (byte) 0x8F};
-        System.out.println(AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))));
-        System.out.println(AirbornePositionMessage.of(RawMessage.of(0, bytes)));
-        System.out.println();
+        AirbornePositionMessage expected = new AirbornePositionMessage(0, new IcaoAddress("392035"), 3474.72d, 1, 0.6575698852539062, 0.4848175048828125);
+        assertEquals(expected.altitude(), AirbornePositionMessage.of(RawMessage.of(0, bytes)).altitude(), 10e-5);
     }
     @Test
     public void AnotherAltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D, (byte) 0xAE, 0x02, (byte) 0xC8, 0x58, 0x64, (byte) 0xA5, (byte) 0xF5, (byte) 0xDD, 0x49, 0x75, (byte) 0xA1, (byte) 0xA3, (byte) 0xF5};
-        System.out.println(AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))));
+        AirbornePositionMessage expected = new AirbornePositionMessage(0, new IcaoAddress("AE02C8"), 7315.20d, 1, 0.6867904663085938, 0.7254638671875);
+        assertEquals(expected.altitude(), AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))).altitude(), 10e-5);
     }
 }
