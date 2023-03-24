@@ -24,19 +24,17 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
     }
 
     private static char getChar(int i) {
-        // return the corresponding letter if 1 <= i <= 26, return the corresponding number if 48 <= i <= 57 and a space if i == 32
-        String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
-        String[] numbers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
         if (i >= 1 && i <= 26) {
-            return letters[i - 1].charAt(0);
+            return (char) ('A' + i - 1);
         } else if (i >= 48 && i <= 57) {
-            return numbers[i - 48].charAt(0);
+            return (char) ('0' + i - 48);
         } else if (i == 32) {
             return ' ';
         } else {
             return 'a';
         }
     }
+
 
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         Preconditions.checkArgument(rawMessage.downLinkFormat() == 17);
