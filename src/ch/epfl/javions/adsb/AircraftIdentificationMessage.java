@@ -8,7 +8,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  * @author @franklintra
  * @project Javions
  */
-public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category, CallSign callSign) {
+public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category, CallSign callSign) implements Message {
     /**
      * Checks that the parameters are not null and that the time stamp is positive.
      * @param timeStampNs the time stamp in nanoseconds
