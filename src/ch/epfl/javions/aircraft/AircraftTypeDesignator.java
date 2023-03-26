@@ -8,22 +8,22 @@ import java.util.regex.Pattern;
  * @author @franklintra, @chukla
  * @project Javions
  */
-public record AircraftTypeDesignator(String string) {
+public record AircraftTypeDesignator(String typeDesignator) {
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9]{2,4}");
 
     /**
      * The constructor of the AircraftTypeDesignator class
-     * @param string ICAO aircraft type designator
+     * @param typeDesignator ICAO aircraft type designator
      * @throws IllegalArgumentException if the type designator is not valid
      */
     public AircraftTypeDesignator {
-        Preconditions.checkArgument(REGEX.matcher(string).matches() || string.equals(""));
+        Preconditions.checkArgument(REGEX.matcher(typeDesignator).matches() || typeDesignator.equals(""));
     }
 
     /**
-     * @return the type designator of the aircraft as a string
+     * @return the type designator of the aircraft as a description
      */
-    public String string() {
-        return string;
+    public String typeDesignator() {
+        return typeDesignator;
     }
 }

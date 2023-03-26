@@ -11,16 +11,16 @@ import java.io.InputStream;
  * @project Javions
  */
 public final class PowerWindow {
-    private static final int batchSize = (int) Math.scalb(1, 16);
+    private static final int BATCH_SIZE = (int) Math.scalb(1, 16);
     private final PowerComputer computer;
-    private final int windowSize;
     private final int[] evenWindow;
     private final int[] oddWindow;
+    private final int windowSize;
     private final int[] window; //we will consider the window as a circular array
-    private long windowOldestIndex = 0;
-    private long position = 0;
-    private int batchIndex = 0;
-    private int samplesCalculated;
+    private long windowOldestIndex; // this is the index of the oldest sample in the window
+    private byte batchIndex = 0; // this is used to alternate between the even and odd batch (alternates between 0 and 1 hence the byte type)
+    private int samplesCalculated; // this is used to determine whether the window is full or not (if we have reached the end of the stream)
+
     /**
      * Constructs a new PowerWindow object with the given stream and window size.
      *
@@ -30,34 +30,14 @@ public final class PowerWindow {
      * @throws IllegalArgumentException if the window size is not in the range [1, 2^16]
      */
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
-        Preconditions.checkArgument(0 < windowSize && windowSize <= batchSize);
+        Preconditions.checkArgument(0 < windowSize && windowSize <= BATCH_SIZE);
         this.windowSize = windowSize;
-        this.computer = new PowerComputer(stream, batchSize);
-        evenWindow = new int[batchSize];
-        oddWindow = new int[batchSize];
+        this.computer = new PowerComputer(stream, BATCH_SIZE);
+        evenWindow = new int[BATCH_SIZE];
+        oddWindow = new int[BATCH_SIZE];
         window = new int[windowSize];
-        readBatch();
-        advanceBy(windowSize);
-    }
-
-    /**
-     * This method is used to calculate the modulus of a number with the size of the window
-     *
-     * @param index the number to calculate the modulus of
-     * @return the modulus of the number base windowSize
-     */
-    private int baseWindowMod(long index) {
-        return Math.floorMod(index, windowSize);
-    }
-
-    private void readBatch() throws IOException {
-        // odd when batchIndex is 0, even when batchIndex is 1 (because batchIndex is incremented at the end of the method)
-        if (batchIndex % 2 == 0) {
-            samplesCalculated = computer.readBatch(oddWindow);
-        } else {
-            samplesCalculated = computer.readBatch(evenWindow);
-        }
-        batchIndex = (batchIndex + 1) % 2;
+        readBatch(); // we read the first batch to fill the even window
+        advanceBy(windowSize); // we advance the window by the window size to fill it with the first samples
     }
 
     /**
@@ -71,15 +51,14 @@ public final class PowerWindow {
      * @return the current position of the window
      */
     public long position() {
-        return position - windowSize;
+        return windowOldestIndex - windowSize;
     }
-
 
     /**
      * @return true if the window is full, false otherwise
      */
     public boolean isFull() {
-        return position % batchSize <= samplesCalculated;
+        return windowOldestIndex % BATCH_SIZE <= samplesCalculated;
     }
 
     /**
@@ -95,22 +74,20 @@ public final class PowerWindow {
     }
 
     /**
-     * Advances the window by one sample by reading the next sample from the stream.
-     *
+     * Advances the window by one sample by reading it from the buffer (either the even or odd window)
+     * and reading it from the stream if we reached the end of the current buffer
      * @throws IOException if the stream cannot be read / if the window is full
      */
     public void advance() throws IOException {
-        //samplesLeft--;
-        if (position % batchSize == 0 && position != 0) {
+        if (windowOldestIndex % BATCH_SIZE == 0 && windowOldestIndex != 0) {
             readBatch();
         }
         if (batchIndex % 2 == 0) {
-            window[baseWindowMod(windowOldestIndex)] = evenWindow[(int) ((position) % (batchSize))];
+            window[baseWindowMod(windowOldestIndex)] = evenWindow[(int) ((windowOldestIndex) % (BATCH_SIZE))];
         } else {
-            window[baseWindowMod(windowOldestIndex)] = oddWindow[(int) ((position) % batchSize)];
+            window[baseWindowMod(windowOldestIndex)] = oddWindow[(int) ((windowOldestIndex) % BATCH_SIZE)];
         }
         windowOldestIndex++;
-        position++;
     }
 
     /**
@@ -128,14 +105,27 @@ public final class PowerWindow {
     }
 
     /**
-     * This method is used to print beautifully the window as an array shape
+     * This method is used to read a batch of samples from the stream. It is used to fill the even and odd window according to which batch was read last.
+     * It is also used to alternate between the even and odd window by updating the batchIndex.
+     * @throws IOException if the stream cannot be read
      */
-    @SuppressWarnings("unused")
-    public void printArray() {
-        System.out.print("[");
-        for (int i = 0; i < windowSize; i++) {
-            System.out.printf("%d, ", window[baseWindowMod(windowOldestIndex + i)]);
+    private void readBatch() throws IOException {
+        // odd when batchIndex is 0, even when batchIndex is 1 (because batchIndex is incremented at the end of the method)
+        if (batchIndex % 2 == 0) {
+            samplesCalculated = computer.readBatch(oddWindow);
+        } else {
+            samplesCalculated = computer.readBatch(evenWindow);
         }
-        System.out.printf("]%n");
+        batchIndex = (byte) ((batchIndex + 1) % 2);
+    }
+
+    /**
+     * This method is used to calculate the modulus of a number with the size of the window
+     *
+     * @param index the number to calculate the modulus of
+     * @return the modulus of the number base windowSize
+     */
+    private int baseWindowMod(long index) {
+        return Math.floorMod(index, windowSize);
     }
 }

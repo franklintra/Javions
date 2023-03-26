@@ -10,11 +10,9 @@ import java.io.InputStream;
  * @project Javions
  */
 public final class SamplesDecoder {
-    private final int batchSize;
+    private final int batchSize; // the size of the batch of samples to read
     private final InputStream stream;
-
     private final byte[] buffer;
-
 
     /**
      * The constructor of the SamplesDecoder class that takes an input stream and a batch size
@@ -44,7 +42,6 @@ public final class SamplesDecoder {
         Preconditions.checkArgument(batch.length == batchSize); //throws IllegalArgumentException if the size of the batch doesn't match the required size
         int data = stream.readNBytes(buffer, 0, 2 * batchSize);
         //if the number of bytes data is not equal to 2*batchSize, then we have reached the end of the stream
-
 
         for (int i = 0; i < buffer.length; i+=2) {
             //buffer[i] is a two bytes number that represents a sample ([0] and [1])

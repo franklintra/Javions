@@ -8,22 +8,22 @@ import java.util.regex.Pattern;
  * @author @franklintra, @chukla
  * @project Javions
  */
-public record AircraftRegistration(String string) {
+public record AircraftRegistration(String registration) {
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9 .?/_+-]+");
 
     /**
      * The constructor of the AircraftRegistration class
-     * @param string ICAO aircraft string
-     * @throws IllegalArgumentException if the string is not valid
+     * @param registration ICAO aircraft description
+     * @throws IllegalArgumentException if the description is not valid
      */
     public AircraftRegistration {
-        Preconditions.checkArgument(REGEX.matcher(string).matches());
+        Preconditions.checkArgument(REGEX.matcher(registration).matches());
     }
 
     /**
-     * @return the string of the aircraft as a string
+     * @return the description of the aircraft as a description
      */
-    public String string() {
-        return string;
+    public String registration() {
+        return registration;
     }
 }

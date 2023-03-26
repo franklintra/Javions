@@ -37,26 +37,6 @@ class AirbornePositionMessageTest {
             }
         }
     }
-/*
-    @Ignore
-    public void mest() {
-        int counter = 0;
-        try (var s = getClass().getResourceAsStream("/samples_20230304_1442.bin")) {
-            var demodulator = new AdsbDemodulator(s);
-            RawMessage m;
-            while ((m = demodulator.nextMessage()) != null && counter < 5) {
-                int typeCode = Bits.extractUInt(m.payload(), 51, 5);
-                if ((9 <= typeCode && typeCode <= 18) || (20 <= typeCode && typeCode <= 22)) {
-//                    System.out.println(AirbornePositionMessage.of(m));
-                    System.out.println(m.bytes().toString());
-                    counter++;
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(counter);
-    }*/
 
     @Test
     void compactConstrusctorThrowsExceptionIfIcaoAddressIsNull() {
@@ -86,14 +66,6 @@ class AirbornePositionMessageTest {
         assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 0, 1));
         assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 1, 0));
     }
-//    @Test
-//    void testOfWithQIsZero() {
-//        assertNull(AirbornePositionMessage.of(new RawMessage(1, new ByteString(HexFormat.of().parseHex("8D39203559B225F07550ADBE328F")))));
-//    }
-//    @Test
-//    void testOfWithIfInvalidAltitude() {
-//        assertNull(AirbornePositionMessage.of(new RawMessage(1, new ByteString(HexFormat.of().parseHex("8D392AE89B00009570AC00DDEBE5")))));
-//    }
 
     @Test
     public void AltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D,(byte) 0x39,(byte) 0x20,(byte) 0x35,(byte) 0x59, (byte) 0xB2,(byte) 0x25, (byte) 0xF0,(byte) 0x75,(byte) 0x50, (byte) 0xAD, (byte) 0xBE,(byte) 0x32, (byte) 0x8F};

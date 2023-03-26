@@ -3,13 +3,10 @@ package ch.epfl.javions.aircraft;
 //import jdk.internal.icu.impl.Punycode;
 
 import java.io.*;
-import java.net.URLDecoder;
-import java.util.List;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author @franklintra, @chukla
@@ -20,7 +17,6 @@ public final class AircraftDatabase {
 
     /**
      * The constructor of the AircraftDatabase class
-     *
      * @param filename the name of the database file
      * @throws NullPointerException if the database file could not be read
      */
@@ -30,41 +26,29 @@ public final class AircraftDatabase {
     }
 
     /**
-     * Returns the aircraft data for the given ICAO string.
-     *
-     * @param address the ICAO string of the aircraft
+     * Returns the aircraft data for the given ICAO description.
+     * @param address the ICAO description of the aircraft
      * @return the aircraft data
      * @throws IOException if the database file could not be read
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         Objects.requireNonNull(address);
-        String zipPath = Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getFile();
-        zipPath = URLDecoder.decode(zipPath, UTF_8);
+        try (ZipFile zipFile = new ZipFile(new File(filename))) {
+            Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
 
-        try (ZipFile zipFile = new ZipFile(new File(zipPath))) {
-            List<? extends ZipEntry> zipEntries = zipFile.stream().toList();
-
-            for (ZipEntry z : zipEntries) {
+            while (zipEntries.hasMoreElements()) {
                 nextZip :
                 try (
-                        InputStream inputStream = zipFile.getInputStream(z);
-                        Reader streamReader = new InputStreamReader(inputStream, UTF_8);
-                        BufferedReader bufferedReader = new BufferedReader(streamReader)
+                        InputStreamReader inputStream = new InputStreamReader(zipFile.getInputStream(zipEntries.nextElement()));
+                        BufferedReader bufferedReader = new BufferedReader(inputStream)
                 ) {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
-                        if ((line.split(",", -1)[0]).compareTo(address.string()) > 0) {
-                            break nextZip; //Interrupts the loop and go to the next zip file if the current string is greater than the string we're looking for (because the database is sorted)
+                        if ((line.split(",", -1)[0]).compareTo(address.icaoAddress()) > 0) {
+                            break nextZip; //Interrupts the loop and go to the next zip file if the current description is greater than the description we're looking for (because the database is sorted)
                         }
-                        if (line.startsWith(address.string())) {
-                            String[] data = line.split(",", -1);
-                            return new AircraftData(
-                                    new AircraftRegistration(data[1]),
-                                    new AircraftTypeDesignator(data[2]),
-                                    data[3],
-                                    new AircraftDescription(data[4]),
-                                    WakeTurbulenceCategory.of(data[5])
-                            );
+                        if (line.startsWith(address.icaoAddress())) {
+                            return parseAircraftData(line);
                         }
                     }
                 }
@@ -73,5 +57,21 @@ public final class AircraftDatabase {
             throw new IOException("Could not read database file: " + filename);
         }
        return null;
+    }
+
+    /**
+     * Parses a line of the database file and returns the corresponding AircraftData object.
+     * @param line the line to parse
+     * @return the AircraftData object corresponding to the line
+     */
+    private AircraftData parseAircraftData(String line) {
+        String[] data = line.split(",", -1);
+        return new AircraftData(
+                new AircraftRegistration(data[1]),
+                new AircraftTypeDesignator(data[2]),
+                data[3],
+                new AircraftDescription(data[4]),
+                WakeTurbulenceCategory.of(data[5])
+        );
     }
 }

@@ -16,6 +16,8 @@ public class CprDecoder {
     }
 
     /**
+     * Throughout this class, the following notation is used:
+     * (mostRecent==0)?x0:x1 allows to choose between x0 and x1 depending on the value of mostRecent without using an if statement or a List
      * @param x0 - longitude of an even message aircraft position
      * @param y0 - latitude of an even message aircraft position
      * @param x1 - longitude of an odd message aircraft position
@@ -55,7 +57,7 @@ public class CprDecoder {
             actualLong = (nLong[0] == 1) ? ((mostRecent==0)?x0:x1) : (widthLong * (longitude + ((mostRecent==0)?x0:x1))); // if nLong is 1, then the longitude is completely determined by x0 or x1
         }
 
-        return checkValidityAndReturn(actualLong, (mostRecent==0)?evenLat:oddLat);
+        return isValidData(actualLong, (mostRecent==0)?evenLat:oddLat);
     }
 
     /**
@@ -64,7 +66,7 @@ public class CprDecoder {
      * @param latitude : latitude in turn
      * @return a GeoPos object with rounded values of T32 longitude and latitude if the given latitude and longitude are valid, null otherwise
      */
-    private static GeoPos checkValidityAndReturn(double longitude, double latitude) {
+    private static GeoPos isValidData(double longitude, double latitude) {
         if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32)))) {
             return null;
         }

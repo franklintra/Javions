@@ -8,17 +8,17 @@ import java.util.regex.Pattern;
  * @author @franklintra
  * @project Javions
  */
-public record IcaoAddress(String string) {
+public record IcaoAddress(String icaoAddress) {
     private static final Pattern REGEX = Pattern.compile("[0-9A-F]{6}");
 
     public IcaoAddress {
-        Preconditions.checkArgument(REGEX.matcher(string).matches());
+        Preconditions.checkArgument(REGEX.matcher(icaoAddress).matches());
     }
 
     /**
-     * @return the ICAO string of the aircraft as a string
+     * @return the ICAO description of the aircraft as a description
      */
-    public String string() {
-        return string;
+    public String icaoAddress() {
+        return icaoAddress;
     }
 }

@@ -12,7 +12,6 @@ import java.io.InputStream;
  */
 
 public final class PowerComputer {
-
     private final SamplesDecoder decoder;
     private final short[] sampleBuffer; // this is the buffer that will contain the samples read from the input stream.
     private final int[] last8Samples = new int[8]; // this is the buffer that will contain the last 8 samples used to calculate the power
@@ -26,15 +25,6 @@ public final class PowerComputer {
     }
 
     /**
-     * This method is used to calculate the modulus of a number with 8
-     * @param index the number to calculate the modulus of
-     * @return the modulus of the number base 8
-     */
-    private int base8Mod(int index) {
-        return Math.floorMod(index, 8);// this is used so that it works with negative values (the % operator in java gives the remainder instead of the modulus)
-    }
-
-    /**
      * Reads a batch of samples from the input stream / necessary to calculate a batch of power samples
      * @param batch the array of shorts that will contain the samples
      * @return number of samples read and written to the batch
@@ -44,7 +34,7 @@ public final class PowerComputer {
     public int readBatch(int[] batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
         int read = decoder.readBatch(sampleBuffer);
-        int last8Index = 0;
+        int last8Index = 0; // this is the index of the last sample that was added in the last8Samples buffer
 
         for (int i = 0; i < read / 2; i++) {
             // turnover latest data in last8Samples
@@ -56,5 +46,15 @@ public final class PowerComputer {
             last8Index = Math.floorMod(last8Index + 2, 8);
         }
         return read/2;
+    }
+
+    /**
+     * This method is used to calculate the modulus of a number with 8
+     * In our case, we need to calculate the modulus of a number with 8, but the % operator in java gives the remainder instead of the modulus
+     * @param index the number to calculate the modulus of
+     * @return the modulus of the number base 8
+     */
+    private int base8Mod(int index) {
+        return Math.floorMod(index, 8);// this is used so that it works with negative values (the % operator in java gives the remainder instead of the modulus)
     }
 }

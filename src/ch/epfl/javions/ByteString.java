@@ -14,62 +14,15 @@ public final class ByteString {
 
     /**
      * The constructor of the ByteString class
-     * @param bytes the bytes to be stored in the byte string
+     * @param bytes the bytes to be stored in the byte description
      */
     public ByteString(byte[] bytes) {
-        byte[] temp = new byte[bytes.length];
-        System.arraycopy(bytes, 0, temp, 0, bytes.length);
-        this.data = temp;
+        this.data = bytes.clone();
     }
 
     /**
-     * @param hexString the hex string to be converted to a byte string
-     * @return the byte string corresponding to the hex string
-     * @throws IllegalArgumentException if the hex string is not valid
+     * @return the size of the byte description
      */
-    public static ByteString ofHexadecimalString(String hexString) {
-        Preconditions.checkArgument(hexString.length()%2 == 0);
-        if (!hexString.matches("[0-9a-fA-F]+")) {
-            throw new NumberFormatException("Only hexadecimal characters are allowed");
-        }
-        HexFormat hf = HexFormat.of().withUpperCase();
-        byte[] bytes = hf.parseHex(hexString);
-        return new ByteString(bytes);
-    }
-
-    /**
-     * Does a structural comparison of the two byte strings.
-     * @param o: the object to compare to
-     * @return : true if the two byte strings are equal, false otherwise
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof ByteString)) {
-            return false;
-        }
-        return java.util.Arrays.equals(data, ((ByteString) o).data);
-    }
-
-    /**
-     * Allow the data to be printed in hexadecimal format
-     * @return : the string representation of the byte string
-     */
-    public String toString() {
-        return HEX_FORMAT.formatHex(data);
-    }
-
-    /**
-     * Allow to use the byte string as a key in a hash map for example
-     * @return : the hash code of the byte string
-     */
-    public int hashCode() {
-        return java.util.Arrays.hashCode(data);
-    }
-
-    /**
-     * @return the size of the byte string
-     */
-
     public int size() {
         return data.length;
     }
@@ -89,7 +42,9 @@ public final class ByteString {
      * @return the bytes in the range [fromIndex, toIndex[
      */
     public long bytesInRange(int fromIndex, int toIndex) {
+        Preconditions.checkArgument(toIndex-fromIndex < 8);
         Objects.checkFromToIndex(fromIndex, toIndex, data.length);
+
         byte[] bytes = new byte[toIndex - fromIndex];
         System.arraycopy(data, fromIndex, bytes, 0, toIndex - fromIndex);
         long result = 0;
@@ -98,5 +53,48 @@ public final class ByteString {
             result |= b & 0xFF;
         }
         return result;
+    }
+
+    /**
+     * @param hexString the hex description to be converted to a byte description
+     * @return the byte description corresponding to the hex description
+     * @throws IllegalArgumentException if the hex description is not valid
+     */
+    public static ByteString ofHexadecimalString(String hexString) {
+        Preconditions.checkArgument(hexString.length()%2 == 0);
+        if (!hexString.matches("[0-9a-fA-F]+")) {
+            throw new NumberFormatException("Only hexadecimal characters are allowed");
+        }
+        byte[] bytes = HEX_FORMAT.parseHex(hexString);
+        return new ByteString(bytes);
+    }
+
+    /**
+     * Allow to use the byte description as a key in a hash map for example
+     * @return : the hash code of the byte description
+     */
+    public int hashCode() {
+        return java.util.Arrays.hashCode(data);
+    }
+
+    /**
+     * Allow the data to be printed in hexadecimal format
+     * @return : the description representation of the byte description
+     */
+    public String toString() {
+        return HEX_FORMAT.formatHex(data);
+    }
+
+    /**
+     * Does a structural comparison of the two byte strings.
+     * @param o: the object to compare to
+     * @return : true if the two byte strings are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ByteString)) {
+            return false;
+        }
+        return java.util.Arrays.equals(data, ((ByteString) o).data);
     }
 }

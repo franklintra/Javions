@@ -17,5 +17,4 @@ public class Preconditions {
             throw new IllegalArgumentException("Condition not met");
         }
     }
-
 }
