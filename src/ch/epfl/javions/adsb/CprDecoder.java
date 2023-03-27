@@ -67,12 +67,12 @@ public class CprDecoder {
      * @return a GeoPos object with rounded values of T32 longitude and latitude if the given latitude and longitude are valid, null otherwise
      */
     private static GeoPos isValidData(double longitude, double latitude) {
-        if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32)))) {
-            return null;
+        if (GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32)))) {
+            return new GeoPos(
+                    (int) Math.rint(Units.convert(longitude, Units.Angle.TURN, Units.Angle.T32)),
+                    (int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32))
+            );
         }
-        return new GeoPos(
-                (int) Math.rint(Units.convert(longitude, Units.Angle.TURN, Units.Angle.T32)),
-                (int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32))
-        );
+        return null;
     }
 }

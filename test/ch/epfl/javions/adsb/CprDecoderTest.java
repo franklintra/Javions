@@ -1,82 +1,95 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.Units;
 import org.junit.jupiter.api.Test;
+
+import static java.lang.Math.scalb;
+import static java.lang.Math.toDegrees;
 import static org.junit.jupiter.api.Assertions.*;
 
-
-/**
- * @author @franklintra
- * @project Javions
- */
-@SuppressWarnings("unused")
 class CprDecoderTest {
+    private static double cpr(double cpr) {
+        return scalb(cpr, -17);
+    }
 
-    int[] long_CPR = new int[] {111600, 108865};
-    int[] lat_CPR = new int[] {94445, 77558};
-
-    double[] normalizedLong_CPR = new double[] {Math.scalb(long_CPR[0], -17), Math.scalb(long_CPR[1], -17)};
-    double[] normalizedLat_CPR = new double[] {Math.scalb(lat_CPR[0], -17), Math.scalb(lat_CPR[1], -17)};
-
-    @Test
-    void throwExceptionIfMostRecentIsNot0Or1() {
-        assertThrows(IllegalArgumentException.class, () -> CprDecoder.decodePosition(0, 0, 0, 0, 2));
-        assertThrows(IllegalArgumentException.class, () -> CprDecoder.decodePosition(0, 0, 0, 0, -1));
+    void checkDecodePosition(int cprX0,
+                             int cprY0,
+                             int cprX1,
+                             int cprY1,
+                             int mostRecent,
+                             double expectedLonDeg,
+                             double expectedLatDeg,
+                             double delta) {
+        var x0 = cpr(cprX0);
+        var x1 = cpr(cprX1);
+        var y0 = cpr(cprY0);
+        var y1 = cpr(cprY1);
+        var p = CprDecoder.decodePosition(x0, y0, x1, y1, mostRecent);
+        assertNotNull(p);
+        assertEquals(expectedLonDeg, toDegrees(p.longitude()), delta);
+        assertEquals(expectedLatDeg, toDegrees(p.latitude()), delta);
     }
 
     @Test
-    void returnsNullIfLatitudeIsNotBetweenMinus90And90() {
-        //this test is very complicated to make because we don't have examples of latitude and longitude that are not between -90 and 90 from local data
-        assertNull(CprDecoder.decodePosition(0.01, 0.01, 0.03, 0.03, 0));
+    void cprDecoderDecodePositionWorksOnKnownExamples() {
+        // Example given in stage 5
+        var delta = 1e-6;
+        checkDecodePosition(111600, 94445, 108865, 77558, 0, 7.476062, 46.323349, delta);
+
+        // Example from https://mode-s.org/decode/content/ads-b/3-airborne-position.html#decoding-example
+        checkDecodePosition(0b01100100010101100, 0b10110101101001000, 0b01100010000010010, 0b10010000110101110, 0, 3.919373, 52.257202, delta);
+
+        // Examples from https://github.com/flightaware/dump1090/blob/master/cprtests.c
+        checkDecodePosition(9432, 80536, 9192, 61720, 0, 0.700156, 51.686646, delta);
+        checkDecodePosition(9432, 80536, 9192, 61720, 1, 0.701294, 51.686763, delta);
+        checkDecodePosition(9413, 80534, 9144, 61714, 0, 0.698745, 51.686554, delta);
+        checkDecodePosition(9413, 80534, 9144, 61714, 1, 0.697632, 51.686484, delta);
     }
 
     @Test
-    void testDecodePositionWithGivenValues() {
-        GeoPos[] expected = new GeoPos[]{new GeoPos((int) Units.convert(7.476062d, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(46.323349d, Units.Angle.DEGREE, Units.Angle.T32)), new GeoPos((int) Units.convert(7.475166d, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(46.322363d, Units.Angle.DEGREE, Units.Angle.T32))};
-        double epsilon = 10e-9;
-        GeoPos[] actual = new GeoPos[]{(CprDecoder.decodePosition(normalizedLong_CPR[0], normalizedLat_CPR[0], normalizedLong_CPR[1], normalizedLat_CPR[1], 0)),CprDecoder.decodePosition(normalizedLong_CPR[0], normalizedLat_CPR[0], normalizedLong_CPR[1], normalizedLat_CPR[1], 1)};
-        for (GeoPos geoPos : actual) {
-            assertNotNull(geoPos);
+    void cprDecoderDecodePositionWorksWithOnlyOneLatitudeBand() {
+        checkDecodePosition(2458, 92843, 2458, 60712, 0, 6.75, 88.25, 1e-2);
+        checkDecodePosition(2458, 92843, 2458, 60712, 1, 6.75, 88.25, 1e-2);
+    }
+
+    @Test
+    void cprDecoderDecodePositionWorksWithPositiveAndNegativeCoordinates() {
+        for (var i = 0; i <= 1; i += 1) {
+            checkDecodePosition(94663, 43691, 101945, 47332, i, -20d, -10d, 1e-4);
+            checkDecodePosition(94663, 87381, 101945, 83740, i, -20d, 10d, 1e-4);
+            checkDecodePosition(36409, 43691, 29127, 47332, i, 20d, -10d, 1e-4);
+            checkDecodePosition(36409, 87381, 29127, 83740, i, 20d, 10d, 1e-4);
         }
-        for (int i = 0; i < 2; i++) {
-            assertEquals(expected[i].longitude(), actual[i].longitude(), epsilon);
-            assertEquals(expected[i].latitude(), actual[i].latitude(), epsilon);
+    }
+
+    @Test
+    void cprDecoderDecodePositionReturnsNullWhenLatitudeIsInvalid() {
+        assertNull(CprDecoder.decodePosition(0, 0, 0, cpr(34776), 0));
+        assertNull(CprDecoder.decodePosition(0, 0, 0, cpr(34776), 1));
+        assertNull(CprDecoder.decodePosition(0, cpr(5), 0, cpr(66706), 0));
+        assertNull(CprDecoder.decodePosition(0, cpr(5), 0, cpr(66706), 1));
+    }
+
+    @Test
+    void cprDecoderDecodePositionReturnsNullWhenSwitchingLatitudeBands() {
+        var args = new int[][]{
+                // Random values
+                {43253, 99779, 122033, 118260},
+                {67454, 100681, 123802, 124315},
+                {129578, 70001, 82905, 105074},
+                {30966, 110907, 122716, 79872},
+                // Real values
+                {85707, 77459, 81435, 60931},
+                {100762, 106328, 98304, 89265},
+                {104941, 106331, 104905, 89210},
+        };
+
+        for (var as : args) {
+            var x0 = cpr(as[0]);
+            var y0 = cpr(as[1]);
+            var x1 = cpr(as[2]);
+            var y1 = cpr(as[3]);
+            assertNull(CprDecoder.decodePosition(x0, y0, x1, y1, 0));
+            assertNull(CprDecoder.decodePosition(x0, y0, x1, y1, 1));
         }
-        //GeoPos actualExternal = CprDecoder.decodePosition(0.3919, 0.7095, 0.3829,0.5658, 0);
-    }
-
-    @Test
-    void testWithEdStemTeacherValues() {
-        double x0 = Math.scalb(111600d, -17);
-        double y0 = Math.scalb(94445d, -17);
-        double x1 = Math.scalb(108865d, -17);
-        double y1 = Math.scalb(77558d, -17);
-        GeoPos p = CprDecoder.decodePosition(x0, y0, x1, y1, 0);
-        assertEquals(new GeoPos(89192898, 552659081), p);
-    }
-
-    @Test
-    void testWithInternetValues() {
-        //got these values from : http://airmetar.main.jp/radio/ADS-B%20Decoding%20Guide.pdf
-        GeoPos even = CprDecoder.decodePosition(0.3919, 0.7095, 0.3829, 0.5658, 0);
-        GeoPos odd = CprDecoder.decodePosition(0.3919, 0.7095, 0.3829, 0.5658, 1);
-        assertNotNull(even);
-        assertNotNull(odd);
-        assertEquals(Units.convertTo(even.latitude(), Units.Angle.DEGREE), 52.25720214843750d, 10e-4);
-        assertEquals(Units.convertTo(odd.latitude(), Units.Angle.DEGREE), 52.26578017412606d, 10e-4);
-        assertEquals(Units.convertTo(even.longitude(), Units.Angle.DEGREE), 3.91937d, 10e-4);
-        assertEquals(Units.convertTo(odd.longitude(), Units.Angle.DEGREE), 3.91937d, 10e-1);
-    }
-
-    @Test
-    void testWithValuesFromBookThatInspiredTeacher() {
-        GeoPos even = CprDecoder.decodePosition(Math.scalb(51372, -17), Math.scalb(93000, -17), Math.scalb(50194, -17), Math.scalb(74158, -17), 0);
-        GeoPos odd = CprDecoder.decodePosition(Math.scalb(51372, -17), Math.scalb(93000, -17), Math.scalb(50194, -17), Math.scalb(74158, -17), 1);
-        assertNotNull(even);
-        assertNotNull(odd);
-        assertEquals(Units.convertTo(even.latitude(), Units.Angle.DEGREE), 52.25720214843750d, 10e-7);
-        assertEquals(Units.convertTo(odd.latitude(), Units.Angle.DEGREE), 52.26578017412606d, 10e-7);
-        assertEquals(Units.convertTo(even.longitude(), Units.Angle.DEGREE), 3.91937255859375, 10e-7);
     }
 }

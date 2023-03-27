@@ -1,80 +1,147 @@
 package ch.epfl.javions.adsb;
-import ch.epfl.javions.Bits;
-import ch.epfl.javions.ByteString;
+
+import ch.epfl.javions.Crc24;
 import ch.epfl.javions.aircraft.IcaoAddress;
-import ch.epfl.javions.demodulation.AdsbDemodulator;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * @author @franklintra
- * @project Javions
- */
-@SuppressWarnings("unused")
 class AirbornePositionMessageTest {
-    AirbornePositionMessage[] firstFiveIdMessagesExpected = new AirbornePositionMessage[] {
-            new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 0.6867904663085938, 0.7254638671875),
-            new AirbornePositionMessage(116538700, new IcaoAddress("4241A9"), 1303.02d, 0, 0.702667236328125, 0.7131423950195312),
-            new AirbornePositionMessage(138560100, new IcaoAddress("4D2228"), 10972.800000000001d, 1, 0.6243515014648438, 0.4921417236328125),
-            new AirbornePositionMessage(208135700, new IcaoAddress("4D029F"), 4244.34d, 0, 0.747222900390625, 0.7342300415039062),
-            new AirbornePositionMessage(233069800, new IcaoAddress("3C6481"), 10370.82d, 0, 0.8674850463867188, 0.7413406372070312),
-    };
     @Test
-    void testWithInstructionSetValues() throws IOException {
-        int counter = 0;
-        try (var s = getClass().getResourceAsStream("/samples_20230304_1442.bin")) {
-            var demodulator = new AdsbDemodulator(s);
-            RawMessage m;
-            while ((m = demodulator.nextMessage()) != null && counter < 5) {
-                int typeCode = Bits.extractUInt(m.payload(), 51, 5);
-                if ((9 <= typeCode && typeCode <= 18) || (20 <= typeCode && typeCode <= 22)) {
-                    assertEquals(firstFiveIdMessagesExpected[counter], AirbornePositionMessage.of(m));
-                    counter++;
-                }
-            }
+    void airbornePositionMessageConstructorThrowsWhenTimeStampIsInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new AirbornePositionMessage(-1, new IcaoAddress("ABCDEF"), 1000, 0, 0, 0);
+        });
+        assertDoesNotThrow(() -> {
+            new AirbornePositionMessage(0, new IcaoAddress("ABCDEF"), 1000, 0, 0, 0);
+        });
+    }
+
+    @Test
+    void airbornePositionMessageConstructorThrowsWhenIcaoAddressIsNull() {
+        assertThrows(NullPointerException.class, () -> {
+            new AirbornePositionMessage(100, null, 1000, 0, 0, 0);
+        });
+    }
+
+    @Test
+    void airbornePositionMessageConstructorThrowsWhenParityIsInvalid() {
+        var icaoAddress = new IcaoAddress("ABCDEF");
+        for (int i = -100; i <= 100; i += 1) {
+            if (i == 0 || i == 1) continue;
+            var invalidParity = i;
+            assertThrows(IllegalArgumentException.class, () -> {
+                new AirbornePositionMessage(100, icaoAddress, 100, invalidParity, 0.5, 0.5);
+            });
         }
     }
 
     @Test
-    void compactConstrusctorThrowsExceptionIfIcaoAddressIsNull() {
-        assertThrows(NullPointerException.class, () ->  new AirbornePositionMessage(75898000, null, 10546.08d, 0, 0.6867904663085938, 0.7254638671875));
+    void airbornePositionMessageConstructorThrowsWhenXYAreInvalid() {
+        var icaoAddress = new IcaoAddress("ABCDEF");
+        for (var invalidXY = 1d; invalidXY < 5d; invalidXY += 0.1) {
+            var xy = invalidXY;
+            assertThrows(IllegalArgumentException.class, () -> {
+                new AirbornePositionMessage(100, icaoAddress, 100, 0, xy, 0.5);
+            });
+            assertThrows(IllegalArgumentException.class, () -> {
+                new AirbornePositionMessage(100, icaoAddress, 100, 0, -xy, 0.5);
+            });
+            assertThrows(IllegalArgumentException.class, () -> {
+                new AirbornePositionMessage(100, icaoAddress, 100, 0, 0.5, xy);
+            });
+            assertThrows(IllegalArgumentException.class, () -> {
+                new AirbornePositionMessage(100, icaoAddress, 100, 0, 0.5, -xy);
+            });
+        }
     }
 
     @Test
-    void compactConstrusctorThrowsExceptionIfTimeStampIsLessThanZero() {
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(-1, new IcaoAddress("495299"), 10546.08d, 0, 0.6867904663085938, 0.7254638671875));
+    void airbornePositionMessageOfCorrectlyDecodesAltitudeWhenQIs0() {
+        record MessageAndAltitude(String message, double altitude) {
+        }
+        var testValues = List.of(
+                new MessageAndAltitude("8D4B1BB5598486491F4BDBF44FC6", 1584.96),
+                new MessageAndAltitude("8D4B1BB5592C22D2A155F49835EF", 1798.32),
+                new MessageAndAltitude("8D4B1BB5592422D2BB55FD991FA4", 1828.80),
+                new MessageAndAltitude("8D4B1BB559A4264FDB4DDDC058EA", 1859.28),
+                new MessageAndAltitude("8D4B1BB5598426509F4E1F032D5D", 1889.76),
+                new MessageAndAltitude("8D4B1BB5598406514D4E5FEC1AC3", 1920.24),
+                new MessageAndAltitude("8D4B1BB559A40653594F35F9A08F", 1950.72),
+                new MessageAndAltitude("8D4B1BB55924065661506DA3728A", 1981.20),
+                new MessageAndAltitude("8D4B1BB5592C02EE175E9AF78185", 2011.68),
+                new MessageAndAltitude("8D4B1BB5590C02FAED63A05783E1", 2042.16),
+                new MessageAndAltitude("8DADA2FD593682D9D99C2643E7DA", 2743.20));
+        for (var testValue : testValues) {
+            var message = RawMessage.of(100, HexFormat.of().parseHex(testValue.message));
+            assertNotNull(message);
+            var airbornePositionMessage = AirbornePositionMessage.of(message);
+            assertNotNull(airbornePositionMessage);
+            assertEquals(testValue.altitude, airbornePositionMessage.altitude(), 0.005);
+        }
     }
 
     @Test
-    void compactConstructorThrowsExceptionIfParityIsNotZeroOrOne() {
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 2, 0.6867904663085938, 0.7254638671875));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, -1, 0.6867904663085938, 0.7254638671875));
+    void airbornePositionMessageOfCorrectlyDecodesAltitudeWhenQIs1() {
+        record MessageAndAltitude(String message, double altitude) {
+        }
+        var testValues = List.of(
+                new MessageAndAltitude("8D406666580D1652395CBE0A4D3E", 434.34),
+                new MessageAndAltitude("8D4B1BDD5911A68127785A8F1273", 746.76),
+                new MessageAndAltitude("8D344645584592A80D5BC637ED82", 3909.06),
+                new MessageAndAltitude("8F405B66585915E28714229EFD13", 5067.30),
+                new MessageAndAltitude("8D4B1A23586B8307F5B26CB39D00", 6217.92),
+                new MessageAndAltitude("8D4402F2587563156B9880D4D855", 6812.28),
+                new MessageAndAltitude("8D4402F25887D6AFD7A1A3769B45", 7962.90),
+                new MessageAndAltitude("8D347307589B66396B69C91DD7B1", 9128.76),
+                new MessageAndAltitude("8D4CA24558ADE68009DEF6E531E5", 10287.00),
+                new MessageAndAltitude("8D49328A59CB16A537939E3B583D", 12016.74),
+                new MessageAndAltitude("8D3B754358D311E57545B2100575", 12504.42));
+        for (var testValue : testValues) {
+            var message = RawMessage.of(100, HexFormat.of().parseHex(testValue.message));
+            assertNotNull(message);
+            var airbornePositionMessage = AirbornePositionMessage.of(message);
+            assertNotNull(airbornePositionMessage);
+            assertEquals(testValue.altitude, airbornePositionMessage.altitude(), 0.005);
+        }
+    }
+
+    // Code to generate the invalid messages used by the test below.
+    List<String> airbornePositionMessagesWithInvalidAltitude() {
+        var crcComputer = new Crc24(Crc24.GENERATOR);
+        var messages = new ArrayList<String>();
+
+        var byte0 = "8D";
+        var icaoAddress = "406666";
+        var payload = 0x580D1652395CBEL;
+        var altMask = ((1L << 12) - 1) << 36;
+        var invalidAlts = new long[]{0b000000000000, 0b101010000000, 0b100010000000};
+        for (var alt : invalidAlts) {
+            var corruptedPayload = payload & ~altMask | (alt & 0xFFF) << 36;
+            var messageWithoutCRC = byte0 + icaoAddress + "%014X".formatted(corruptedPayload);
+            var messageBytes = HexFormat.of().parseHex(messageWithoutCRC);
+            var crc = crcComputer.crc(messageBytes);
+            var message = messageWithoutCRC + "%06X".formatted(crc);
+            messages.add(message);
+        }
+        return messages;
     }
 
     @Test
-    void compactConstructorThrowsExceptionIfXOrYIsNotInRange() {
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 1.1, 0.7254638671875));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 0.6867904663085938, 1.1));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, -0.1, 0.7254638671875));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 0.6867904663085938, -0.1));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 0.6867904663085938, 1));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 1, -0.1));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 1, 1));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 0, 1));
-        assertThrows(IllegalArgumentException.class, () ->  new AirbornePositionMessage(75898000, new IcaoAddress("495299"), 10546.08d, 0, 1, 0));
-    }
-
-    @Test
-    public void AltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D,(byte) 0x39,(byte) 0x20,(byte) 0x35,(byte) 0x59, (byte) 0xB2,(byte) 0x25, (byte) 0xF0,(byte) 0x75,(byte) 0x50, (byte) 0xAD, (byte) 0xBE,(byte) 0x32, (byte) 0x8F};
-        AirbornePositionMessage expected = new AirbornePositionMessage(0, new IcaoAddress("392035"), 3474.72d, 1, 0.6575698852539062, 0.4848175048828125);
-        assertEquals(expected.altitude(), AirbornePositionMessage.of(RawMessage.of(0, bytes)).altitude(), 10e-5);
-    }
-    @Test
-    public void AnotherAltitudeComputerTestQis1(){    byte[] bytes = {(byte) 0x8D, (byte) 0xAE, 0x02, (byte) 0xC8, 0x58, 0x64, (byte) 0xA5, (byte) 0xF5, (byte) 0xDD, 0x49, 0x75, (byte) 0xA1, (byte) 0xA3, (byte) 0xF5};
-        AirbornePositionMessage expected = new AirbornePositionMessage(0, new IcaoAddress("AE02C8"), 7315.20d, 1, 0.6867904663085938, 0.7254638671875);
-        assertEquals(expected.altitude(), AirbornePositionMessage.of(new RawMessage(0, new ByteString(bytes))).altitude(), 10e-5);
+    void airbornePositionMessageOfReturnsNullWhenAltitudeIsInvalid() {
+        var messages = List.of(
+                "8D40666658000652395CBEB25722",
+                "8D40666658A80652395CBED10630",
+                "8D40666658880652395CBE7570E9");
+        for (var testValue : messages) {
+            var message = RawMessage.of(100, HexFormat.of().parseHex(testValue));
+            assertNotNull(message);
+            var airbornePositionMessage = AirbornePositionMessage.of(message);
+            assertNull(airbornePositionMessage);
+        }
     }
 }
