@@ -37,9 +37,10 @@ public class CprDecoder {
 
         { // calculate latitude
             int lat = (int) Math.rint(y0 * nLat[1] - y1 * nLat[0]); // this is a temporary value used to compute latZone0 and latZone1
-            int latZone = lat < 0 ? lat + nLat[mostRecent] : lat;
-            evenLat = widthLat[0] * (latZone + y0);
-            oddLat = widthLat[1] * (latZone + y1);
+            evenLat = widthLat[0] * ((lat < 0 ? lat + nLat[0] : lat) + y0);
+            oddLat = widthLat[1] * ((lat < 0 ? lat + nLat[1] : lat) + y1);
+            if (evenLat > 0.5) evenLat--; // if the latitude is greater than 90°, then it should be -90° + the latitude so one turn is subtracted
+            if (oddLat > 0.5) oddLat--; // if the latitude is greater than 90°, then it should be -90° + the latitude so one turn is subtracted
         }
 
         { // calculate longitude
@@ -55,6 +56,7 @@ public class CprDecoder {
             int longitude = (int) Math.rint(x0 * nLong[1] - x1 * nLong[0]);
             longitude = (longitude < 0 ? longitude + nLong[mostRecent] : longitude);
             actualLong = (nLong[0] == 1) ? ((mostRecent==0)?x0:x1) : (widthLong * (longitude + ((mostRecent==0)?x0:x1))); // if nLong is 1, then the longitude is completely determined by x0 or x1
+            if (actualLong > 0.5) actualLong--; //if the longitude is greater than 180°, then it should be 180° - the longitude so one turn is subtracted
         }
 
         return isValidData(actualLong, (mostRecent==0)?evenLat:oddLat);
