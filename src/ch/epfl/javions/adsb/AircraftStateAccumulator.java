@@ -10,7 +10,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;
     private AirbornePositionMessage lastEvenMessage;
     private AirbornePositionMessage lastOddMessage;
-    private AircraftState state;
+    private AircraftState state = new AircraftState();
 
     /**
      * Constructs a new AirCraftStateAccumulator object with the given state setter.
@@ -64,7 +64,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 state.setVelocity(avm.speed()); // TODO: 3/27/2023 check
                 state.setTrackOrHeading(avm.trackOrHeading()); // TODO: 3/27/2023 check
             }
-            default -> System.out.println("Other type of Messafge");
+            default -> System.out.println("Other type of Message");
         }
 
     }
