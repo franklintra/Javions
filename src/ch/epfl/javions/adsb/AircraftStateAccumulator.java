@@ -10,7 +10,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;
     private AirbornePositionMessage lastEvenMessage;
     private AirbornePositionMessage lastOddMessage;
-    private AircraftState state = new AircraftState();
+    private final AircraftState state = new AircraftState();
 
     /**
      * Constructs a new AirCraftStateAccumulator object with the given state setter.
@@ -91,7 +91,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
             return false; // TODO: 3/28/2023 check if this doesnt cause any issues in their tests
         }
         long diff = message.timeStampNs() - lastOppositeTimeStamp(message);
-        return diff <= 10_000_000_000L; // 10 seconds in nanoseconds
+        return diff <= 10e9; // 10 seconds in nanoseconds
     }
 
 

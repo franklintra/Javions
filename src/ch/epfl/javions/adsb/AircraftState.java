@@ -18,13 +18,11 @@ public class AircraftState implements AircraftStateSetter {
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         this.timeStampNs = timeStampNs;
-        System.out.println("LastMessageTimeStampNs: " + timeStampNs);
     }
 
     @Override
     public void setCategory(int category) {
         this.category = category;
-        System.out.println("Category: " + category);
     }
 
     @Override
@@ -42,18 +40,15 @@ public class AircraftState implements AircraftStateSetter {
     @Override
     public void setAltitude(double altitude) {
         this.altitude = altitude;
-        System.out.println("Altitude: " + altitude);
     }
 
     @Override
     public void setVelocity(double velocity) {
         this.velocity = velocity;
-        System.out.println("Velocity: " + velocity);
     }
 
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading = trackOrHeading;
-        System.out.println("TrackOrHeading: " + trackOrHeading);
     }
 }
