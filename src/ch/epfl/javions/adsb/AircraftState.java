@@ -8,7 +8,6 @@ import ch.epfl.javions.GeoPos;
  */
 @SuppressWarnings("all") // TODO: 30/03/2023: remove this once done testing
 public class AircraftState implements AircraftStateSetter {
-    //todo : remove this class once done testing
     private long timeStampNs;
     private int category;
     private CallSign callSign;
