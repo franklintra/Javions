@@ -7,8 +7,16 @@ import ch.epfl.javions.Bits;
  * @project Javions
  */
 public final class MessageParser {
+    /**
+     * This class is not instantiable hence the private constructor.
+     */
     private MessageParser() {}
 
+    /**
+     * Parses the given raw message into a message object if the message is of a known type.
+     * @param message the raw message to parse
+     * @return the parsed message or null if the message is of an unknown type
+     */
     public static Message parse(RawMessage message) {
         int typeCode = Bits.extractUInt(message.payload(), 51, 5);
         if (1 <= typeCode && typeCode <= 4) {
