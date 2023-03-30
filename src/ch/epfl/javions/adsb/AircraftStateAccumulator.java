@@ -10,7 +10,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;
     private AirbornePositionMessage lastEvenMessage;
     private AirbornePositionMessage lastOddMessage;
-    private AircraftState state = new AircraftState();
+    private final AircraftState state = new AircraftState();
 
     /**
      * Constructs a new AirCraftStateAccumulator object with the given state setter.
