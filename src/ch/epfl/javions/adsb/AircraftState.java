@@ -6,7 +6,7 @@ import ch.epfl.javions.GeoPos;
  * @author @franklintra
  * @project Javions
  */
-@SuppressWarnings("all") // TODO: 30/03/2023: remove this once done testing
+@SuppressWarnings("all")
 public class AircraftState implements AircraftStateSetter {
     private long timeStampNs;
     private int category;
@@ -28,13 +28,11 @@ public class AircraftState implements AircraftStateSetter {
     @Override
     public void setCallSign(CallSign callSign) {
         this.callSign = callSign;
-        System.out.println("CallSign: " + callSign);
     }
 
     @Override
     public void setPosition(GeoPos position) {
         this.position = position;
-        System.out.println("Position: " + position);
     }
 
     @Override

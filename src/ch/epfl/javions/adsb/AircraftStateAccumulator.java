@@ -6,7 +6,6 @@ package ch.epfl.javions.adsb;/*
  */
 
 public class AircraftStateAccumulator<T extends AircraftStateSetter> {
-
     private final T stateSetter;
     private AirbornePositionMessage lastEvenMessage;
     private AirbornePositionMessage lastOddMessage;
@@ -27,7 +26,6 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     /**
      * Returns the state of the aircraft.
-     *
      * @return the state of the aircraft
      */
     public T stateSetter() {
@@ -36,12 +34,10 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     /**
      * Updates the state of the aircraft with the given message.
-     *
      * @param message the message to update the state with
      */
     public void update(Message message) {
         state.setLastMessageTimeStampNs(message.timeStampNs());
-
 
         switch (message) {
             case AircraftIdentificationMessage aim -> {
@@ -61,12 +57,10 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                         state.setPosition(CprDecoder.decodePosition(lastEvenMessage.x(), lastEvenMessage.y(), lastOddMessage.x(), lastOddMessage.y(), apm.parity()));
                     }
                 }
-
-
             }
             case AirborneVelocityMessage avm -> {
-                state.setVelocity(avm.speed()); // TODO: 3/27/2023 check
-                state.setTrackOrHeading(avm.trackOrHeading()); // TODO: 3/27/2023 check
+                state.setVelocity(avm.speed());
+                state.setTrackOrHeading(avm.trackOrHeading());
             }
             default -> System.out.println("Other type of Message");
         }
@@ -75,11 +69,9 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     /**
      * Returns the last message with the opposite parity.
-     *
      * @param message the message to check
      * @return the last message with the opposite parity
      */
-
     private long lastOppositeTimeStamp(AirbornePositionMessage message) {
         if (message.parity() == 0) {
             return lastOddMessage != null ? lastOddMessage.timeStampNs() : 0L;
@@ -87,6 +79,4 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
             return lastEvenMessage != null ? lastEvenMessage.timeStampNs() : 0L;
         }
     }
-
-
 }

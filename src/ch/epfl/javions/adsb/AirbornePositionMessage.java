@@ -44,7 +44,6 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
             if ((mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
                     (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1)) {
-                System.err.println("Invalid value for mult100GrayCode");
                 return null;
             }
             // Swap 7 with 5

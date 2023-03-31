@@ -12,6 +12,18 @@ import java.util.Objects;
  * @project Javions
  */
 public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress, double speed, double trackOrHeading) implements Message {
+
+    private static final int SUBTYPE_DATA_START_BIT = 21;
+    private static final int SUBTYPE_START_BIT = 48;
+    private static final int SUBTYPE_SIZE = 3;
+    private static final int[] VALID_SUBTYPES = new int[]{1, 2, 3, 4};
+    private static final int[] SUBSONIC_SUBTYPES = new int[]{1, 3};
+    private static final int[] SUPERSONIC_SUBTYPES = new int[]{2, 4};
+    private static final int[] GROUND_SUBTYPES = new int[]{1, 2};
+    private static final int[] AIR_SUBTYPES = new int[]{3, 4};
+    private static final double SUBSONIC_SPEED = Units.Speed.KNOT;
+    private static final double SUPERSONIC_SPEED = Units.Speed.KNOT * 4;
+
     /**
      * Checks that the parameters are not null and that the time stamp is positive.
      * @param timeStampNs the time stamp in nanoseconds
@@ -30,13 +42,14 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the corresponding AirborneVelocityMessage
      */
     public static AirborneVelocityMessage of(RawMessage rawMessage) {
-        // the subType is an unsigned integer of 3 bits
-        int subType = (int) Integer.toUnsignedLong(Bits.extractUInt(rawMessage.payload(), 48, 3));
-        return switch (subType) {
-            case 1, 2 -> groundVelocity(rawMessage, subType);
-            case 3, 4 -> airVelocity(rawMessage, subType);
-            default -> null;
-        };
+        int subType = Bits.extractUInt(rawMessage.payload(), SUBTYPE_START_BIT, SUBTYPE_SIZE);
+        if (isSubtypeA(subType, GROUND_SUBTYPES)) {
+            return groundVelocity(rawMessage, subType);
+        }
+        if (isSubtypeA(subType, AIR_SUBTYPES)) {
+            return airVelocity(rawMessage, subType);
+        }
+        return null;
     }
 
     /**
@@ -47,10 +60,10 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the corresponding AirborneVelocityMessage
      */
     private static AirborneVelocityMessage groundVelocity(RawMessage m, int subType) {
-        int horizontalDirection = Bits.extractUInt(m.payload(), 21, 1) == 0 ? -1 : 1;
-        int verticalDirection = Bits.extractUInt(m.payload(), 10, 1) == 0 ? -1 : 1;
-        double eastWest = Bits.extractUInt(m.payload(), 11, 10) - 1;
-        double northSouth = Bits.extractUInt(m.payload(), 0, 10) - 1;
+        int horizontalDirection = Bits.extractUInt(m.payload(), 21 + SUBTYPE_DATA_START_BIT, 1) == 0 ? 1 : -1; // as on the unit circle : 1 to go up and -1 down
+        int verticalDirection = Bits.extractUInt(m.payload(), 10 + SUBTYPE_DATA_START_BIT, 1) == 0 ? 1 : -1; // as on the unit circle : 1 to go up and -1 down
+        double eastWest = Bits.extractUInt(m.payload(), 11 + SUBTYPE_DATA_START_BIT, 10) - 1;
+        double northSouth = Bits.extractUInt(m.payload(), SUBTYPE_DATA_START_BIT, 10) - 1;
         if (eastWest == -1 || northSouth == -1) {
             return null;
         }
@@ -69,12 +82,14 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the corresponding AirborneVelocityMessage
      */
     private static AirborneVelocityMessage airVelocity(RawMessage m, int subType) {
-        int SH = Bits.extractUInt(m.payload(), 21, 1);
+        int SH = Bits.extractUInt(m.payload(), 21+ SUBTYPE_DATA_START_BIT, 1);
         if (SH == 0) return null; // if SH is 0, the message is invalid
         // interpret the turn : Bits.extractUInt(m.payload(), 11, 10) as a unsigned integer
-        long turnValue = Integer.toUnsignedLong(Bits.extractUInt(m.payload(), 11, 10));
+        long turnValue = Bits.extractUInt(m.payload(), 11+ SUBTYPE_DATA_START_BIT, 10);
         double turn = Units.convertFrom(Math.scalb(turnValue, -10), Units.Angle.TURN); // divide by 1024 and convert to radian as specified in the standard
-        double speed = Bits.extractUInt(m.payload(), 0, 10);
+        double speed = Bits.extractUInt(m.payload(), SUBTYPE_DATA_START_BIT, 10);
+        if (speed == 0) return null; // if speed is 0, the message is invalid
+        speed--; // the speed is 1 less than the value
         return new AirborneVelocityMessage(m.timeStampNs(), m.icaoAddress(), speedInMeterPerSecond(speed, subType), turn);
     }
 
@@ -87,8 +102,11 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the calculated angle in radian
      */
     private static double getAngle(double x, double y) {
-        double angle = - (Math.atan2(y, x) - (Math.PI / 2)); // align angle with north and make it clockwise
-        return angle < 0 ? angle + 2*Math.PI : angle; // make sure angle is positive
+        // the valuers are passed as x and y instead of y and x because we want the complementary angle which is the angle between the vector and the north direction
+        // this is why we use atan2(x, y) instead of atan2(y, x) because symmetrically, atan2(y, x) would give the angle between the vector and the east direction
+        double angle = Math.atan2(x, y);
+        if (angle < 0) angle += Math.PI * 2; // if the angle is negative, we add 2*PI to get a positive angle
+        return angle;
     }
 
     /**
@@ -98,10 +116,22 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the speed in meter per second (m/s)
      */
     private static double speedInMeterPerSecond(double speed, int subType) {
-        return switch (subType) {
-            case 1, 3 -> Units.convertFrom(speed, Units.Speed.KNOT);
-            case 2, 4 -> Units.convertFrom(speed, 4*Units.Speed.KNOT);
-            default -> throw new IllegalArgumentException("Subtype must be 1 or 2");
-        };
+        Preconditions.checkArgument(isSubtypeA(subType, VALID_SUBTYPES));
+        if (isSubtypeA(subType, SUBSONIC_SUBTYPES)) return Units.convertFrom(speed, SUBSONIC_SPEED);
+        if (isSubtypeA(subType, SUPERSONIC_SUBTYPES)) return Units.convertFrom(speed, SUPERSONIC_SPEED);
+        throw new IllegalArgumentException("The subtype is not valid");
+    }
+
+    /**
+     * Checks if the given subtype is contained in the given subtypes. Used for cleaner code.
+     * @param subtype : the subtype to check
+     * @param subtypes : the subtypes of values
+     * @return true if the subtype is contained in the subtypes, false otherwise
+     */
+    public static boolean isSubtypeA(int subtype, int[] subtypes) {
+        for (int inBatch : subtypes) {
+            if (inBatch == subtype) return true;
+        }
+        return false;
     }
 }
