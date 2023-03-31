@@ -58,10 +58,9 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 if (lastEvenMessage != null && lastOddMessage != null) {
                     long diff = apm.timeStampNs() - (apm.parity() == 0 ? lastOddMessage.timeStampNs() : lastEvenMessage.timeStampNs());
                     if (diff <= 10e9) { // 10 seconds in nanoseconds
-                        state.setPosition(CprDecoder.decodePosition(apm.x(), apm.y(), lastEvenMessage.x(), lastEvenMessage.y(), apm.parity()));
+                        state.setPosition(CprDecoder.decodePosition(lastEvenMessage.x(), lastEvenMessage.y(), lastOddMessage.x(), lastOddMessage.y(), apm.parity()));
                     }
                 }
-
 
 
             }
