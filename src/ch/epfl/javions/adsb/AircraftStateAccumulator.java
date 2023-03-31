@@ -49,15 +49,20 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 state.setCallSign(aim.callSign());
             }
             case AirbornePositionMessage apm -> {
-                state.setAltitude(apm.altitude());
-                if (isPositionDetermined(apm)) {
-                    state.setPosition(CprDecoder.decodePosition(apm.x(), apm.y(), lastEvenMessage.x(), lastEvenMessage.y(), apm.parity())); // TODO: 3/28/2023 how to get position
-                }
                 if (apm.parity() == 0) {
                     lastEvenMessage = apm;
                 } else {
                     lastOddMessage = apm;
                 }
+                state.setAltitude(apm.altitude());
+                if (lastEvenMessage != null && lastOddMessage != null) {
+                    long diff = apm.timeStampNs() - (apm.parity() == 0 ? lastOddMessage.timeStampNs() : lastEvenMessage.timeStampNs());
+                    if (diff <= 10e9) { // 10 seconds in nanoseconds
+                        state.setPosition(CprDecoder.decodePosition(apm.x(), apm.y(), lastEvenMessage.x(), lastEvenMessage.y(), apm.parity()));
+                    }
+                }
+
+
 
             }
             case AirborneVelocityMessage avm -> {
@@ -69,29 +74,19 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     }
 
-
     /**
-     * Returns the time stamp of the last message of the opposite parity.
+     * Returns the last message with the opposite parity.
      *
      * @param message the message to check
-     * @return the time stamp of the last message of the opposite parity
+     * @return the last message with the opposite parity
      */
+
     private long lastOppositeTimeStamp(AirbornePositionMessage message) {
-        return message.parity() == 0 ? lastOddMessage.timeStampNs() : lastEvenMessage.timeStampNs();
-    }
-
-    /**
-     * Returns true if the position of the aircraft can be determined.
-     *
-     * @param message the message to check
-     * @return true if the position of the aircraft can be determined
-     */
-    private boolean isPositionDetermined(AirbornePositionMessage message) {
-        if (lastOddMessage == null && lastEvenMessage == null) {
-            return false; // TODO: 3/28/2023 check if this doesnt cause any issues in their tests
+        if (message.parity() == 0) {
+            return lastOddMessage != null ? lastOddMessage.timeStampNs() : 0L;
+        } else {
+            return lastEvenMessage != null ? lastEvenMessage.timeStampNs() : 0L;
         }
-        long diff = message.timeStampNs() - lastOppositeTimeStamp(message);
-        return diff <= 10e9; // 10 seconds in nanoseconds
     }
 
 

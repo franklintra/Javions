@@ -32,4 +32,15 @@ class AircraftStateAccumulatorTest {
             }
         }
     }
+
+    @Test
+    void constructorThrowsExceptionWhenZero() {
+        assertThrows(NullPointerException.class, () -> new AircraftStateAccumulator(null));
+    }
+
+//    @Test
+//    void stateSetterReturnsValidStateSetter() {
+//        AircraftStateAccumulator accumulator = new AircraftStateAccumulator(new AircraftState());
+//        assertEquals(accumulator.stateSetter(), new AircraftState());
+//    }
 }
