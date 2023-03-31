@@ -1,16 +1,10 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.Crc24;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HexFormat;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,14 +27,12 @@ class AircraftStateAccumulatorTest {
         }
     }
 
+    /**
+     * Tests that the constructor throws a NullPointerException when the state setter is null.
+     */
     @Test
     void constructorThrowsExceptionWhenZero() {
         assertThrows(NullPointerException.class, () -> new AircraftStateAccumulator(null));
     }
 
-//    @Test
-//    void stateSetterReturnsValidStateSetter() {
-//        AircraftStateAccumulator accumulator = new AircraftStateAccumulator(new AircraftState());
-//        assertEquals(accumulator.stateSetter(), new AircraftState());
-//    }
 }
