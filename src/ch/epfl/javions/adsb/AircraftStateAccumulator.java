@@ -9,7 +9,6 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;
     private AirbornePositionMessage lastEvenMessage;
     private AirbornePositionMessage lastOddMessage;
-    private final AircraftState state = new AircraftState();
 
     /**
      * Constructs a new AirCraftStateAccumulator object with the given state setter.
@@ -37,12 +36,12 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
      * @param message the message to update the state with
      */
     public void update(Message message) {
-        state.setLastMessageTimeStampNs(message.timeStampNs());
+        stateSetter.setLastMessageTimeStampNs(message.timeStampNs());
 
         switch (message) {
             case AircraftIdentificationMessage aim -> {
-                state.setCategory(aim.category());
-                state.setCallSign(aim.callSign());
+                stateSetter.setCategory(aim.category());
+                stateSetter.setCallSign(aim.callSign());
             }
             case AirbornePositionMessage apm -> {
                 if (apm.parity() == 0) {
@@ -50,17 +49,17 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 } else {
                     lastOddMessage = apm;
                 }
-                state.setAltitude(apm.altitude());
+                stateSetter.setAltitude(apm.altitude());
                 if (lastEvenMessage != null && lastOddMessage != null) {
                     long diff = apm.timeStampNs() - (apm.parity() == 0 ? lastOddMessage.timeStampNs() : lastEvenMessage.timeStampNs());
                     if (diff <= 10e9) { // 10 seconds in nanoseconds
-                        state.setPosition(CprDecoder.decodePosition(lastEvenMessage.x(), lastEvenMessage.y(), lastOddMessage.x(), lastOddMessage.y(), apm.parity()));
+                        stateSetter.setPosition(CprDecoder.decodePosition(lastEvenMessage.x(), lastEvenMessage.y(), lastOddMessage.x(), lastOddMessage.y(), apm.parity()));
                     }
                 }
             }
             case AirborneVelocityMessage avm -> {
-                state.setVelocity(avm.speed());
-                state.setTrackOrHeading(avm.trackOrHeading());
+                stateSetter.setVelocity(avm.speed());
+                stateSetter.setTrackOrHeading(avm.trackOrHeading());
             }
             default -> System.out.println("Other type of Message");
         }
