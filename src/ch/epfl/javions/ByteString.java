@@ -4,8 +4,8 @@ import java.util.HexFormat;
 import java.util.Objects;
 
 /**
- * @project Javions
  * @author @franklintra
+ * @project Javions
  */
 
 public final class ByteString {
@@ -14,10 +14,12 @@ public final class ByteString {
 
     /**
      * The constructor of the ByteString class
+     *
      * @param bytes the bytes to be stored in the byte description
      */
     public ByteString(byte[] bytes) {
-        this.data = bytes.clone();
+        data = new byte[bytes.length];
+        System.arraycopy(bytes, 0, data, 0, bytes.length); // This is to make sure that the byte array is immutable (the array is copied)
     }
 
     /**
@@ -38,11 +40,11 @@ public final class ByteString {
 
     /**
      * @param fromIndex the index of the first byte to be returned
-     * @param toIndex the index of the last byte to be returned
+     * @param toIndex   the index of the last byte to be returned
      * @return the bytes in the range [fromIndex, toIndex[
      */
     public long bytesInRange(int fromIndex, int toIndex) {
-        Preconditions.checkArgument(toIndex-fromIndex < 8);
+        Preconditions.checkArgument(toIndex - fromIndex < 8);
         Objects.checkFromToIndex(fromIndex, toIndex, data.length);
 
         byte[] bytes = new byte[toIndex - fromIndex];
@@ -61,7 +63,7 @@ public final class ByteString {
      * @throws IllegalArgumentException if the hex description is not valid
      */
     public static ByteString ofHexadecimalString(String hexString) {
-        Preconditions.checkArgument(hexString.length()%2 == 0);
+        Preconditions.checkArgument(hexString.length() % 2 == 0);
         if (!hexString.matches("[0-9a-fA-F]+")) {
             throw new NumberFormatException("Only hexadecimal characters are allowed");
         }
@@ -71,6 +73,7 @@ public final class ByteString {
 
     /**
      * Allow to use the byte description as a key in a hash map for example
+     *
      * @return : the hash code of the byte description
      */
     public int hashCode() {
@@ -79,6 +82,7 @@ public final class ByteString {
 
     /**
      * Allow the data to be printed in hexadecimal format
+     *
      * @return : the description representation of the byte description
      */
     public String toString() {
@@ -87,6 +91,7 @@ public final class ByteString {
 
     /**
      * Does a structural comparison of the two byte strings.
+     *
      * @param o: the object to compare to
      * @return : true if the two byte strings are equal, false otherwise
      */

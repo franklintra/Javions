@@ -13,7 +13,24 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity, double x, double y) implements Message {
+/**
+ * Represents an ADS-B airborne position message.
+ * This is a record to avoid boilerplate code.
+ *
+ * @param timeStampNs the time stamp of the message in nanoseconds
+ * @param icaoAddress the ICAO address of the aircraft
+ * @param altitude    the altitude of the aircraft in meters
+ * @param parity      the parity of the message
+ * @param x           the x coordinate of the aircraft in the ADS-B reference frame
+ * @param y           the y coordinate of the aircraft in the ADS-B reference frame
+ */
+public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity,
+                                      double x, double y) implements Message {
+    //fixme : need as many useful MAGIC_NUMBERS as possible (private static final constants)
+
+    /**
+     * Checks that all the arguments given are valid.
+     */
     public AirbornePositionMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
         Preconditions.checkArgument(parity == 0 || parity == 1);
@@ -23,7 +40,15 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         }
     }
 
+    /**
+     * If the raw message can be decoded as an airborne position message, returns the corresponding message as an object.
+     * Otherwise, returns null.
+     *
+     * @param rawMessage the raw message to decode
+     * @return the decoded message, or null if the message cannot be decoded
+     */
     public static AirbornePositionMessage of(RawMessage rawMessage) {
+        //fixme : try and get rid of mult100GrayCode and mult500GrayCode and replace them with a cleaner solution
         int Q = Bits.extractUInt(rawMessage.payload(), 40, 1);
         double altitude = 0;
         //getting 12 bits from index 36 of the 56 bits, then masking to remove but from index 4 from the right of the 12 bits
@@ -61,7 +86,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 } else if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 2 to 4
                     mult100GrayCode[0] = 1;
                     mult100GrayCode[2] = 0;
-                } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 to 1
+                } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 to 1 // fixme : this case is not reachable because there is an if return null above
                     mult100GrayCode[0] = 0;
                     mult100GrayCode[1] = 0;
                 } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 0) { // 4 to 2
@@ -87,21 +112,23 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
 
     /**
      * This function removes the bit at index i from the long x
+     *
      * @param x the long to remove the bit from
      * @param i the index of the bit to remove
      * @return the long with the bit removed
      */
-    private static long spliceOutBit(long x, int i) {
+    private static long spliceOutBit(long x, int i) { //fixme what is this for?
         long mask = ~(-1L << i);
         return (x & mask) | ((x >>> 1) & ~mask);
     }
 
     /**
      * Converts a gray code to decimal
+     *
      * @param grayCode the gray code to convert
      * @return the decimal value of the gray code
      */
-    private static int grayCodeToDecimal(int[] grayCode) {
+    private static int grayCodeToDecimal(int[] grayCode) { //fixme need a very precise documentation of input and output (is the array from left to right or right to left? and other)
         int result = 0;
         for (int i = 0; i < grayCode.length; i++) {
             if (i == 0) {
@@ -120,16 +147,17 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     }
 
     /**
-     * Unscrambles the bits in the payload
+     * Unscrambles the bits in the payload as per the ADS-B standard
+     *
      * @param rawMessage the raw message to unscramble
      * @return the unscrambled bits
      */
     private static int[] unscramble(RawMessage rawMessage) {
         int[] sortedBits = new int[12];
         HashMap<Integer, Integer> sortingTable = new HashMap<>();
-        int[] values = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
+        int[] values = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2}; // fixme: this needs to be a magic number or something
         for (int i = 0; i < values.length; i++) {
-            sortingTable.put(47 - i, values[i]);
+            sortingTable.put(47 - i, values[i]); // fixme: the 47 as well
         }
         for (Map.Entry<Integer, Integer> entry : sortingTable.entrySet()) {
             sortedBits[entry.getValue()] = Bits.extractUInt(rawMessage.payload(), entry.getKey(), 1);

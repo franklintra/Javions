@@ -5,7 +5,7 @@ import ch.epfl.javions.Preconditions;
 import java.util.regex.Pattern;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public record AircraftDescription(String description) {
@@ -13,6 +13,7 @@ public record AircraftDescription(String description) {
 
     /**
      * The constructor of the AircraftDescription class
+     *
      * @param description aircraft description
      * @throws IllegalArgumentException if the description is not valid
      */

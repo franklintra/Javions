@@ -17,18 +17,25 @@ public final class PowerComputer {
     private final int[] last8Samples = new int[8]; // this is the buffer that will contain the last 8 samples used to calculate the power
     private final int batchSize;
 
+    /**
+     * Creates a new PowerComputer object that will read from the given input stream
+     *
+     * @param stream    the input stream to read from
+     * @param batchSize the size of the batch of power samples to be calculated (must be a multiple of 8 and strictly greater than 0)
+     */
     public PowerComputer(InputStream stream, int batchSize) {
         Preconditions.checkArgument(batchSize > 0 && batchSize % 8 == 0);
         this.batchSize = batchSize;
-        this.decoder = new SamplesDecoder(stream, 2*batchSize);
-        this.sampleBuffer = new short[2*batchSize];
+        this.decoder = new SamplesDecoder(stream, 2 * batchSize);
+        this.sampleBuffer = new short[2 * batchSize];
     }
 
     /**
      * Reads a batch of samples from the input stream / necessary to calculate a batch of power samples
+     *
      * @param batch the array of shorts that will contain the samples
      * @return number of samples read and written to the batch
-     * @throws IOException if input or output error occurs
+     * @throws IOException              if input or output error occurs
      * @throws IllegalArgumentException if the size of the batch doesn't match the required size
      */
     public int readBatch(int[] batch) throws IOException {
@@ -38,19 +45,20 @@ public final class PowerComputer {
 
         for (int i = 0; i < read / 2; i++) {
             // turnover latest data in last8Samples
-            last8Samples[base8Mod(last8Index)] = sampleBuffer[2*i];
-            last8Samples[base8Mod(last8Index+1)] = sampleBuffer[2*i+1];
+            last8Samples[base8Mod(last8Index)] = sampleBuffer[2 * i];
+            last8Samples[base8Mod(last8Index + 1)] = sampleBuffer[2 * i + 1];
             int evenIndexes = last8Samples[base8Mod(last8Index - 6)] - last8Samples[base8Mod(last8Index - 4)] + last8Samples[base8Mod(last8Index - 2)] - last8Samples[base8Mod((last8Index))];
             int oddIndexes = last8Samples[base8Mod(last8Index - 5)] - last8Samples[base8Mod(last8Index - 3)] + last8Samples[base8Mod(last8Index - 1)] - last8Samples[base8Mod((last8Index + 1))];
             batch[i] = evenIndexes * evenIndexes + oddIndexes * oddIndexes;
             last8Index = Math.floorMod(last8Index + 2, 8);
         }
-        return read/2;
+        return read / 2;
     }
 
     /**
      * This method is used to calculate the modulus of a number with 8
      * In our case, we need to calculate the modulus of a number with 8, but the % operator in java gives the remainder instead of the modulus
+     *
      * @param index the number to calculate the modulus of
      * @return the modulus of the number base 8
      */
