@@ -1,6 +1,9 @@
 package ch.epfl.cs108;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,9 +32,9 @@ public final class Submit {
     // CONFIGURATION
     // -------------
     // Jeton du premier membre du groupe
-    private static final String TOKEN_1 = TOKENS.TOKEN_1;
+    private static final String TOKEN_1 = TOKENS.TOKEN_1();
     // Jeton du second membre (identique au premier pour les personnes travaillant seules)
-    private static final String TOKEN_2 = TOKENS.TOKEN_2;
+    private static final String TOKEN_2 = TOKENS.TOKEN_2();
     // -------------
 
     private static final String ZIP_ENTRY_NAME_PREFIX = "Javions/";
