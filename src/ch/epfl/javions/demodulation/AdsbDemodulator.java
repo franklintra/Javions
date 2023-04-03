@@ -11,6 +11,7 @@ import java.io.InputStream;
  * The demodulation is done using the power window method.
  */
 public final class AdsbDemodulator {
+    // The window size is the length of an ADS-B Message to be able to properly decode it
     private final static int WINDOW_SIZE = 1200;
     private final PowerWindow powerWindow; // the power window used to demodulate the ADS-B messages
 

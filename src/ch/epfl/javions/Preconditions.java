@@ -1,12 +1,13 @@
 package ch.epfl.javions;
 
 /**
- * @project Javions
  * @author @franklintra, @chukla
+ * @project Javions
  */
 
-public class Preconditions {
-    private Preconditions() {} // Prevents instantiation
+public final class Preconditions {
+    private Preconditions() {
+    } // Prevents instantiation
 
     /**
      * @param shouldBeTrue the condition to check

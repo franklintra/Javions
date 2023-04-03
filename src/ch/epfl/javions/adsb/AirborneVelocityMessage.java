@@ -11,24 +11,26 @@ import java.util.Objects;
  * @author @franklintra
  * @project Javions
  */
-public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress, double speed, double trackOrHeading) implements Message {
+public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress, double speed,
+                                      double trackOrHeading) implements Message {
 
     private static final int SUBTYPE_DATA_START_BIT = 21;
     private static final int SUBTYPE_START_BIT = 48;
     private static final int SUBTYPE_SIZE = 3;
-    private static final int[] VALID_SUBTYPES = new int[]{1, 2, 3, 4};
-    private static final int[] SUBSONIC_SUBTYPES = new int[]{1, 3};
-    private static final int[] SUPERSONIC_SUBTYPES = new int[]{2, 4};
-    private static final int[] GROUND_SUBTYPES = new int[]{1, 2};
-    private static final int[] AIR_SUBTYPES = new int[]{3, 4};
+    private static final int[] VALID_SUBTYPES = {1, 2, 3, 4};
+    private static final int[] SUBSONIC_SUBTYPES = {1, 3};
+    private static final int[] SUPERSONIC_SUBTYPES = {2, 4};
+    private static final int[] GROUND_SUBTYPES = {1, 2};
+    private static final int[] AIR_SUBTYPES = {3, 4};
     private static final double SUBSONIC_SPEED = Units.Speed.KNOT;
     private static final double SUPERSONIC_SPEED = Units.Speed.KNOT * 4;
 
     /**
      * Checks that the parameters are not null and that the time stamp is positive.
-     * @param timeStampNs the time stamp in nanoseconds
-     * @param icaoAddress the ICAO description of the aircraft
-     * @param speed the speed of the aircraft
+     *
+     * @param timeStampNs    the time stamp in nanoseconds
+     * @param icaoAddress    the ICAO description of the aircraft
+     * @param speed          the speed of the aircraft
      * @param trackOrHeading the track or heading of the aircraft
      */
     public AirborneVelocityMessage {
@@ -38,6 +40,7 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
 
     /**
      * Returns the AirborneVelocityMessage corresponding to the given raw message.
+     *
      * @param rawMessage the raw message
      * @return the corresponding AirborneVelocityMessage
      */
@@ -55,7 +58,8 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
     /**
      * Returns the AirborneVelocityMessage corresponding to the given raw message.
      * It decodes the speed and the angle of the aircraft for groundVelocity subType messages.
-     * @param m the raw message
+     *
+     * @param m       the raw message
      * @param subType the subType of the given message
      * @return the corresponding AirborneVelocityMessage
      */
@@ -77,15 +81,18 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
     /**
      * Returns the AirborneVelocityMessage corresponding to the given raw message.
      * It decodes the speed and the angle of the aircraft for airVelocity subType messages.
-     * @param m the raw message
+     *
+     * @param m       the raw message
      * @param subType the subType of the given message
      * @return the corresponding AirborneVelocityMessage
      */
     private static AirborneVelocityMessage airVelocity(RawMessage m, int subType) {
-        int SH = Bits.extractUInt(m.payload(), 21+ SUBTYPE_DATA_START_BIT, 1);
-        if (SH == 0) return null; // if SH is 0, the message is invalid
+        int SH_BIT = Bits.extractUInt(m.payload(), 21 + SUBTYPE_DATA_START_BIT, 1);
+        if (SH_BIT == 0) {
+            return null; // if SH_BIT is 0, the message is invalid
+        }
         // interpret the turn : Bits.extractUInt(m.payload(), 11, 10) as a unsigned integer
-        long turnValue = Bits.extractUInt(m.payload(), 11+ SUBTYPE_DATA_START_BIT, 10);
+        long turnValue = Bits.extractUInt(m.payload(), 11 + SUBTYPE_DATA_START_BIT, 10);
         double turn = Units.convertFrom(Math.scalb(turnValue, -10), Units.Angle.TURN); // divide by 1024 and convert to radian as specified in the standard
         double speed = Bits.extractUInt(m.payload(), SUBTYPE_DATA_START_BIT, 10);
         if (speed == 0) return null; // if speed is 0, the message is invalid
@@ -97,6 +104,7 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
      * Returns the angle in radian between the vector (x, y) and the north direction (0 radian).
      * The angle is clockwise and positive from 0 to 2*PI.
      * This method is used for the ground velocity message.
+     *
      * @param x the x value of the vector
      * @param y the y value of the vector
      * @return the calculated angle in radian
@@ -111,7 +119,8 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
 
     /**
      * Returns the speed in meter per second according to the subtype (units are different for each subtype).
-     * @param speed the speed in the unit specified by the subtype
+     *
+     * @param speed   the speed in the unit specified by the subtype
      * @param subType the subtype of the message
      * @return the speed in meter per second (m/s)
      */
@@ -124,7 +133,8 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
 
     /**
      * Checks if the given subtype is contained in the given subtypes. Used for cleaner code.
-     * @param subtype : the subtype to check
+     *
+     * @param subtype  : the subtype to check
      * @param subtypes : the subtypes of values
      * @return true if the subtype is contained in the subtypes, false otherwise
      */

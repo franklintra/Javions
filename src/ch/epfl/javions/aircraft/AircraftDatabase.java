@@ -2,7 +2,10 @@ package ch.epfl.javions.aircraft;
 
 //import jdk.internal.icu.impl.Punycode;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
@@ -17,6 +20,7 @@ public final class AircraftDatabase {
 
     /**
      * The constructor of the AircraftDatabase class
+     *
      * @param filename the name of the database file
      * @throws NullPointerException if the database file could not be read
      */
@@ -27,6 +31,7 @@ public final class AircraftDatabase {
 
     /**
      * Returns the aircraft data for the given ICAO description.
+     *
      * @param address the ICAO description of the aircraft
      * @return the aircraft data
      * @throws IOException if the database file could not be read
@@ -37,7 +42,7 @@ public final class AircraftDatabase {
             Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
 
             while (zipEntries.hasMoreElements()) {
-                nextZip :
+                nextZip:
                 try (
                         InputStreamReader inputStream = new InputStreamReader(zipFile.getInputStream(zipEntries.nextElement()));
                         BufferedReader bufferedReader = new BufferedReader(inputStream)
@@ -54,13 +59,14 @@ public final class AircraftDatabase {
                 }
             }
         } catch (IOException e) {
-            throw new IOException("Could not read database file: " + filename);
+            throw new IOException("Could not read database file: " + filename + " (" + e.getMessage() + ")", e);
         }
-       return null;
+        return null;
     }
 
     /**
      * Parses a line of the database file and returns the corresponding AircraftData object.
+     *
      * @param line the line to parse
      * @return the AircraftData object corresponding to the line
      */

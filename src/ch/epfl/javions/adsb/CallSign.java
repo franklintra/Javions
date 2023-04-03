@@ -13,11 +13,12 @@ public record CallSign(String string) {
 
     /**
      * Constructs a new CallSign object with the given description.
+     *
      * @param string a description describing the call sign
      * @throws IllegalArgumentException if the description is not valid according to the regex pattern
      */
     public CallSign {
-        Preconditions.checkArgument(REGEX.matcher(string).matches() || string.equals(""));
+        Preconditions.checkArgument(string.equals("") || REGEX.matcher(string).matches());
     }
 
     /**

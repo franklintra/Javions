@@ -1,19 +1,20 @@
 package ch.epfl.javions;
 
 /**
- * @project ${PROJECT_NAME}
  * @author @franklintra
+ * @project ${PROJECT_NAME}
  */
 
-public class Bits {
-    private Bits() {} // Prevents instantiation
+public final class Bits {
+    private Bits() {
+    } // Prevents instantiation
 
     /**
      * @param value the value to extract from
      * @param start the start index (inclusive)
-     * @param size the size of the range
+     * @param size  the size of the range
      * @return the extracted value
-     * @throws IllegalArgumentException if the size is invalid
+     * @throws IllegalArgumentException  if the size is invalid
      * @throws IndexOutOfBoundsException if the range is invalid
      */
     public static int extractUInt(long value, int start, int size) {
@@ -21,8 +22,8 @@ public class Bits {
         if (start < 0 || start + size > 64) {
             throw new IndexOutOfBoundsException("Invalid range: start=" + start + ", size=" + size);
         }
-        long mask = (1L << size) - 1;
-        return (int) ((value>>start) & mask);
+        final long mask = (1L << size) - 1;
+        return (int) ((value >> start) & mask);
     }
 
     /**

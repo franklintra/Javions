@@ -8,13 +8,15 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  * @author @franklintra
  * @project Javions
  */
-public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category, CallSign callSign) implements Message {
+public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category,
+                                            CallSign callSign) implements Message {
     /**
      * Checks that the parameters are not null and that the time stamp is positive.
+     *
      * @param timeStampNs the time stamp in nanoseconds
      * @param icaoAddress the ICAO description of the aircraft
-     * @param category the category of the aircraft
-     * @param callSign the call sign of the aircraft
+     * @param category    the category of the aircraft
+     * @param callSign    the call sign of the aircraft
      */
     public AircraftIdentificationMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
@@ -25,6 +27,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
 
     /**
      * Returns the AircraftIdentificationMessage corresponding to the given raw message if all the characters are valid, null otherwise.
+     *
      * @param rawMessage the raw message
      * @return the corresponding AircraftIdentificationMessage
      */
@@ -32,12 +35,12 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
         Preconditions.checkArgument(rawMessage.downLinkFormat() == 17);
         int category = (14 - (Bits.extractUInt(rawMessage.payload(), 51, 5)) << 4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
         StringBuilder callSignString = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 7; i >= 0; i--) {
             char ch = getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6));
             if (ch == '\uFFFD') {
                 return null;
             }
-            callSignString.insert(0, ch);
+            callSignString.append(ch);
         }
         CallSign callSign = new CallSign(callSignString.toString().stripTrailing());
         return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category, callSign);
@@ -46,6 +49,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
     /**
      * Returns the character corresponding to the given integer as per ADS-B specification.
      * This method is optimized using character arithmetic instead of using a table.
+     *
      * @param i the integer to convert to a character
      * @return the corresponding character or '\uFFFD' if the integer is not valid according to the ADS-B specification
      */

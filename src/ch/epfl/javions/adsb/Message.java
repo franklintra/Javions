@@ -8,6 +8,14 @@ import ch.epfl.javions.aircraft.IcaoAddress;
  */
 public interface Message {
     // The modifiers public and abstract are not explicitly written in the interface because all interface methods are public and abstract by default.
-    long timeStampNs(); // Returns the time stamp of the message.
-    IcaoAddress icaoAddress(); // Returns the ICAO description of the aircraft that sent the message.
+
+    /**
+     * @return the timeStampNs of the message in nanoseconds
+     */
+    long timeStampNs();
+
+    /**
+     * @return the icaoAddress of the aircraft that sent the message
+     */
+    IcaoAddress icaoAddress();
 }

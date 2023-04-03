@@ -18,7 +18,7 @@ public record AircraftDescription(String description) {
      * @throws IllegalArgumentException if the description is not valid
      */
     public AircraftDescription {
-        Preconditions.checkArgument(REGEX.matcher(description).matches() || description.equals(""));
+        Preconditions.checkArgument(description.equals("") || REGEX.matcher(description).matches());
     }
 
     /**

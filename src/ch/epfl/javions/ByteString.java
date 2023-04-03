@@ -47,12 +47,10 @@ public final class ByteString {
         Preconditions.checkArgument(toIndex - fromIndex < 8);
         Objects.checkFromToIndex(fromIndex, toIndex, data.length);
 
-        byte[] bytes = new byte[toIndex - fromIndex];
-        System.arraycopy(data, fromIndex, bytes, 0, toIndex - fromIndex);
         long result = 0;
-        for (byte b : bytes) {
-            result <<= 8;
-            result |= b & 0xFF;
+        for (int i = fromIndex; i < toIndex; i++) {
+            result <<= 8; // moving over the last byte calculated by one to have space for the next one
+            result |= data[i] & 0xFF; // appending the new byte to the end of result
         }
         return result;
     }
@@ -76,6 +74,7 @@ public final class ByteString {
      *
      * @return : the hash code of the byte description
      */
+    @Override
     public int hashCode() {
         return java.util.Arrays.hashCode(data);
     }
@@ -85,6 +84,7 @@ public final class ByteString {
      *
      * @return : the description representation of the byte description
      */
+    @Override
     public String toString() {
         return HEX_FORMAT.formatHex(data);
     }

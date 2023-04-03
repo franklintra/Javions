@@ -13,11 +13,12 @@ public record AircraftTypeDesignator(String typeDesignator) {
 
     /**
      * The constructor of the AircraftTypeDesignator class
+     *
      * @param typeDesignator ICAO aircraft type designator
      * @throws IllegalArgumentException if the type designator is not valid
      */
     public AircraftTypeDesignator {
-        Preconditions.checkArgument(REGEX.matcher(typeDesignator).matches() || typeDesignator.equals(""));
+        Preconditions.checkArgument(typeDesignator.equals("") || REGEX.matcher(typeDesignator).matches());
     }
 
     /**

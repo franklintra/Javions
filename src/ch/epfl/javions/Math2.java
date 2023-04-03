@@ -1,21 +1,22 @@
 package ch.epfl.javions;
 
 /**
- * @project Javions
  * @author @franklintra
+ * @project Javions
  */
 
 public final class Math2 {
-    private Math2() {} // Prevents instantiation
+    private Math2() {
+    } // Prevents instantiation
 
     /**
-     * @param min inclusive
+     * @param min   inclusive
      * @param value to clamp
-     * @param max inclusive
+     * @param max   inclusive
      * @return the clamped value
      * @throws IllegalArgumentException if the bounds are not valid.
      */
-    public static int clamp (int min, int value, int max) throws IllegalArgumentException {
+    public static int clamp(int min, int value, int max) {
         Preconditions.checkArgument(min <= max);
         return Math.max(min, Math.min(value, max));
     }
@@ -25,6 +26,6 @@ public final class Math2 {
      * @return the hyperbolic arc sine of x
      */
     public static double asinh(double x) {
-        return Math.log(x + Math.sqrt(x*x + 1));
+        return Math.log(x + Math.sqrt(x * x + 1));
     }
 }

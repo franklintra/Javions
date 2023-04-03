@@ -6,14 +6,17 @@ package ch.epfl.javions;
  * @project Javions
  */
 public final class Crc24 {
-    public static final int GENERATOR = 0xFFF409; // This is a default generator used to generate the CRC
+    //This is the default generator used to generate the CRC (it has to be given by the user upon construction with new Crc24(Crc24.GENERATOR))
+    public static final int GENERATOR = 0xFFF409;
     // This is the table used to optimize the algorithm (see instruction set 2.4.4). It was generated using the crc_bitwise and buildTable methods.
-    private static int[] buildTable = new int[256];
-    public static int generator = 0xFFF409; // This is the generator used to generate the CRC given by the user
+    private final int[] buildTable;
+    // This is the generator used to generate the CRC given by the user
+    private static int generator = 0xFFF409;
 
 
     /**
      * This constructor builds the table for the given generator to use in the optimized algorithm
+     *
      * @param generator the generator to use
      */
     public Crc24(int generator) {
@@ -23,6 +26,7 @@ public final class Crc24 {
 
     /**
      * This returns the crc of a byte array using a table (optimized version or unoptimized according to config (optimized variable)).
+     *
      * @param bytes the bytes to calculate the crc for
      * @return the crc
      */
@@ -37,7 +41,8 @@ public final class Crc24 {
 
     /**
      * This returns the crc of a byte array using the bitwise algorithm. This is not optimized but is used to build the table.
-     * @param bytes the bytes to calculate the crc for
+     *
+     * @param bytes     the bytes to calculate the crc for
      * @param generator the generator to use
      * @return the crc
      */
@@ -57,6 +62,7 @@ public final class Crc24 {
 
     /**
      * Build the table for the given generator to use in the optimized algorithm
+     *
      * @return the table
      */
     private static int[] buildTable() {

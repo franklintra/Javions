@@ -18,7 +18,7 @@ public final class PowerWindow {
     private final int windowSize;
     private final int[] window; //we will consider the window as a circular array
     private long windowOldestIndex; // this is the index of the oldest sample in the window
-    private byte batchIndex = 0; // this is used to alternate between the even and odd batch (alternates between 0 and 1 hence the byte type)
+    private byte batchIndex; // this is used to alternate between the even and odd batch (alternates between 0 and 1 hence the byte type)
     private int samplesCalculated; // this is used to determine whether the window is full or not (if we have reached the end of the stream)
 
     /**
@@ -76,6 +76,7 @@ public final class PowerWindow {
     /**
      * Advances the window by one sample by reading it from the buffer (either the even or odd window)
      * and reading it from the stream if we reached the end of the current buffer
+     *
      * @throws IOException if the stream cannot be read / if the window is full
      */
     public void advance() throws IOException {
@@ -107,6 +108,7 @@ public final class PowerWindow {
     /**
      * This method is used to read a batch of samples from the stream. It is used to fill the even and odd window according to which batch was read last.
      * It is also used to alternate between the even and odd window by updating the batchIndex.
+     *
      * @throws IOException if the stream cannot be read
      */
     private void readBatch() throws IOException {

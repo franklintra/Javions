@@ -53,7 +53,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         double altitude = 0;
         //getting 12 bits from index 36 of the 56 bits, then masking to remove but from index 4 from the right of the 12 bits
         //within rawmessage index 1, we take out bytes 4 to 10, then extract 12 bites starting from index 36
-        if (Q == 1) {
+        if (Q == 1) { // todo : maybe replace with a switch statement
             long alt = Bits.extractUInt(rawMessage.payload(), 36, 12);
             long extractedBits = spliceOutBit(alt, 4);
             altitude = (extractedBits * 25) - 1000;
@@ -117,8 +117,8 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param i the index of the bit to remove
      * @return the long with the bit removed
      */
-    private static long spliceOutBit(long x, int i) { //fixme what is this for?
-        long mask = ~(-1L << i);
+    private static long spliceOutBit(long x, int i) { //fixme what is this for? + i is always 4 why ?
+        final long mask = ~(-1L << i);
         return (x & mask) | ((x >>> 1) & ~mask);
     }
 
