@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - 'releases/*'
+env:
+   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
 
 jobs:
   qodana:
