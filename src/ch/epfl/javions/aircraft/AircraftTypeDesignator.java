@@ -23,7 +23,7 @@ public record AircraftTypeDesignator(String typeDesignator) {
     /**
      * @return the type designator of the aircraft as a description
      */
-    public String typeDesignator() {
+    public String string() {
         return typeDesignator;
     }
 }

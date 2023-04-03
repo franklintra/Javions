@@ -23,7 +23,7 @@ public record AircraftRegistration(String registration) {
     /**
      * @return the description of the aircraft as a description
      */
-    public String registration() {
+    public String string() {
         return registration;
     }
 }

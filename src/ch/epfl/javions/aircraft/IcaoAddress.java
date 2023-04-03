@@ -18,7 +18,7 @@ public record IcaoAddress(String icaoAddress) {
     /**
      * @return the ICAO description of the aircraft as a description
      */
-    public String icaoAddress() {
+    public String string() {
         return icaoAddress;
     }
 }

@@ -23,7 +23,7 @@ public record AircraftDescription(String description) {
     /**
      * @return the description of the aircraft as a description
      */
-    public String description() {
+    public String string() {
         return description;
     }
 }
