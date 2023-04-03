@@ -1,0 +1,52 @@
+name: "qodana.recommended"
+
+groups:
+  - groupId: IncludedPaths # Qodana can run any inspections, but these groups are tested and monitored by Qodana team
+    groups:
+      - "category:Java"
+      - "category:JVM languages"
+      - "category:RegExp"
+      
+  - groupId: Excluded
+    groups:
+      - "ALL"
+      - "!IncludedPaths"
+      - "category:Java/Java language level migration aids" # Migration aids - only on explicit request, due to possible spam
+      - "category:JavaScript and TypeScript/ES2015 migration aids" # Migration aids - only on explicit request, due to possible spam
+      - "category:Roslyn/General" # Exclude Roslyn checks, since they are flaky now
+      - "category:C#/Spelling Issues" # Flaky spelling inspections
+      - "GLOBAL" # Qodana doesn't run global inspections by default, due to significant time consumption
+      - "severity:INFORMATION" # Qodana doesn't run "invisible" and "technical" in IDE inspections
+      - "severity:TEXT ATTRIBUTES" # Qodana don't run "invisible" and "technical" in IDE inspections
+      - "ExcludedInspections"
+
+  - groupId: ExcludedInspections # list of inspections disabled by specific reason
+    inspections:
+      - Annotator # substituted by JavaAnnotator in sanity
+      - KotlinAnnotator # works in "sanity" inspections
+      - JavaAnnotator # works in "sanity" inspections
+      - SyntaxError # should work on sanity level
+      - RedundantSuppression # not a problem actually
+      - Since15 #Detects wrong language level. Should work on sanity.
+      - JavadocBlankLines # Questionable. Spam on mockito, RxJava and other projects.
+
+
+inspections:
+  - group: Excluded
+    enabled: false
+  - group: ALL
+    ignore:
+      - "vendor/**"
+      - "build/**"
+      - "buildSrc/**"
+      - "builds/**"
+      - "dist/**"
+      - "tests/**"
+      - "tools/**"
+      - "vendor/**"
+      - "**.test.ts"
+      - "scope#$gitignore" # $gitignore scope available only in qodana execution
+      - "scope#test:*..*"
+      - "scope#file:buildSrc/*"
+  - inspection: JavadocReference
+    severity: WARNING # It has default ERROR severity. It's understandable for unresolved references in javadocs for editor but not on CI.
