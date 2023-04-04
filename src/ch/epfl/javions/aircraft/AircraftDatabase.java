@@ -49,10 +49,11 @@ public final class AircraftDatabase {
                 ) {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
-                        if ((line.split(",", -1)[0]).compareTo(address.icaoAddress()) > 0) {
+                        int comparison = line.substring(0, IcaoAddress.LENGTH).compareTo(address.icaoAddress());
+                        if (comparison > 0) {
                             break nextZip; //Interrupts the loop and go to the next zip file if the current description is greater than the description we're looking for (because the database is sorted)
                         }
-                        if (line.startsWith(address.icaoAddress())) {
+                        if (comparison == 0) {
                             return parseAircraftData(line);
                         }
                     }

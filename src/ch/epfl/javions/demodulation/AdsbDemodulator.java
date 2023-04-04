@@ -90,7 +90,7 @@ public final class AdsbDemodulator {
      * @param i the index of the byte
      * @return the i-th byte that can be decoded from the ADS-B message
      */
-    private int getByte(int i) {
+    private byte getByte(int i) {
         byte b = 0;
         for (int j = 0; j < 8; j++) {
             b = (byte) (b << 1);
@@ -107,7 +107,7 @@ public final class AdsbDemodulator {
     private byte[] getAllBytes() {
         byte[] bytes = new byte[14];
         for (int i = 0; i < 14; i++) {
-            bytes[i] = (byte) getByte(i);
+            bytes[i] = getByte(i);
         }
         return bytes;
     }

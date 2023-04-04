@@ -9,7 +9,10 @@ import java.util.regex.Pattern;
  * @project Javions
  */
 public record IcaoAddress(String icaoAddress) {
-    private static final Pattern REGEX = Pattern.compile("[0-9A-F]{6}");
+    // This constant is used to check that the ICAO address is valid and to extract the ICAO address from the file more easily
+    // as it is always 6 characters long.
+    public static final int LENGTH = 6;
+    private static final Pattern REGEX = Pattern.compile("[0-9A-F]{%s}".formatted(LENGTH));
 
     public IcaoAddress {
         Preconditions.checkArgument(REGEX.matcher(icaoAddress).matches());
