@@ -46,7 +46,7 @@ public final class Crc24 {
      * @param generator the generator to use
      * @return the crc
      */
-    private static int crc_bitwise(byte[] bytes, int generator) {
+    private static int crcBitwise(byte[] bytes, int generator) {
         int crc = 0;
         for (byte b : bytes) {
             crc ^= (b & 0xff) << 16;
@@ -69,7 +69,7 @@ public final class Crc24 {
         int[] table = new int[256];
         //use crc_bitwise to build the table
         for (int i = 0; i < 256; i++) {
-            table[i] = crc_bitwise(new byte[]{(byte) i}, generator);
+            table[i] = crcBitwise(new byte[]{(byte) i}, generator);
         }
         return table;
     }

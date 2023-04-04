@@ -18,7 +18,7 @@ public record AircraftTypeDesignator(String typeDesignator) {
      * @throws IllegalArgumentException if the type designator is not valid
      */
     public AircraftTypeDesignator {
-        Preconditions.checkArgument(typeDesignator.equals("") || REGEX.matcher(typeDesignator).matches());
+        Preconditions.checkArgument("".equals(typeDesignator) || REGEX.matcher(typeDesignator).matches());
     }
 
     /**

@@ -44,7 +44,7 @@ public final class CprDecoder {
         int nLong = numberOfLongitudeZones(mostRecent == 0 ? currentMessageLat : otherMessageLat); // the number of longitude zones for even messages (odd value is even - 1)
         double currentMessageLong = normalizeT32Angle(longitudeCalculator(x0, x1, nLong, mostRecent)); //if the longitude is greater than 180°, then it should be 180° - the longitude so one turn is subtracted
 
-        return isValidData(currentMessageLong, currentMessageLat);
+        return checkValidityAndReturn(currentMessageLong, currentMessageLat);
     }
 
     /**
@@ -54,7 +54,7 @@ public final class CprDecoder {
      * @param latitude  : latitude in turn
      * @return a GeoPos object with rounded values of T32 longitude and latitude if the given latitude and longitude are valid, null otherwise
      */
-    private static GeoPos isValidData(double longitude, double latitude) {
+    private static GeoPos checkValidityAndReturn(double longitude, double latitude) {
         if (GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32)))) {
             return new GeoPos(
                     (int) Math.rint(Units.convert(longitude, Units.Angle.TURN, Units.Angle.T32)),

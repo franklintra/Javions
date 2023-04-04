@@ -84,9 +84,9 @@ public final class PowerWindow {
             readBatch();
         }
         if (batchIndex % 2 == 0) {
-            window[baseWindowMod(windowOldestIndex)] = evenWindow[(int) ((windowOldestIndex) % (BATCH_SIZE))];
+            window[baseWindowMod(windowOldestIndex)] = evenWindow[(int) (windowOldestIndex % BATCH_SIZE)];
         } else {
-            window[baseWindowMod(windowOldestIndex)] = oddWindow[(int) ((windowOldestIndex) % BATCH_SIZE)];
+            window[baseWindowMod(windowOldestIndex)] = oddWindow[(int) (windowOldestIndex % BATCH_SIZE)];
         }
         windowOldestIndex++;
     }
@@ -122,12 +122,13 @@ public final class PowerWindow {
     }
 
     /**
-     * This method is used to calculate the modulus of a number with the size of the window
+     * This method is used to calculate the modulus of a number with the size of the window.
+     * It casts the number to an int to use it directly as an index in the window array.
      *
      * @param index the number to calculate the modulus of
      * @return the modulus of the number base windowSize
      */
     private int baseWindowMod(long index) {
-        return Math.floorMod(index, windowSize);
+        return (int) (index % windowSize);
     }
 }

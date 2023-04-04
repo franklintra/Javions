@@ -36,9 +36,11 @@ public final class AdsbDemodulator {
         RawMessage message = null;
         int previous = 0; // this is used to compare the current power with the previous power
         while (powerWindow.isFull()) {
-            if (sigmaP(0) >= previous && sigmaP(0) >= sigmaP(1)) { // this check that the current power is a local maximum
-                if (sigmaP(0) >= 2 * sigmaV()) { // this checks the necessary condition found in the ADS-B documentation
-                    if ((getBitAt(0) * 16 + getBitAt(1) * 8 + getBitAt(2) * 4 + getBitAt(3) * 2 + getBitAt(4)) == 17) { // this checks that the df is 17
+            // The DF is calculated like this instead of (getByte(0) & 0xFF) >> 3; because of huge performance gains (25% over all the tests)
+            int DF = (getBitAt(0) * 16 + getBitAt(1) * 8 + getBitAt(2) * 4 + getBitAt(3) * 2 + getBitAt(4)); //this is the DF of the message.
+            if (DF == 17) { // first check that the Downlink Format is 17
+                if (sigmaP(0) >= previous && sigmaP(0) >= sigmaP(1)) { // this check that the current power is a local maximum
+                    if (sigmaP(0) >= 2 * sigmaV()) { // this checks the necessary condition found in the ADS-B documentation
                         message = RawMessage.of(powerWindow.position() * 100, getAllBytes());
                         if (message != null) {
                             powerWindow.advanceBy(WINDOW_SIZE);
@@ -88,11 +90,11 @@ public final class AdsbDemodulator {
      * @param i the index of the byte
      * @return the i-th byte that can be decoded from the ADS-B message
      */
-    private byte getByte(int i) {
+    private int getByte(int i) {
         byte b = 0;
         for (int j = 0; j < 8; j++) {
             b = (byte) (b << 1);
-            b = (byte) (b + getBitAt(i * 8 + j));
+            b = (byte) (b | getBitAt(i * 8 + j));
         }
         return b;
     }
@@ -105,7 +107,7 @@ public final class AdsbDemodulator {
     private byte[] getAllBytes() {
         byte[] bytes = new byte[14];
         for (int i = 0; i < 14; i++) {
-            bytes[i] = getByte(i);
+            bytes[i] = (byte) getByte(i);
         }
         return bytes;
     }
