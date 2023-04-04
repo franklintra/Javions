@@ -38,31 +38,20 @@ public final class CprDecoder {
         double currentMessageLat = normalizeT32Angle(latitudeCalculator(y0, y1, mostRecent));
         double otherMessageLat = normalizeT32Angle(latitudeCalculator(y0, y1, 1 - mostRecent));
 
-        if (numberOfLongitudeZones(currentMessageLat) != numberOfLongitudeZones(otherMessageLat)) {
-            return null; // if the two values are not equal, then the plane has crossed a longitude zone
+        if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(currentMessageLat, Units.Angle.TURN, Units.Angle.T32)))
+                || numberOfLongitudeZones(currentMessageLat) != numberOfLongitudeZones(otherMessageLat)) {
+            return null;
         }
+
         int nLong = numberOfLongitudeZones(mostRecent == 0 ? currentMessageLat : otherMessageLat); // the number of longitude zones for even messages (odd value is even - 1)
         double currentMessageLong = normalizeT32Angle(longitudeCalculator(x0, x1, nLong, mostRecent)); //if the longitude is greater than 180°, then it should be 180° - the longitude so one turn is subtracted
 
-        return checkValidityAndReturn(currentMessageLong, currentMessageLat);
+        return new GeoPos(
+                (int) Math.rint(Units.convert(currentMessageLong, Units.Angle.TURN, Units.Angle.T32)),
+                (int) Math.rint(Units.convert(currentMessageLat, Units.Angle.TURN, Units.Angle.T32))
+        );
     }
 
-    /**
-     * Checks if the given latitude and longitude are valid and returns a GeoPos object if they are with rounded values of T32 longitude and latitude.
-     *
-     * @param longitude : longitude in turn
-     * @param latitude  : latitude in turn
-     * @return a GeoPos object with rounded values of T32 longitude and latitude if the given latitude and longitude are valid, null otherwise
-     */
-    private static GeoPos checkValidityAndReturn(double longitude, double latitude) {
-        if (GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32)))) {
-            return new GeoPos(
-                    (int) Math.rint(Units.convert(longitude, Units.Angle.TURN, Units.Angle.T32)),
-                    (int) Math.rint(Units.convert(latitude, Units.Angle.TURN, Units.Angle.T32))
-            );
-        }
-        return null;
-    }
 
     /**
      * Calculates the latitude in turn from the given y0 and y1 values and the given index.

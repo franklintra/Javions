@@ -33,15 +33,14 @@ public final class AdsbDemodulator {
      * @throws IOException if an error occurs while reading the stream
      */
     public RawMessage nextMessage() throws IOException {
-        RawMessage message = null;
-        int previous = 0; // this is used to compare the current power with the previous power
+        int previousPower = 0; // this is used to compare the current power with the previous power
         while (powerWindow.isFull()) {
             // The DF is calculated like this instead of (getByte(0) & 0xFF) >> 3; because of huge performance gains (25% over all the tests)
             int DF = (getBitAt(0) * 16 + getBitAt(1) * 8 + getBitAt(2) * 4 + getBitAt(3) * 2 + getBitAt(4)); //this is the DF of the message.
             if (DF == 17) { // first check that the Downlink Format is 17
-                if (sigmaP(0) >= previous && sigmaP(0) >= sigmaP(1)) { // this check that the current power is a local maximum
+                if (sigmaP(0) >= previousPower && sigmaP(0) >= sigmaP(1)) { // this check that the current power is a local maximum
                     if (sigmaP(0) >= 2 * sigmaV()) { // this checks the necessary condition found in the ADS-B documentation
-                        message = RawMessage.of(powerWindow.position() * 100, getAllBytes());
+                        RawMessage message = RawMessage.of(powerWindow.position() * 100, getAllBytes());
                         if (message != null) {
                             powerWindow.advanceBy(WINDOW_SIZE);
                             return message;
@@ -49,10 +48,10 @@ public final class AdsbDemodulator {
                     }
                 }
             }
-            previous = sigmaP(0);
+            previousPower = sigmaP(0);
             powerWindow.advance();
         }
-        return message;
+        return null;
     }
 
     /**
