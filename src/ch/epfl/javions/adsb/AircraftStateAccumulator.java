@@ -7,8 +7,8 @@ package ch.epfl.javions.adsb;/*
 
 public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;
-    private AirbornePositionMessage lastEvenMessage;
-    private AirbornePositionMessage lastOddMessage;
+    // This is a buffer of size two where the even messages are stored at index 0 and the odd messages are stored at index 1.
+    private final AirbornePositionMessage[] lastMessages = new AirbornePositionMessage[2];
 
     /**
      * Constructs a new AirCraftStateAccumulator object with the given state setter.
@@ -25,6 +25,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     /**
      * Returns the state of the aircraft.
+     *
      * @return the state of the aircraft
      */
     public T stateSetter() {
@@ -33,6 +34,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     /**
      * Updates the state of the aircraft with the given message.
+     *
      * @param message the message to update the state with
      */
     public void update(Message message) {
@@ -44,16 +46,12 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setCallSign(aim.callSign());
             }
             case AirbornePositionMessage apm -> {
-                if (apm.parity() == 0) {
-                    lastEvenMessage = apm;
-                } else {
-                    lastOddMessage = apm;
-                }
+                lastMessages[apm.parity()] = apm;
                 stateSetter.setAltitude(apm.altitude());
-                if (lastEvenMessage != null && lastOddMessage != null) {
-                    long diff = apm.timeStampNs() - (apm.parity() == 0 ? lastOddMessage.timeStampNs() : lastEvenMessage.timeStampNs());
+                if (lastMessages[0] != null && lastMessages[1] != null) {
+                    long diff = apm.timeStampNs() - lastMessages[1 - apm.parity()].timeStampNs();
                     if (diff <= 10e9) { // 10 seconds in nanoseconds
-                        stateSetter.setPosition(CprDecoder.decodePosition(lastEvenMessage.x(), lastEvenMessage.y(), lastOddMessage.x(), lastOddMessage.y(), apm.parity()));
+                        stateSetter.setPosition(CprDecoder.decodePosition(lastMessages[0].x(), lastMessages[0].y(), lastMessages[1].x(), lastMessages[1].y(), apm.parity()));
                     }
                 }
             }
@@ -64,18 +62,5 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
             default -> System.out.println("Other type of Message");
         }
 
-    }
-
-    /**
-     * Returns the last message with the opposite parity.
-     * @param message the message to check
-     * @return the last message with the opposite parity
-     */
-    private long lastOppositeTimeStamp(AirbornePositionMessage message) {
-        if (message.parity() == 0) {
-            return lastOddMessage != null ? lastOddMessage.timeStampNs() : 0L;
-        } else {
-            return lastEvenMessage != null ? lastEvenMessage.timeStampNs() : 0L;
-        }
     }
 }
