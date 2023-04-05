@@ -51,6 +51,9 @@
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>
+                    <excludes>
+                        <exclude>**/cs108/Submit.java</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -73,6 +76,9 @@
                 <version>3.0.0-M6</version>
                 <configuration>
                     <argLine>--enable-preview</argLine>
+                    <excludes>
+                        <exclude>**/cs108/Submit.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
