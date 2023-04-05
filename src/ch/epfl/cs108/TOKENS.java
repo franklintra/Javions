@@ -12,10 +12,10 @@ public final class TOKENS {
     } // Prevents instantiation
 
     public static String TOKEN_1() {
-        return "";
+        return System.getenv("TOKEN1");
     }
 
     public static String TOKEN_2() {
-        return "";
+        return System.getenv("TOKEN2");
     }
 }
