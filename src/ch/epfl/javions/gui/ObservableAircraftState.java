@@ -1,6 +1,7 @@
 package ch.epfl.javions.gui;/*
 /**
- * @author @chukla
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
  * @project Javions
  */
 
