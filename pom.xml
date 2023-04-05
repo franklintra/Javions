@@ -45,15 +45,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.11.0</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>
-                    <excludes>
-                        <exclude>**/cs108/Submit.java</exclude>
-                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -67,12 +64,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M6</version>
+                <version>3.0.0</version>
                 <configuration>
                     <argLine>--enable-preview</argLine>
-                    <excludes>
-                        <exclude>**/cs108/Submit.java</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
