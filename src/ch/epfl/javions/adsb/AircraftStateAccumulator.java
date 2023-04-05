@@ -5,6 +5,8 @@ package ch.epfl.javions.adsb;/*
  * @project Javions
  */
 
+import ch.epfl.javions.GeoPos;
+
 public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;
     // This is a buffer of size two where the even messages are stored at index 0 and the odd messages are stored at index 1.
@@ -51,7 +53,10 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 if (lastMessages[0] != null && lastMessages[1] != null) {
                     long diff = apm.timeStampNs() - lastMessages[1 - apm.parity()].timeStampNs();
                     if (diff <= 10e9) { // 10 seconds in nanoseconds
-                        stateSetter.setPosition(CprDecoder.decodePosition(lastMessages[0].x(), lastMessages[0].y(), lastMessages[1].x(), lastMessages[1].y(), apm.parity()));
+                        GeoPos pos = CprDecoder.decodePosition(lastMessages[0].x(), lastMessages[0].y(), lastMessages[1].x(), lastMessages[1].y(), apm.parity());
+                        if (pos != null) {
+                            stateSetter.setPosition(pos);
+                        }
                     }
                 }
             }
