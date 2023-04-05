@@ -5,7 +5,9 @@ import ch.epfl.javions.adsb.RawMessage;
 import java.io.IOException;
 import java.io.InputStream;
 
+
 /**
+ * @author @franklintra (362694)
  * This class is used to demodulate ADS-B messages from a stream of samples.
  * It doesn't return specific types of messages, but rather the raw messages that it finds in the stream.
  * The demodulation is done using the power window method.
@@ -35,9 +37,7 @@ public final class AdsbDemodulator {
     public RawMessage nextMessage() throws IOException {
         int previousPower = 0; // this is used to compare the current power with the previous power
         while (powerWindow.isFull()) {
-            // The DF is calculated like this instead of (getByte(0) & 0xFF) >> 3; because of huge performance gains (25% over all the tests)
-            int DF = (getBitAt(0) * 16 + getBitAt(1) * 8 + getBitAt(2) * 4 + getBitAt(3) * 2 + getBitAt(4)); //this is the DF of the message.
-            if (DF == 17) { // first check that the Downlink Format is 17
+            if (DF() == 17) { // first check that the Downlink Format is 17
                 if (sigmaP(0) >= previousPower && sigmaP(0) >= sigmaP(1)) { // this check that the current power is a local maximum
                     if (sigmaP(0) >= 2 * sigmaV()) { // this checks the necessary condition found in the ADS-B documentation
                         RawMessage message = RawMessage.of(powerWindow.position() * 100, getAllBytes());
@@ -72,7 +72,18 @@ public final class AdsbDemodulator {
     }
 
     /**
+     * The DF is calculated like this instead of (getByte(0) & 0xFF) >> 3; because of huge performance gains (~25% over all the tests)
+     * It is also much faster to calculate it this way then decoding the whole message and using the message.downLinkFormat method (2s gains out of 4s)
+     *
+     * @return the DF of the ADS-B message
+     */
+    private int DF() {
+        return getBitAt(0) * 16 + getBitAt(1) * 8 + getBitAt(2) * 4 + getBitAt(3) * 2 + getBitAt(4); //this is the DF of the message.
+    }
+
+    /**
      * This method returns the i-th bit that can be decoded from the ADS-B message
+     * The 80 + 10i and 85 + 10i come from the instruction set. As they are only used in this method we chose not to implement class constants
      *
      * @param i the index of the bit
      * @return the i-th bit that can be decoded from the ADS-B message
@@ -91,7 +102,7 @@ public final class AdsbDemodulator {
      */
     private byte getByte(int i) {
         byte b = 0;
-        for (int j = 0; j < 8; j++) {
+        for (int j = 0; j < Byte.SIZE; j++) {
             b = (byte) (b << 1);
             b = (byte) (b | getBitAt(i * 8 + j));
         }
@@ -104,8 +115,8 @@ public final class AdsbDemodulator {
      * @return all the bytes that can be decoded from the ADS-B message
      */
     private byte[] getAllBytes() {
-        byte[] bytes = new byte[14];
-        for (int i = 0; i < 14; i++) {
+        byte[] bytes = new byte[RawMessage.LENGTH];
+        for (int i = 0; i < RawMessage.LENGTH; i++) {
             bytes[i] = getByte(i);
         }
         return bytes;

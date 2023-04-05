@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress, double speed,

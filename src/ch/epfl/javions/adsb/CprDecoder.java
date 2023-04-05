@@ -5,15 +5,15 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public final class CprDecoder {
     //these values never change so they are declared as class constants to be used in the static methods
     // the number of latitude zones for even and odd messages
-    private static final int[] N_LATS = {60, 59};
-    // the width of each of these latitude zones
-    private static final double[] WIDTH_LATS = {1d / N_LATS[0], 1d / N_LATS[1]};
+    private static final int[] NUMBER_OF_LATITUDE_ZONES = {60, 59};
+    // the width of each of these latitude zones for even and odd messages
+    private static final double[] WIDTH_OF_LATITUDE_ZONES = {1d / NUMBER_OF_LATITUDE_ZONES[0], 1d / NUMBER_OF_LATITUDE_ZONES[1]};
 
     /**
      * This class is not meant to be instantiated. Hence, the constructor is private.
@@ -35,20 +35,20 @@ public final class CprDecoder {
     public static GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
         Preconditions.checkArgument(mostRecent == 0 || mostRecent == 1);
         //need to calculate both latitudes because they are used to calculate nLong and check that the plane doesn't cross a longitude zone (rare case but still)
-        double currentMessageLat = normalizeT32Angle(latitudeCalculator(y0, y1, mostRecent));
-        double otherMessageLat = normalizeT32Angle(latitudeCalculator(y0, y1, 1 - mostRecent));
+        double currentMessageLatitude = normalizeT32Angle(latitudeCalculator(y0, y1, mostRecent));
+        double otherMessageLatitude = normalizeT32Angle(latitudeCalculator(y0, y1, 1 - mostRecent));
 
-        if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(currentMessageLat, Units.Angle.TURN, Units.Angle.T32)))
-                || numberOfLongitudeZones(currentMessageLat) != numberOfLongitudeZones(otherMessageLat)) {
+        if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(currentMessageLatitude, Units.Angle.TURN, Units.Angle.T32)))
+                || numberOfLongitudeZones(currentMessageLatitude) != numberOfLongitudeZones(otherMessageLatitude)) {
             return null;
         }
 
-        int nLong = numberOfLongitudeZones(mostRecent == 0 ? currentMessageLat : otherMessageLat); // the number of longitude zones for even messages (odd value is even - 1)
+        int nLong = numberOfLongitudeZones(mostRecent == 0 ? currentMessageLatitude : otherMessageLatitude); // the number of longitude zones for even messages (odd value is even - 1)
         double currentMessageLong = normalizeT32Angle(longitudeCalculator(x0, x1, nLong, mostRecent)); //if the longitude is greater than 180°, then it should be 180° - the longitude so one turn is subtracted
 
         return new GeoPos(
                 (int) Math.rint(Units.convert(currentMessageLong, Units.Angle.TURN, Units.Angle.T32)),
-                (int) Math.rint(Units.convert(currentMessageLat, Units.Angle.TURN, Units.Angle.T32))
+                (int) Math.rint(Units.convert(currentMessageLatitude, Units.Angle.TURN, Units.Angle.T32))
         );
     }
 
@@ -63,27 +63,28 @@ public final class CprDecoder {
      * @return the latitude in turn
      */
     private static double latitudeCalculator(double y0, double y1, int calcIndex) {
-        int lat = (int) Math.rint(y0 * N_LATS[1] - y1 * N_LATS[0]); // this is a temporary value used to compute latZone0 and latZone1
-        double actualY = calcIndex == 0 ? y0 : y1; // choose between y0 and y1 depending on calcIndex
-        return WIDTH_LATS[calcIndex] * ((lat < 0 ? lat + N_LATS[calcIndex] : lat) + actualY);
+        int lat = (int) Math.rint(y0 * NUMBER_OF_LATITUDE_ZONES[1] - y1 * NUMBER_OF_LATITUDE_ZONES[0]); // this is a temporary value used to compute latZone0 and latZone1
+        double currentMessageY = (calcIndex == 0) ? y0 : y1; // choose between y0 and y1 depending on calcIndex
+        return WIDTH_OF_LATITUDE_ZONES[calcIndex] * ((lat < 0 ? lat + NUMBER_OF_LATITUDE_ZONES[calcIndex] : lat) + currentMessageY);
     }
 
     /**
      * Calculates the longitude in turn from the given x0 and x1 values and the given index.
      *
-     * @param nLong     : the number of longitude zones for even messages
-     * @param x0        : local longitude in turn of the even message
-     * @param x1        : local longitude in turn of the odd message
-     * @param calcIndex : 0 if the longitude is calculated from x0, 1 if the longitude is calculated from x1
+     * @param numberOfEvenLongitudeZones : the number of longitude zones for even messages
+     * @param x0                         : local longitude in turn of the even message
+     * @param x1                         : local longitude in turn of the odd message
+     * @param calcIndex                  : 0 if the longitude is calculated from x0, 1 if the longitude is calculated from x1
      * @return the longitude in turn
      */
-    private static double longitudeCalculator(double x0, double x1, int nLong, int calcIndex) {
-        int[] nLongValues = {nLong, nLong - 1};
-        double widthLong = 1d / nLongValues[calcIndex];
-        int longitude = (int) Math.rint(x0 * nLongValues[1] - x1 * nLongValues[0]);
-        longitude = (longitude < 0 ? longitude + nLongValues[calcIndex] : longitude);
-        double X = calcIndex == 0 ? x0 : x1;
-        return (nLongValues[0] == 1) ? X : (widthLong * (longitude + X)); // if nLong is 1, then the longitude is completely determined by x0 or x1
+    private static double longitudeCalculator(double x0, double x1, int numberOfEvenLongitudeZones, int calcIndex) {
+        int[] numberOfLongitudeZones = {numberOfEvenLongitudeZones, numberOfEvenLongitudeZones - 1};
+        double widthOfLongitudeZones = 1d / numberOfLongitudeZones[calcIndex];
+        int longitude = (int) Math.rint(x0 * numberOfLongitudeZones[1] - x1 * numberOfLongitudeZones[0]);
+        longitude = (longitude < 0 ? longitude + numberOfLongitudeZones[calcIndex] : longitude);
+        double currentMessageX = calcIndex == 0 ? x0 : x1;
+        // if numberOfEvenLongitudeZones is 1, then the longitude is completely determined by x0 or x1
+        return (numberOfLongitudeZones[0] == 1) ? currentMessageX : (widthOfLongitudeZones * (longitude + currentMessageX));
     }
 
 
@@ -95,7 +96,11 @@ public final class CprDecoder {
      */
     private static int numberOfLongitudeZones(double lat) {
         //the following formulas are both taken from the ADS-B specification
-        double A = Math.acos(1 - (1 - Math.cos(Math.PI * 2 * WIDTH_LATS[0])) / Math.pow(Math.cos(Units.convert(lat, Units.Angle.TURN, Units.Angle.RADIAN)), 2));
+        double A = Math.acos(1 -
+                (1 - Math.cos(Math.PI * 2 * WIDTH_OF_LATITUDE_ZONES[0]))
+                        /
+                        Math.pow(Math.cos(Units.convert(lat, Units.Angle.TURN, Units.Angle.RADIAN)), 2)
+        );
         return (Double.isNaN(A) ? 1 : (int) Math.floor((Math.PI * 2) / A));
     }
 

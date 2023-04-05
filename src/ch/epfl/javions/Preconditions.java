@@ -1,7 +1,8 @@
 package ch.epfl.javions;
 
 /**
- * @author @franklintra, @chukla
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
  * @project Javions
  */
 

@@ -4,7 +4,7 @@ package ch.epfl.cs108;
  * This class contains the tokens pushing to the EPFL's servers.
  * It doesn't matter if the tokens are uploaded to GitHub as they are only valid for a week.
  *
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public final class TOKENS {

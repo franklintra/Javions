@@ -1,9 +1,4 @@
-package ch.epfl.javions.adsb;/*
-
-/**
- * @project Javions
- * @author @chukla
- */
+package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.Preconditions;
@@ -13,17 +8,12 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
- * Represents an ADS-B airborne position message.
- * This is a record to avoid boilerplate code.
- *
- * @param timeStampNs the time stamp of the message in nanoseconds
- * @param icaoAddress the ICAO address of the aircraft
- * @param altitude    the altitude of the aircraft in meters
- * @param parity      the parity of the message
- * @param x           the x coordinate of the aircraft in the ADS-B reference frame
- * @param y           the y coordinate of the aircraft in the ADS-B reference frame
+ * @author @chukla (357550)
+ * @project Javions
  */
+
 public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity,
                                       double x, double y) implements Message {
     // Number of bits used to encode the altitude
@@ -34,7 +24,16 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     private static final int ALT_INDEX_START = 47;
 
     /**
-     * Checks that all the arguments given are valid.
+     * Represents an ADS-B airborne position message.
+     * This is a record to avoid boilerplate code.
+     * Checks that the arguments are valid.
+     *
+     * @param timeStampNs the time stamp of the message in nanoseconds
+     * @param icaoAddress the ICAO address of the aircraft
+     * @param altitude    the altitude of the aircraft in meters
+     * @param parity      the parity of the message
+     * @param x           the x coordinate of the aircraft in the ADS-B reference frame
+     * @param y           the y coordinate of the aircraft in the ADS-B reference frame
      */
     public AirbornePositionMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
@@ -104,11 +103,11 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     }
 
     /**
-     Mirrors the given 3-bit gray code of a multiple of 100
-     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
-     @return an integer array representing the mirrored 3-bit gray code
+     * Mirrors the given 3-bit gray code of a multiple of 100
+     *
+     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
      */
-    private static int[] changeMult100GrayCode(int[] mult100GrayCode) {
+    private static void changeMult100GrayCode(int[] mult100GrayCode) {
         if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 to 5
             mult100GrayCode[0] = 1;
             mult100GrayCode[1] = 1;
@@ -122,14 +121,14 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
             mult100GrayCode[0] = 0;
             mult100GrayCode[2] = 1;
         }
-        return mult100GrayCode;
     }
 
     /**
-     Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
-     An invalid gray code is one that represents 0, 5, or 6 in decimal.
-     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
-     @return true if the given gray code is invalid, false otherwise
+     * Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
+     * An invalid gray code is one that represents 0, 5, or 6 in decimal.
+     *
+     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
+     * @return true if the given gray code is invalid, false otherwise
      */
     private static boolean checkInvalidityGrayCode(int[] mult100GrayCode) {
         // 0 5 6 are invalid

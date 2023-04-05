@@ -5,7 +5,8 @@ import ch.epfl.javions.Preconditions;
 import java.util.regex.Pattern;
 
 /**
- * @author @franklintra, @chukla
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
  * @project Javions
  */
 public record AircraftRegistration(String registration) {
@@ -13,6 +14,7 @@ public record AircraftRegistration(String registration) {
 
     /**
      * The constructor of the AircraftRegistration class
+     *
      * @param registration ICAO aircraft description
      * @throws IllegalArgumentException if the description is not valid
      */

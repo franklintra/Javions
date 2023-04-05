@@ -1,8 +1,8 @@
 package ch.epfl.javions;
 
 /**
- * @author @franklintra
- * @author @chukla
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
  * @project Javions
  */
 public final class Crc24 {
@@ -11,7 +11,7 @@ public final class Crc24 {
     // This is the table used to optimize the algorithm (see instruction set 2.4.4). It was generated using the crc_bitwise and buildTable methods.
     private final int[] buildTable;
     // This is the generator used to generate the CRC given by the user
-    private static int generator = 0xFFF409;
+    private final int generator;
 
 
     /**
@@ -20,7 +20,7 @@ public final class Crc24 {
      * @param generator the generator to use
      */
     public Crc24(int generator) {
-        Crc24.generator = generator;
+        this.generator = generator;
         buildTable = buildTable();
     }
 
@@ -46,7 +46,7 @@ public final class Crc24 {
      * @param generator the generator to use
      * @return the crc
      */
-    private static int crcBitwise(int generator, byte... bytes) {
+    private int crcBitwise(int generator, byte... bytes) {
         int crc = 0;
         for (byte b : bytes) {
             crc ^= (b & 0xff) << 16;
@@ -65,7 +65,7 @@ public final class Crc24 {
      *
      * @return the table
      */
-    private static int[] buildTable() {
+    private int[] buildTable() {
         int[] table = new int[256];
         //use crc_bitwise to build the table
         for (int i = 0; i < 256; i++) {

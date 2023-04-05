@@ -5,7 +5,8 @@ import ch.epfl.javions.Preconditions;
 import java.util.regex.Pattern;
 
 /**
- * @author @franklintra, @chukla
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
  * @project Javions
  */
 public record AircraftTypeDesignator(String typeDesignator) {

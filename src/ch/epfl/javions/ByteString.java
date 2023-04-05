@@ -4,7 +4,7 @@ import java.util.HexFormat;
 import java.util.Objects;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 
@@ -35,7 +35,7 @@ public final class ByteString {
      */
     public int byteAt(int index) {
         Objects.checkIndex(index, data.length);
-        return data[index] & 0xFF; // This is to make sure that the byte is unsigned
+        return data[index] & 0xFF;
     }
 
     /**
@@ -50,7 +50,7 @@ public final class ByteString {
         long result = 0;
         for (int i = fromIndex; i < toIndex; i++) {
             result <<= 8; // moving over the last byte calculated by one to have space for the next one
-            result |= data[i] & 0xFF; // appending the new byte to the end of result
+            result |= byteAt(i); // appending the new byte to the end of result
         }
         return result;
     }

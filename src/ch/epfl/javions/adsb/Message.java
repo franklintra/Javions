@@ -3,7 +3,7 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public interface Message {

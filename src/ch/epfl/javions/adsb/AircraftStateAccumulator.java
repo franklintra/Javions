@@ -1,11 +1,11 @@
-package ch.epfl.javions.adsb;/*
-
-/**
- * @author @chukla
- * @project Javions
- */
+package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.GeoPos;
+
+/**
+ * @author @chukla (357550)
+ * @project Javions
+ */
 
 public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final T stateSetter;

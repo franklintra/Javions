@@ -5,7 +5,7 @@ import ch.epfl.javions.Preconditions;
 import java.util.regex.Pattern;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public record IcaoAddress(String icaoAddress) {

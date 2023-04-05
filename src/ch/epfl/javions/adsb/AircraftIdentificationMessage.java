@@ -5,11 +5,18 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category,
                                             CallSign callSign) implements Message {
+
+    private static final int CHAR_LENGTH_ENCODED = 6;
+    private static final int LETTERS_LOWER_BOUND = 1;
+    public static final int LETTERS_UPPER_BOUND = 26;
+    private static final int NUMBERS_LOWER_BOUND = 48;
+    private static final int NUMBERS_UPPER_BOUND = 57;
+
     /**
      * Checks that the parameters are not null and that the time stamp is positive.
      *
@@ -34,9 +41,11 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         Preconditions.checkArgument(rawMessage.downLinkFormat() == 17);
         StringBuilder callSignString = new StringBuilder();
-        for (int i = 7; i >= 0; i--) {
-            char ch = getChar(Bits.extractUInt(rawMessage.payload(), i * 6, 6));
-            if (ch == '\uFFFD') {
+        //this loop goes from 42 to 0, 6 by 6, to ensure we decode the characters in order (and use the .append method with the String Builder).
+        //the most significant bits contain the characters on the left
+        for (int i = 42; i >= 0; i = i - CHAR_LENGTH_ENCODED) {
+            Character ch = getChar(Bits.extractUInt(rawMessage.payload(), i, CHAR_LENGTH_ENCODED));
+            if (ch == null) {
                 return null;
             }
             callSignString.append(ch);
@@ -48,20 +57,21 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
 
     /**
      * Returns the character corresponding to the given integer as per ADS-B specification.
-     * This method is optimized using character arithmetic instead of using a table.
+     * This method is optimized using character arithmetic instead of using a switch table.
      *
      * @param i the integer to convert to a character
      * @return the corresponding character or '\uFFFD' if the integer is not valid according to the ADS-B specification
      */
-    private static char getChar(int i) {
-        if (i >= 1 && i <= 26) {
+    private static Character getChar(int i) {
+        int SPACE_INTEGER = 32;
+        if (LETTERS_LOWER_BOUND <= i && i <= LETTERS_UPPER_BOUND) {
             return (char) ('A' + i - 1);
-        } else if (i >= 48 && i <= 57) {
+        } else if (NUMBERS_LOWER_BOUND <= i && i <= NUMBERS_UPPER_BOUND) {
             return (char) ('0' + i - 48);
-        } else if (i == 32) {
+        } else if (i == SPACE_INTEGER) {
             return ' ';
         } else {
-            return '\uFFFD'; // '\uFFFD' for error handling (invalid character)
+            return null;
         }
     }
 }

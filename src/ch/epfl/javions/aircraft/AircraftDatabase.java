@@ -12,7 +12,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * @author @franklintra, @chukla
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
  * @project Javions
  */
 public final class AircraftDatabase {
@@ -40,15 +41,17 @@ public final class AircraftDatabase {
         Objects.requireNonNull(address);
         try (ZipFile zipFile = new ZipFile(new File(filename))) {
             Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-
             while (zipEntries.hasMoreElements()) {
                 nextZip:
                 try (
-                        InputStreamReader inputStream = new InputStreamReader(zipFile.getInputStream(zipEntries.nextElement()));
-                        BufferedReader bufferedReader = new BufferedReader(inputStream)
+                        BufferedReader file = new BufferedReader(new InputStreamReader(
+                                zipFile.getInputStream(
+                                        zipEntries.nextElement()
+                                )
+                        ))
                 ) {
                     String line;
-                    while ((line = bufferedReader.readLine()) != null) {
+                    while ((line = file.readLine()) != null) {
                         int comparison = line.substring(0, IcaoAddress.LENGTH).compareTo(address.icaoAddress());
                         if (comparison > 0) {
                             break nextZip; //Interrupts the loop and go to the next zip file if the current description is greater than the description we're looking for (because the database is sorted)

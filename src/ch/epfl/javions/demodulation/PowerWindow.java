@@ -6,8 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * @author @franklintra
- * @author @chukla
+ * @author @franklintra (362694)
  * @project Javions
  */
 public final class PowerWindow {
@@ -17,7 +16,7 @@ public final class PowerWindow {
     private final int[] oddWindow;
     private final int windowSize;
     private final int[] window; //we will consider the window as a circular array
-    private long windowOldestIndex; // this is the index of the oldest sample in the window
+    private int windowOldestIndex; // this is the index of the oldest sample in the window
     private byte batchIndex; // this is used to alternate between the even and odd batch (alternates between 0 and 1 hence the byte type)
     private int samplesCalculated; // this is used to determine whether the window is full or not (if we have reached the end of the stream)
 
@@ -84,9 +83,9 @@ public final class PowerWindow {
             readBatch();
         }
         if (batchIndex % 2 == 0) {
-            window[baseWindowMod(windowOldestIndex)] = evenWindow[(int) (windowOldestIndex % BATCH_SIZE)];
+            window[baseWindowMod(windowOldestIndex)] = evenWindow[windowOldestIndex % BATCH_SIZE];
         } else {
-            window[baseWindowMod(windowOldestIndex)] = oddWindow[(int) (windowOldestIndex % BATCH_SIZE)];
+            window[baseWindowMod(windowOldestIndex)] = oddWindow[windowOldestIndex % BATCH_SIZE];
         }
         windowOldestIndex++;
     }
@@ -123,12 +122,11 @@ public final class PowerWindow {
 
     /**
      * This method is used to calculate the modulus of a number with the size of the window.
-     * It casts the number to an int to use it directly as an index in the window array.
      *
      * @param index the number to calculate the modulus of
      * @return the modulus of the number base windowSize
      */
-    private int baseWindowMod(long index) {
-        return (int) (index % windowSize);
+    private int baseWindowMod(int index) {
+        return index % windowSize;
     }
 }

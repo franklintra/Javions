@@ -6,8 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * @author @franklintra
- * @author @chukla
+ * @author @franklintra (362694)
  * @project Javions
  */
 

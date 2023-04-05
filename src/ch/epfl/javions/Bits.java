@@ -1,7 +1,7 @@
 package ch.epfl.javions;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project ${PROJECT_NAME}
  */
 
@@ -18,8 +18,8 @@ public final class Bits {
      * @throws IndexOutOfBoundsException if the range is invalid
      */
     public static int extractUInt(long value, int start, int size) {
-        Preconditions.checkArgument(size > 0 && size < 32);
-        if (start < 0 || start + size > 64) {
+        Preconditions.checkArgument(0 < size && size < Integer.SIZE);
+        if (start < 0 || start + size > Long.SIZE) {
             throw new IndexOutOfBoundsException("Invalid range: start=" + start + ", size=" + size);
         }
         final long mask = (1L << size) - 1;
@@ -35,7 +35,7 @@ public final class Bits {
      * @throws IndexOutOfBoundsException if the index is negative or greater than or equal to 64
      */
     public static boolean testBit(long value, int index) {
-        if (index < 0 || index >= 64) {
+        if (index < 0 || index >= Long.SIZE) {
             throw new IndexOutOfBoundsException("Invalid index: " + index);
         }
         return (value & (1L << index)) != 0;

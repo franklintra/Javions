@@ -7,12 +7,14 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 /**
- * @author @chukla
+ * @author @chukla (357550)
  * @project Javions
  */
 public record RawMessage(long timeStampNs, ByteString bytes) {
     public static final int LENGTH = 14; // length of ADS-B message in bytes
     private static final int DF = 17; // downlink format of known-type ADS-B message
+    private static final int PAYLOAD_START_BYTE = 4;
+    private static final int PAYLOAD_END_BYTE = 11;
 
     public RawMessage {
         Preconditions.checkArgument(timeStampNs >= 0 && bytes.size() == LENGTH);
@@ -67,7 +69,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     public IcaoAddress icaoAddress() {
         // extract the 24-bit ICAO address from the message (byte 1 to byte 3 inclusive)
         String address = Long.toHexString(bytes.bytesInRange(1, 4)).toUpperCase();
-        // pad with zeros to 6 characters if necessary
+        // pad with zeros to 6 characters if necessary in case the ICAO address encoded is ABC3 for exemple it's meant to be 00ABC3
         address = "000000".substring(address.length()) + address;
         return new IcaoAddress(address);
     }
@@ -79,7 +81,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public long payload() {
         // extract the 56-bit payload from the message (byte 4 to byte 10 inclusive)
-        return bytes.bytesInRange(4, 11);
+        return bytes.bytesInRange(PAYLOAD_START_BYTE, PAYLOAD_END_BYTE);
     }
 
     /**

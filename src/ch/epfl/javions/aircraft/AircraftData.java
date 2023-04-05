@@ -3,16 +3,18 @@ package ch.epfl.javions.aircraft;
 import java.util.Objects;
 
 /**
- * @author @franklintra, @chukla
+ * @author @chukla (357550)
  * @project Javions
  */
-public record AircraftData(AircraftRegistration registration, AircraftTypeDesignator typeDesignator, String model, AircraftDescription description, WakeTurbulenceCategory wakeTurbulenceCategory) {
+public record AircraftData(AircraftRegistration registration, AircraftTypeDesignator typeDesignator, String model,
+                           AircraftDescription description, WakeTurbulenceCategory wakeTurbulenceCategory) {
     /**
      * Constructs a new AircraftData object with the given parameters.
-     * @param registration ICAO aircraft description
-     * @param typeDesignator ICAO aircraft type designator
-     * @param model aircraft model
-     * @param description aircraft description
+     *
+     * @param registration           ICAO aircraft description
+     * @param typeDesignator         ICAO aircraft type designator
+     * @param model                  aircraft model
+     * @param description            aircraft description
      * @param wakeTurbulenceCategory aircraft wake turbulence category
      */
     public AircraftData {

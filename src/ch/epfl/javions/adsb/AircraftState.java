@@ -3,7 +3,7 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.GeoPos;
 
 /**
- * @author @franklintra
+ * @author @franklintra (362694)
  * @project Javions
  */
 @SuppressWarnings("all")
@@ -15,6 +15,7 @@ public class AircraftState implements AircraftStateSetter {
     private double altitude;
     private double velocity;
     private double trackOrHeading;
+
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         this.timeStampNs = timeStampNs;
