@@ -113,11 +113,11 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     }
 
     /**
-     Mirrors the given 3-bit gray code of a multiple of 100
-     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
-     @return an integer array representing the mirrored 3-bit gray code
+     * Mirrors the given 3-bit gray code of a multiple of 100
+     *
+     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
      */
-    private static int[] changeMult100GrayCode(int[] mult100GrayCode) {
+    private static void changeMult100GrayCode(int[] mult100GrayCode) {
         // mirrors the gray code by interpreting it in its decimal values
         if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 mirrored to 5
             mult100GrayCode[0] = 1;
@@ -132,14 +132,14 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
             mult100GrayCode[0] = 0;
             mult100GrayCode[2] = 1;
         }
-        return mult100GrayCode;
     }
 
     /**
-     Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
-     An invalid gray code is one that represents 0, 5, or 6 in decimal.
-     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
-     @return true if the given gray code is invalid, false otherwise
+     * Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
+     * An invalid gray code is one that represents 0, 5, or 6 in decimal.
+     *
+     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
+     * @return true if the given gray code is invalid, false otherwise
      */
     private static boolean checkInvalidityGrayCode(int[] mult100GrayCode) {
         // decimal values 0, 5, and 6 of the gray code are invalid
