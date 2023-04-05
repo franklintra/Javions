@@ -1,4 +1,9 @@
-package ch.epfl.javions.adsb;
+package ch.epfl.javions.adsb;/*
+
+/**
+ * @project Javions
+ * @author @chukla
+ */
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.Preconditions;
@@ -8,12 +13,17 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * @author @chukla (357550)
- * @project Javions
+ * Represents an ADS-B airborne position message.
+ * This is a record to avoid boilerplate code.
+ *
+ * @param timeStampNs the time stamp of the message in nanoseconds
+ * @param icaoAddress the ICAO address of the aircraft
+ * @param altitude    the altitude of the aircraft in meters
+ * @param parity      the parity of the message
+ * @param x           the x coordinate of the aircraft in the ADS-B reference frame
+ * @param y           the y coordinate of the aircraft in the ADS-B reference frame
  */
-
 public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity,
                                       double x, double y) implements Message {
     // Number of bits used to encode the altitude
@@ -22,18 +32,18 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     private static final int[] REORDERED_BIT_POSITIONS = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
     // 47 is the index of the first bit, starting from the right, of the altitude bits in the ME attribute
     private static final int ALT_INDEX_START = 47;
+    // 47 + 12 = 59 is the index of the last bit, starting from the right, of the altitude bits in the ME attribute
+    private static final int ALT_INDEX_END = 36;
+    // The bit position of the Q bit in the ME attribute, starting from the right
+    private static final int Q_INDEX_POSITION = 40;
+
+    private static final int LONGITUDE_INDEX_START = 0;
+    private static final int LONGITUDE_BIT_LENGTH = 17;
+    private static final int LATITUDE_INDEX_START = 17;
+    private static final int LATITUDE_BIT_LENGTH = 17;
 
     /**
-     * Represents an ADS-B airborne position message.
-     * This is a record to avoid boilerplate code.
-     * Checks that the arguments are valid.
-     *
-     * @param timeStampNs the time stamp of the message in nanoseconds
-     * @param icaoAddress the ICAO address of the aircraft
-     * @param altitude    the altitude of the aircraft in meters
-     * @param parity      the parity of the message
-     * @param x           the x coordinate of the aircraft in the ADS-B reference frame
-     * @param y           the y coordinate of the aircraft in the ADS-B reference frame
+     * Checks that all the arguments given are valid.
      */
     public AirbornePositionMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
@@ -52,15 +62,15 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the decoded message, or null if the message cannot be decoded
      */
     public static AirbornePositionMessage of(RawMessage rawMessage) {
-        //fixme : try and get rid of mult100GrayCode and mult500GrayCode and replace them with a cleaner solution
-        int Q = Bits.extractUInt(rawMessage.payload(), 40, 1);
+
+        int Q = Bits.extractUInt(rawMessage.payload(), Q_INDEX_POSITION, 1);
         double altitude = 0;
-        //getting 12 bits from index 36 of the 56 bits, then masking to remove but from index 4 from the right of the 12 bits
-        //within rawmessage index 1, we take out bytes 4 to 10, then extract 12 bites starting from index 36
+
         switch (Q) {
             case 1 -> {
-                long alt = Bits.extractUInt(rawMessage.payload(), 36, 12);
-                long extractedBits = spliceOutBit(alt);
+                // extracts 12 bits that represent the altitude in the ME attribute and masks the 4th bit from the right (starting from 0)
+                long alt = Bits.extractUInt(rawMessage.payload(), ALT_INDEX_END, NUM_ALT_BITS);
+                long extractedBits = spliceOutFourthBit(alt);
                 altitude = (extractedBits * 25) - 1000;
             }
             case 0 -> {
@@ -80,7 +90,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                     mult100GrayCode[1] = 1;
                     mult100GrayCode[2] = 1;
                 }
-                // convert to decimal
+                // convert gray code to decimal
                 int result500beforeSwaps = grayCodeToDecimal(mult500GrayCode);
                 // Check if the value of result500beforeSwaps is 1, 3, 5 or 7   i.e. odd then mirror the gray code
                 if (result500beforeSwaps % 2 == 1) {
@@ -97,41 +107,42 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 rawMessage.icaoAddress(),
                 Units.convertFrom(altitude, Units.Length.FOOT),
                 Bits.extractUInt(rawMessage.payload(), 34, 1),
-                Bits.extractUInt(rawMessage.payload(), 0, 17) * Math.pow(2, -17),
-                Bits.extractUInt(rawMessage.payload(), 17, 17) * Math.pow(2, -17)
+                Bits.extractUInt(rawMessage.payload(), LONGITUDE_INDEX_START, LONGITUDE_BIT_LENGTH) * Math.pow(2, -17),
+                Bits.extractUInt(rawMessage.payload(), LATITUDE_INDEX_START, LATITUDE_BIT_LENGTH) * Math.pow(2, -17)
         );
     }
 
     /**
-     * Mirrors the given 3-bit gray code of a multiple of 100
-     *
-     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
+     Mirrors the given 3-bit gray code of a multiple of 100
+     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
+     @return an integer array representing the mirrored 3-bit gray code
      */
-    private static void changeMult100GrayCode(int[] mult100GrayCode) {
-        if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 to 5
+    private static int[] changeMult100GrayCode(int[] mult100GrayCode) {
+        // mirrors the gray code by interpreting it in its decimal values
+        if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 mirrored to 5
             mult100GrayCode[0] = 1;
             mult100GrayCode[1] = 1;
-        } else if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 2 to 4
+        } else if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 2 mirrored to 4
             mult100GrayCode[0] = 1;
             mult100GrayCode[2] = 0;
-        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 to 1
+        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 mirrored to 1
             mult100GrayCode[0] = 0;
             mult100GrayCode[1] = 0;
-        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 0) { // 4 to 2
+        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 0) { // 4 mirrored to 2
             mult100GrayCode[0] = 0;
             mult100GrayCode[2] = 1;
         }
+        return mult100GrayCode;
     }
 
     /**
-     * Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
-     * An invalid gray code is one that represents 0, 5, or 6 in decimal.
-     *
-     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
-     * @return true if the given gray code is invalid, false otherwise
+     Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
+     An invalid gray code is one that represents 0, 5, or 6 in decimal.
+     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
+     @return true if the given gray code is invalid, false otherwise
      */
     private static boolean checkInvalidityGrayCode(int[] mult100GrayCode) {
-        // 0 5 6 are invalid
+        // decimal values 0, 5, and 6 of the gray code are invalid
         return (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
                 (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
                 (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1);
@@ -143,7 +154,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param x the long to remove the bit from
      * @return the long with the bit removed
      */
-    private static long spliceOutBit(long x) {
+    private static long spliceOutFourthBit(long x) {
         final long mask = ~(-1L << 4);
         return (x & mask) | ((x >>> 1) & ~mask);
     }
