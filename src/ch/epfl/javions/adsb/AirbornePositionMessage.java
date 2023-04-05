@@ -26,7 +26,12 @@ import java.util.Map;
  */
 public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity,
                                       double x, double y) implements Message {
-    //fixme : need as many useful MAGIC_NUMBERS as possible (private static final constants)
+    // Number of bits used to encode the altitude
+    private static final int NUM_ALT_BITS = 12;
+    // The bit new bit positions of the altitude bits after the reordering
+    private static final int[] REORDERED_BIT_POSITIONS = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
+    // 47 is the index of the first bit, starting from the right, of the altitude bits in the ME attribute
+    private static final int ALT_INDEX_START = 47;
 
     /**
      * Checks that all the arguments given are valid.
@@ -53,53 +58,41 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         double altitude = 0;
         //getting 12 bits from index 36 of the 56 bits, then masking to remove but from index 4 from the right of the 12 bits
         //within rawmessage index 1, we take out bytes 4 to 10, then extract 12 bites starting from index 36
-        if (Q == 1) { // todo : maybe replace with a switch statement
-            long alt = Bits.extractUInt(rawMessage.payload(), 36, 12);
-            long extractedBits = spliceOutBit(alt, 4);
-            altitude = (extractedBits * 25) - 1000;
-        } else if (Q == 0) {
-            // Unscramble
-            int[] sortedBits = unscramble(rawMessage);
-            //separate into two groups, 3 bits from LSB, 9 bits from MSB
-            int[] mult100GrayCode = new int[3];
-            int[] mult500GrayCode = new int[9];
-            System.arraycopy(sortedBits, 0, mult500GrayCode, 0, mult500GrayCode.length);
-            System.arraycopy(sortedBits, 9, mult100GrayCode, 0, mult100GrayCode.length);
-            // 0 5 6 are invalid
-            if ((mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
-                    (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
-                    (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1)) {
-                return null;
+        switch (Q) {
+            case 1 -> {
+                long alt = Bits.extractUInt(rawMessage.payload(), 36, 12);
+                long extractedBits = spliceOutBit(alt);
+                altitude = (extractedBits * 25) - 1000;
             }
-            // Swap 7 with 5
-            if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) {
-                mult100GrayCode[1] = 1;
-                mult100GrayCode[2] = 1;
-            }
-            // convert to decimal
-            int result500beforeSwaps = grayCodeToDecimal(mult500GrayCode);
-            // Check if the value of result500beforeSwaps is 1, 3, 5 or 7   i.e. odd
-            if (result500beforeSwaps % 2 == 1) {
-                if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 to 5
-                    mult100GrayCode[0] = 1;
+            case 0 -> {
+                // Unscramble
+                int[] sortedBits = unscramble(rawMessage);
+                //separate into two groups, 3 bits from LSB, 9 bits from MSB
+                int[] mult100GrayCode = new int[3];
+                int[] mult500GrayCode = new int[9];
+                System.arraycopy(sortedBits, 0, mult500GrayCode, 0, mult500GrayCode.length);
+                System.arraycopy(sortedBits, 9, mult100GrayCode, 0, mult100GrayCode.length);
+                // Check if mult100GrayCode is invalid
+                if (checkInvalidityGrayCode(mult100GrayCode)) {
+                    return null;
+                }
+                // If gray code is 7 in decimal, then change it to 5 in decimal
+                if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) {
                     mult100GrayCode[1] = 1;
-                } else if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 2 to 4
-                    mult100GrayCode[0] = 1;
-                    mult100GrayCode[2] = 0;
-                } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 to 1 // fixme : this case is not reachable because there is an if return null above
-                    mult100GrayCode[0] = 0;
-                    mult100GrayCode[1] = 0;
-                } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 0) { // 4 to 2
-                    mult100GrayCode[0] = 0;
                     mult100GrayCode[2] = 1;
                 }
+                // convert to decimal
+                int result500beforeSwaps = grayCodeToDecimal(mult500GrayCode);
+                // Check if the value of result500beforeSwaps is 1, 3, 5 or 7   i.e. odd then mirror the gray code
+                if (result500beforeSwaps % 2 == 1) {
+                    changeMult100GrayCode(mult100GrayCode);
+                }
+                // convert gray code to decimal
+                int result100 = grayCodeToDecimal(mult100GrayCode);
+                int result500 = grayCodeToDecimal(mult500GrayCode);
+                altitude = -1300 + (result100 * 100) + (result500 * 500);
             }
-            // gray code to decimal
-            int result100 = grayCodeToDecimal(mult100GrayCode);
-            int result500 = grayCodeToDecimal(mult500GrayCode);
-            altitude = -1300 + (result100 * 100) + (result500 * 500);
         }
-
         return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
@@ -111,14 +104,48 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     }
 
     /**
-     * This function removes the bit at index i from the long x
+     Mirrors the given 3-bit gray code of a multiple of 100
+     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
+     @return an integer array representing the mirrored 3-bit gray code
+     */
+    private static int[] changeMult100GrayCode(int[] mult100GrayCode) {
+        if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 to 5
+            mult100GrayCode[0] = 1;
+            mult100GrayCode[1] = 1;
+        } else if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 2 to 4
+            mult100GrayCode[0] = 1;
+            mult100GrayCode[2] = 0;
+        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 to 1
+            mult100GrayCode[0] = 0;
+            mult100GrayCode[1] = 0;
+        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 0) { // 4 to 2
+            mult100GrayCode[0] = 0;
+            mult100GrayCode[2] = 1;
+        }
+        return mult100GrayCode;
+    }
+
+    /**
+     Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
+     An invalid gray code is one that represents 0, 5, or 6 in decimal.
+     @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
+     @return true if the given gray code is invalid, false otherwise
+     */
+    private static boolean checkInvalidityGrayCode(int[] mult100GrayCode) {
+        // 0 5 6 are invalid
+        return (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
+                (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
+                (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1);
+    }
+
+    /**
+     * This function removes the 4th bit from the right, starting from 0, of the altitude bits in the ME attribute
      *
      * @param x the long to remove the bit from
-     * @param i the index of the bit to remove
      * @return the long with the bit removed
      */
-    private static long spliceOutBit(long x, int i) { //fixme what is this for? + i is always 4 why ?
-        final long mask = ~(-1L << i);
+    private static long spliceOutBit(long x) {
+        final long mask = ~(-1L << 4);
         return (x & mask) | ((x >>> 1) & ~mask);
     }
 
@@ -128,7 +155,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param grayCode the gray code to convert
      * @return the decimal value of the gray code
      */
-    private static int grayCodeToDecimal(int[] grayCode) { //fixme need a very precise documentation of input and output (is the array from left to right or right to left? and other)
+    private static int grayCodeToDecimal(int[] grayCode) {
         int result = 0;
         for (int i = 0; i < grayCode.length; i++) {
             if (i == 0) {
@@ -153,11 +180,11 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the unscrambled bits
      */
     private static int[] unscramble(RawMessage rawMessage) {
-        int[] sortedBits = new int[12];
+        int[] sortedBits = new int[NUM_ALT_BITS];
         HashMap<Integer, Integer> sortingTable = new HashMap<>();
-        int[] values = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2}; // fixme: this needs to be a magic number or something
+        int[] values = REORDERED_BIT_POSITIONS;
         for (int i = 0; i < values.length; i++) {
-            sortingTable.put(47 - i, values[i]); // fixme: the 47 as well
+            sortingTable.put(ALT_INDEX_START - i, values[i]);
         }
         for (Map.Entry<Integer, Integer> entry : sortingTable.entrySet()) {
             sortedBits[entry.getValue()] = Bits.extractUInt(rawMessage.payload(), entry.getKey(), 1);
