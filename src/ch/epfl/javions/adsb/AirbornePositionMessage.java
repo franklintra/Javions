@@ -61,7 +61,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         switch (Q) {
             case 1 -> {
                 long alt = Bits.extractUInt(rawMessage.payload(), 36, 12);
-                long extractedBits = spliceOutBit(alt);
+                long extractedBits = spliceOutFourthBit(alt);
                 altitude = (extractedBits * 25) - 1000;
             }
             case 0 -> {
@@ -144,7 +144,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param x the long to remove the bit from
      * @return the long with the bit removed
      */
-    private static long spliceOutBit(long x) {
+    private static long spliceOutFourthBit(long x) {
         final long mask = ~(-1L << 4);
         return (x & mask) | ((x >>> 1) & ~mask);
     }
