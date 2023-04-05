@@ -10,13 +10,11 @@ Our teacher, Michel Schinz based his instruction set on this [book](https://mode
 - [@franklintra](https://www.github.com/franklintra)
 - [@chukla](https://www.github.com/chukla)
 
-
 ## Configuration
 
 As this project uses a software-defined radio provided by EPFL, in order to run it on your own computer, you will have to change the source of the ADS-B data, either using a public web sdr or your own radio. You can find a [list of compatible radios](https://airspy.com/directory/) that you can use in the configuration.
-`SDR_SOURCE`
-
 
 
 ## Support
+
 For additional questions or support, email franklin.tranie@pm.me or engage on our [discussions](https://github.com/franklintra/Javions/discussions/1) github page!
