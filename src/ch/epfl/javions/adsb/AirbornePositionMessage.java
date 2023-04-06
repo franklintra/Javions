@@ -2,7 +2,7 @@ package ch.epfl.javions.adsb;/*
 
 /**
  * @project Javions
- * @author @chukla
+ * @author @chukla (357550)
  */
 
 import ch.epfl.javions.Bits;
@@ -30,10 +30,10 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     private static final int NUM_ALT_BITS = 12;
     // The bit new bit positions of the altitude bits after the reordering
     private static final int[] REORDERED_BIT_POSITIONS = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
-    // 47 is the index of the first bit, starting from the right, of the altitude bits in the ME attribute
-    private static final int ALT_INDEX_START = 47;
-    // 47 + 12 = 59 is the index of the last bit, starting from the right, of the altitude bits in the ME attribute
-    private static final int ALT_INDEX_END = 36;
+    // 36+12+1 = 47 is the index of the first bit, starting from the right, of the altitude bits in the ME attribute
+    private static final int ALT_INDEX_END = 47;
+    //36 is the index of the last bit, starting from the right, of the altitude bits in the ME attribute
+    private static final int ALT_INDEX_START = 36;
     // The bit position of the Q bit in the ME attribute, starting from the right
     private static final int Q_INDEX_POSITION = 40;
 
@@ -69,7 +69,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         switch (Q) {
             case 1 -> {
                 // extracts 12 bits that represent the altitude in the ME attribute and masks the 4th bit from the right (starting from 0)
-                long alt = Bits.extractUInt(rawMessage.payload(), ALT_INDEX_END, NUM_ALT_BITS);
+                long alt = Bits.extractUInt(rawMessage.payload(), ALT_INDEX_START, NUM_ALT_BITS);
                 long extractedBits = spliceOutFourthBit(alt);
                 altitude = (extractedBits * 25) - 1000;
             }
@@ -194,7 +194,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         HashMap<Integer, Integer> sortingTable = new HashMap<>();
         int[] values = REORDERED_BIT_POSITIONS;
         for (int i = 0; i < values.length; i++) {
-            sortingTable.put(ALT_INDEX_START - i, values[i]);
+            sortingTable.put(ALT_INDEX_END - i, values[i]);
         }
         for (Map.Entry<Integer, Integer> entry : sortingTable.entrySet()) {
             sortedBits[entry.getValue()] = Bits.extractUInt(rawMessage.payload(), entry.getKey(), 1);
