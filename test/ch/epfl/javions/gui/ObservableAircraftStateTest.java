@@ -32,4 +32,21 @@ public class ObservableAircraftStateTest {
                 throw new RuntimeException(e);
             }
     }
+/*
+    @Test
+    void updateTable() {
+        AircraftStateManager aircraftStateManager = new AircraftStateManager();
+        try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
+            int counter = 0;
+            byte[] bytes = new byte[RawMessage.LENGTH];
+            while (s.available() >= bytes.length) {
+                long timeStampNs = s.readLong();
+                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
+                RawMessage rawMessage = RawMessage.of(timeStampNs, bytes);
+                aircraftStateManager.updateWithMessage(rawMessage);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }*/
 }

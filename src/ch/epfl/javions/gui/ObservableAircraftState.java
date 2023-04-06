@@ -6,22 +6,21 @@ package ch.epfl.javions.gui;/*
  */
 
 import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.adsb.AirbornePositionMessage;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 
 
 public final class ObservableAircraftState implements AircraftStateSetter {
     private final String icaoAddress;
-    private final int category;
-    private final String callSign;
-    private final double altitude;
-    private final double velocity;
-    private final double trackOrHeading;
-    private final GeoPos position;
-    private final AirbornePositionMessage lastMessageTimeStampNs;
+    private int category;
+    private CallSign callSign;
+    private double altitude;
+    private double velocity;
+    private double trackOrHeading;
+    private GeoPos position;
+    private long lastMessageTimeStampNs;
 
-    public ObservableAircraftState(String icaoAddress, int category, String callSign, double altitude, double velocity, double trackOrHeading, GeoPos position, AirbornePositionMessage lastMessageTimeStampNs) {
+    public ObservableAircraftState(String icaoAddress, int category, CallSign callSign, double altitude, double velocity, double trackOrHeading, GeoPos position, long lastMessageTimeStampNs) {
         this.icaoAddress = icaoAddress;
         this.category = category;
         this.callSign = callSign;
@@ -40,7 +39,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return category;
     }
 
-    public String getCallSign() {
+    public CallSign getCallSign() {
         return callSign;
     }
 
@@ -60,43 +59,43 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return position;
     }
 
-    public AirbornePositionMessage getLastMessageTimeStampNs() {
+    public long getLastMessageTimeStampNs() {
         return lastMessageTimeStampNs;
     }
 
 
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
-
+        this.lastMessageTimeStampNs = timeStampNs;
     }
 
     @Override
     public void setCategory(int category) {
-
+        this.category = category;
     }
 
     @Override
     public void setCallSign(CallSign callSign) {
-
+        this.callSign = callSign;
     }
 
     @Override
     public void setPosition(GeoPos position) {
-
+        this.position = position;
     }
 
     @Override
     public void setAltitude(double altitude) {
-
+        this.altitude = altitude;
     }
 
     @Override
     public void setVelocity(double velocity) {
-
+        this.velocity = velocity;
     }
 
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
-
+        this.trackOrHeading = trackOrHeading;
     }
 }
