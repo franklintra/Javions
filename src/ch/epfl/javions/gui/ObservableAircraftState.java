@@ -28,18 +28,54 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final LongProperty lastMessageTimeStampNs = new SimpleLongProperty();
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
     private final Property<ObservableList<AirbornePos>> trajectory = new SimpleObjectProperty<>(FXCollections.observableList(new ArrayList<>()));
+    private final ObservableList<AirbornePos> unmodifiableTrajectory;
 
-    public ObservableAircraftState(IcaoAddress icaoAddress) {
+
+    public ObservableAircraftState(IcaoAddress icaoAddress, CallSign callSign, int category) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress.setValue(icaoAddress);
+        this.callSign.setValue(callSign);
+        this.category.setValue(category);
+        this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory.getValue());
     }
 
-    public record AirbornePos(GeoPos pos, double altitude) {
+    public record AirbornePos(GeoPos pos, double altitude, long timeStampNs) {
         public AirbornePos {
             Preconditions.checkArgument(altitude >= 0);
+            Preconditions.checkArgument(timeStampNs >= 0);
             Objects.requireNonNull(pos);
         }
     }
+
+
+    private void updateTrajectory() {
+        ObservableList<AirbornePos> currentTrajectory = trajectory.getValue();
+        double currentAltitude = getAltitude();
+        GeoPos currentPosition = getPosition();
+        long currentTimestamp = getLastMessageTimeStampNs();
+
+        if (currentTrajectory.isEmpty()) {
+            currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
+        } else {
+            AirbornePos lastAirbornePos = currentTrajectory.get(currentTrajectory.size() - 1);
+            GeoPos lastPosition = lastAirbornePos.pos();
+            double lastAltitude = lastAirbornePos.altitude();
+            long lastTimestamp = lastAirbornePos.timeStampNs();
+
+            boolean positionChanged = !Objects.equals(currentPosition, lastPosition); //to avoid null pointer exception
+            boolean altitudeChanged = currentAltitude != lastAltitude;
+            boolean sameTimestamp = currentTimestamp == lastTimestamp;
+
+            if (positionChanged || altitudeChanged) {
+                if (sameTimestamp) {
+                    currentTrajectory.set(currentTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
+                } else {
+                    currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
+                }
+            }
+        }
+    }
+
 
 
     public long getLastMessageTimeStampNs() {
@@ -68,7 +104,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * todo: check if this class is needed
      */
     public ObservableList<AirbornePos> getTrajectory() {
-        return trajectory.getValue();
+        return unmodifiableTrajectory;
     }
 
     @Override
@@ -89,11 +125,13 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         this.position.setValue(position);
+        updateTrajectory();
     }
 
     @Override
     public void setAltitude(double altitude) {
         this.altitude.set(altitude);
+        updateTrajectory();
     }
 
     @Override
