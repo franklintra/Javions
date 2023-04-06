@@ -1,9 +1,4 @@
 package ch.epfl.javions.gui;
-/**
- * @author @franklintra (362694)
- * @author @chukla (357550)
- * @project Javions
- */
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Preconditions;
@@ -15,9 +10,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author @franklintra (362694)
+ * @author @chukla (357550)
+ * @project Javions
+ */
 
 public final class ObservableAircraftState implements AircraftStateSetter {
     private final Property<IcaoAddress> icaoAddress = new SimpleObjectProperty<>();

@@ -10,9 +10,6 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Represents an ADS-B airborne position message.
  * This is a record to avoid boilerplate code.
@@ -28,19 +25,20 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                                       double x, double y) implements Message {
     // Number of bits used to encode the altitude
     private static final int NUM_ALT_BITS = 12;
-    // The bit new bit positions of the altitude bits after the reordering
-    private static final int[] REORDERED_BIT_POSITIONS = {9, 3, 10, 4, 11, 5, 6, 0, 7, 1, 8, 2};
-    // 36+12+1 = 47 is the index of the first bit, starting from the right, of the altitude bits in the ME attribute
-    private static final int ALT_INDEX_END = 47;
+    // This is the old position of the bits in order, starting from the right
+    private static final int[] REORDERED_BIT_OLD_POSITIONS = {7, 9, 11, 1, 3, 5, 6, 8, 10, 0, 2, 4};
     //36 is the index of the last bit, starting from the right, of the altitude bits in the ME attribute
     private static final int ALT_INDEX_START = 36;
     // The bit position of the Q bit in the ME attribute, starting from the right
     private static final int Q_INDEX_POSITION = 40;
-
+    // The bit position of the bit that indicates whether the message is even or odd, starting from the right
+    private static final int PARITY_BIT = 34;
+    // The bit position of the first bit of the longitude, starting from the right
     private static final int LONGITUDE_INDEX_START = 0;
-    private static final int LONGITUDE_BIT_LENGTH = 17;
+    // The bit position of the first bit of the latitude, starting from the right
     private static final int LATITUDE_INDEX_START = 17;
-    private static final int LATITUDE_BIT_LENGTH = 17;
+    // The number of bits used to encode the longitude or latitude
+    private static final int LONG_OR_LAT_BIT_LENGTH = 17;
 
     /**
      * Checks that all the arguments given are valid.
@@ -67,96 +65,54 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         double altitude = 0;
 
         switch (Q) {
-            case 1 -> {
-                // extracts 12 bits that represent the altitude in the ME attribute and masks the 4th bit from the right (starting from 0)
-                long alt = Bits.extractUInt(rawMessage.payload(), ALT_INDEX_START, NUM_ALT_BITS);
-                long extractedBits = spliceOutFourthBit(alt);
-                altitude = (extractedBits * 25) - 1000;
-            }
             case 0 -> {
                 // Unscramble
-                int[] sortedBits = unscramble(rawMessage);
+                int sortedBits = unscramble(rawMessage.payload());
                 //separate into two groups, 3 bits from LSB, 9 bits from MSB
-                int[] mult100GrayCode = new int[3];
-                int[] mult500GrayCode = new int[9];
-                System.arraycopy(sortedBits, 0, mult500GrayCode, 0, mult500GrayCode.length);
-                System.arraycopy(sortedBits, 9, mult100GrayCode, 0, mult100GrayCode.length);
-                // Check if mult100GrayCode is invalid
-                if (checkInvalidityGrayCode(mult100GrayCode)) {
+                int multipleOfHundredFoots = grayCodeToDecimal(sortedBits & 0b111);
+                int multipleOfFiveHundredFoots = grayCodeToDecimal(sortedBits >> 3);
+
+                // Check if multipleOfHundredFoots is invalid, making the altitude invalid
+                if (multipleOfHundredFoots == 0 || multipleOfHundredFoots == 5 || multipleOfHundredFoots == 6) {
                     return null;
                 }
                 // If gray code is 7 in decimal, then change it to 5 in decimal
-                if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) {
-                    mult100GrayCode[1] = 1;
-                    mult100GrayCode[2] = 1;
+                if (multipleOfHundredFoots == 7) {
+                    multipleOfHundredFoots = 5;
                 }
-                // convert gray code to decimal
-                int result500beforeSwaps = grayCodeToDecimal(mult500GrayCode);
-                // Check if the value of result500beforeSwaps is 1, 3, 5 or 7   i.e. odd then mirror the gray code
-                if (result500beforeSwaps % 2 == 1) {
-                    changeMult100GrayCode(mult100GrayCode);
+                // Check if the value of multipleOfFiveHundredFoots is odd, and if so, change the value of multipleOfHundredFoots as per the specification
+                if (multipleOfFiveHundredFoots % 2 == 1) {
+                    multipleOfHundredFoots = 6 - multipleOfHundredFoots;
                 }
-                // convert gray code to decimal
-                int result100 = grayCodeToDecimal(mult100GrayCode);
-                int result500 = grayCodeToDecimal(mult500GrayCode);
-                altitude = -1300 + (result100 * 100) + (result500 * 500);
+
+                altitude = -1300 + (multipleOfHundredFoots * 100) + (multipleOfFiveHundredFoots * 500);
+            }
+            case 1 -> {
+                // calculate the altitude directly from the bits
+                altitude = getAltitudeForQ1(Bits.extractUInt(rawMessage.payload(), ALT_INDEX_START, NUM_ALT_BITS));
             }
         }
         return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
                 Units.convertFrom(altitude, Units.Length.FOOT),
-                Bits.extractUInt(rawMessage.payload(), 34, 1),
-                Bits.extractUInt(rawMessage.payload(), LONGITUDE_INDEX_START, LONGITUDE_BIT_LENGTH) * Math.pow(2, -17),
-                Bits.extractUInt(rawMessage.payload(), LATITUDE_INDEX_START, LATITUDE_BIT_LENGTH) * Math.pow(2, -17)
+                Bits.extractUInt(rawMessage.payload(), PARITY_BIT, 1),
+                Math.scalb(Bits.extractUInt(rawMessage.payload(), LONGITUDE_INDEX_START, LONG_OR_LAT_BIT_LENGTH), -17),
+                Math.scalb(Bits.extractUInt(rawMessage.payload(), LATITUDE_INDEX_START, LONG_OR_LAT_BIT_LENGTH), -17)
         );
     }
 
     /**
-     * Mirrors the given 3-bit gray code of a multiple of 100
-     *
-     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100
+     * This function removes the Q-bit that is on the 4th position from the right, starting from 0, of the altitude bits in the ME attribute
+     * Then it converts the remaining 11 bits to decimal, and multiplies it by 25 to get the altitude in foots
+     * Finally, it subtracts 1000 to get the altitude from the ground (as it's stored as the altitude from 1000 foots)
+     * @param value the long to remove the bit from
+     * @return the actual altitude in foots
      */
-    private static void changeMult100GrayCode(int[] mult100GrayCode) {
-        // mirrors the gray code by interpreting it in its decimal values
-        if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1) { // 1 mirrored to 5
-            mult100GrayCode[0] = 1;
-            mult100GrayCode[1] = 1;
-        } else if (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 2 mirrored to 4
-            mult100GrayCode[0] = 1;
-            mult100GrayCode[2] = 0;
-        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) { // 5 mirrored to 1
-            mult100GrayCode[0] = 0;
-            mult100GrayCode[1] = 0;
-        } else if (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 0) { // 4 mirrored to 2
-            mult100GrayCode[0] = 0;
-            mult100GrayCode[2] = 1;
-        }
-    }
-
-    /**
-     * Checks if the given 3-bit gray code of a multiple of 100 in decimal is invalid.
-     * An invalid gray code is one that represents 0, 5, or 6 in decimal.
-     *
-     * @param mult100GrayCode an integer array representing the 3-bit gray code of a multiple of 100 in decimal
-     * @return true if the given gray code is invalid, false otherwise
-     */
-    private static boolean checkInvalidityGrayCode(int[] mult100GrayCode) {
-        // decimal values 0, 5, and 6 of the gray code are invalid
-        return (mult100GrayCode[0] == 0 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 0) ||
-                (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 1 && mult100GrayCode[2] == 1) ||
-                (mult100GrayCode[0] == 1 && mult100GrayCode[1] == 0 && mult100GrayCode[2] == 1);
-    }
-
-    /**
-     * This function removes the 4th bit from the right, starting from 0, of the altitude bits in the ME attribute
-     *
-     * @param x the long to remove the bit from
-     * @return the long with the bit removed
-     */
-    private static long spliceOutFourthBit(long x) {
+    private static long getAltitudeForQ1(long value) {
         final long mask = ~(-1L << 4);
-        return (x & mask) | ((x >>> 1) & ~mask);
+        long alt =  (value & mask) | ((value >>> 1) & ~mask);
+        return 25 * alt - 1000;
     }
 
     /**
@@ -165,39 +121,27 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param grayCode the gray code to convert
      * @return the decimal value of the gray code
      */
-    private static int grayCodeToDecimal(int[] grayCode) {
-        int result = 0;
-        for (int i = 0; i < grayCode.length; i++) {
-            if (i == 0) {
-                for (int j = 0; j < grayCode.length; j++) {
-                    result += grayCode[j] * Math.pow(2, grayCode.length - j - 1);
-                }
-            } else {
-                int dec = 0;
-                for (int j = 0; j < grayCode.length; j++) {
-                    dec += grayCode[j] * Math.pow(2, grayCode.length - j - 1);
-                }
-                result = result ^ (dec >> i);
-            }
+    private static int grayCodeToDecimal(int grayCode) {
+        int decimal = 0;
+        while (grayCode != 0) {
+            decimal ^= grayCode;
+            grayCode = grayCode >> 1;
         }
-        return result;
+        return decimal;
     }
 
     /**
      * Unscrambles the bits in the payload as per the ADS-B standard
      *
-     * @param rawMessage the raw message to unscramble
+     * @param payload the long of the raw message to unscramble
      * @return the unscrambled bits
      */
-    private static int[] unscramble(RawMessage rawMessage) {
-        int[] sortedBits = new int[NUM_ALT_BITS];
-        HashMap<Integer, Integer> sortingTable = new HashMap<>();
-        int[] values = REORDERED_BIT_POSITIONS;
-        for (int i = 0; i < values.length; i++) {
-            sortingTable.put(ALT_INDEX_END - i, values[i]);
-        }
-        for (Map.Entry<Integer, Integer> entry : sortingTable.entrySet()) {
-            sortedBits[entry.getValue()] = Bits.extractUInt(rawMessage.payload(), entry.getKey(), 1);
+    private static int unscramble(long payload) {
+        int sortedBits = 0;
+        int rawBits = Bits.extractUInt(payload, ALT_INDEX_START, NUM_ALT_BITS);
+        for (int i = 0; i < NUM_ALT_BITS; i++) {
+            int valueToPut = Bits.testBit(rawBits, REORDERED_BIT_OLD_POSITIONS[i]) ? 1 : 0;
+            sortedBits |= (valueToPut << i);
         }
         return sortedBits;
     }

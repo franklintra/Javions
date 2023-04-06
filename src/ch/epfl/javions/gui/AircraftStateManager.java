@@ -6,7 +6,6 @@ package ch.epfl.javions.gui;/*
  * @project Javions
  */
 
-import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.*;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.aircraft.IcaoAddress;

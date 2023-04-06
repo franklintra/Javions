@@ -59,7 +59,6 @@ class AirbornePositionMessageTest {
             });
         }
     }
-
     @Test
     void airbornePositionMessageOfCorrectlyDecodesAltitudeWhenQIs0() {
         record MessageAndAltitude(String message, double altitude) {
