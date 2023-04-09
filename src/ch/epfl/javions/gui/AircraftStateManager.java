@@ -31,7 +31,7 @@ public final class AircraftStateManager {
     public void updateWithMessage(RawMessage message) {
         IcaoAddress icaoAddress = message.icaoAddress();
         aircraftStateAccumulators.computeIfAbsent(icaoAddress, k-> {
-            ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress);
+            ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0);
             observableAircraftStates.add(observableAircraftState);
             return new AircraftStateAccumulator<>(observableAircraftState);
         });

@@ -60,7 +60,7 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
      * This method is optimized using character arithmetic instead of using a switch table.
      *
      * @param i the integer to convert to a character
-     * @return the corresponding character or '\uFFFD' if the integer is not valid according to the ADS-B specification
+     * @return the corresponding character or null if the integer is not valid according to the ADS-B specification
      */
     private static Character getChar(int i) {
         int SPACE_INTEGER = 32;
