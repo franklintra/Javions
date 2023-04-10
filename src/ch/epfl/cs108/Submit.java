@@ -32,9 +32,9 @@ public final class Submit {
     // CONFIGURATION
     // -------------
     // Jeton du premier membre du groupe
-    private static final String TOKEN_1 = TOKENS.TOKEN_1();
+    private static final String TOKEN_1 = System.getenv("TOKEN1");
     // Jeton du second membre (identique au premier pour les personnes travaillant seules)
-    private static final String TOKEN_2 = TOKENS.TOKEN_2();
+    private static final String TOKEN_2 = System.getenv("TOKEN1");
     // -------------
 
     private static final String ZIP_ENTRY_NAME_PREFIX = "Javions/";
