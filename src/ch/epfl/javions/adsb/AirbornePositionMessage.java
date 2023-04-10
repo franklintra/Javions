@@ -67,10 +67,10 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         switch (Q) {
             case 0 -> {
                 // Unscramble
-                int sortedBits = unscramble(rawMessage.payload());
+                short sortedBits = unscramble(rawMessage.payload());
                 //separate into two groups, 3 bits from LSB, 9 bits from MSB
-                int multipleOfHundredFoots = grayCodeToDecimal(sortedBits & 0b111);
-                int multipleOfFiveHundredFoots = grayCodeToDecimal(sortedBits >> 3);
+                short multipleOfHundredFoots = grayCodeToDecimal(sortedBits & 0b111);
+                short multipleOfFiveHundredFoots = grayCodeToDecimal(sortedBits >> 3);
 
                 // Check if multipleOfHundredFoots is invalid, making the altitude invalid
                 if (multipleOfHundredFoots == 0 || multipleOfHundredFoots == 5 || multipleOfHundredFoots == 6) {
@@ -82,7 +82,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 }
                 // Check if the value of multipleOfFiveHundredFoots is odd, and if so, change the value of multipleOfHundredFoots as per the specification
                 if (multipleOfFiveHundredFoots % 2 == 1) {
-                    multipleOfHundredFoots = 6 - multipleOfHundredFoots;
+                    multipleOfHundredFoots = (short) (6 - multipleOfHundredFoots);
                 }
 
                 altitude = -1300 + (multipleOfHundredFoots * 100) + (multipleOfFiveHundredFoots * 500);
@@ -121,8 +121,8 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param grayCode the gray code to convert
      * @return the decimal value of the gray code
      */
-    private static int grayCodeToDecimal(int grayCode) {
-        int decimal = 0;
+    private static short grayCodeToDecimal(int grayCode) {
+        short decimal = 0;
         while (grayCode != 0) {
             decimal ^= grayCode;
             grayCode = grayCode >> 1;
@@ -136,8 +136,8 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @param payload the long of the raw message to unscramble
      * @return the unscrambled bits
      */
-    private static int unscramble(long payload) {
-        int sortedBits = 0;
+    private static short unscramble(long payload) {
+        short sortedBits = 0;
         int rawBits = Bits.extractUInt(payload, ALT_INDEX_START, NUM_ALT_BITS);
         for (int i = 0; i < NUM_ALT_BITS; i++) {
             int valueToPut = Bits.testBit(rawBits, REORDERED_BIT_OLD_POSITIONS[i]) ? 1 : 0;
