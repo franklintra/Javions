@@ -47,36 +47,22 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
-
     private void updateTrajectory() {
         ObservableList<AirbornePos> currentTrajectory = trajectory.getValue();
         double currentAltitude = getAltitude();
         GeoPos currentPosition = getPosition();
         long currentTimestamp = getLastMessageTimeStampNs();
 
-        if (currentTrajectory.isEmpty()) {
+        AirbornePos lastAirbornePos = currentTrajectory.get(currentTrajectory.size() - 1);
+        long lastTimestamp = lastAirbornePos.timeStampNs();
+        boolean sameTimestamp = currentTimestamp == lastTimestamp;
+
+        if (currentTrajectory.isEmpty() || !currentPosition.equals(currentTrajectory.get(currentTrajectory.size() - 1).pos())) {
             currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-        } else {
-            AirbornePos lastAirbornePos = currentTrajectory.get(currentTrajectory.size() - 1);
-            GeoPos lastPosition = lastAirbornePos.pos();
-            double lastAltitude = lastAirbornePos.altitude();
-            long lastTimestamp = lastAirbornePos.timeStampNs();
-
-            boolean positionChanged = !Objects.equals(currentPosition, lastPosition); //to avoid null pointer exception
-            boolean altitudeChanged = currentAltitude != lastAltitude;
-            boolean sameTimestamp = currentTimestamp == lastTimestamp;
-
-            if (positionChanged || altitudeChanged) {
-                if (sameTimestamp) {
-                    currentTrajectory.set(currentTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-                } else {
-                    currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-                }
-            }
+        } else if (sameTimestamp) {
+            currentTrajectory.set(currentTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
         }
     }
-
-
 
     public long getLastMessageTimeStampNs() {
         return lastMessageTimeStampNs.get();
@@ -100,9 +86,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return trackOrHeading.get();
     }
 
-    /*
-     * todo: check if this class is needed
-     */
     public ObservableList<AirbornePos> getTrajectory() {
         return unmodifiableTrajectory;
     }
@@ -176,9 +159,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return lastMessageTimeStampNs;
     }
 
-    /**
-     * todo: check if this is needed
-     */
     public ReadOnlyProperty<ObservableList<AirbornePos>> trajectoryProperty() {
         return trajectory;
     }
