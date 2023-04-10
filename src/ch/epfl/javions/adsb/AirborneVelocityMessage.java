@@ -5,9 +5,8 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author @franklintra (362694)
@@ -19,11 +18,11 @@ public record AirborneVelocityMessage(long timeStampNs, IcaoAddress icaoAddress,
     private static final int SUBTYPE_DATA_START_BIT = 21;
     private static final int SUBTYPE_START_BIT = 48;
     private static final int SUBTYPE_SIZE = 3;
-    private static final List<Integer> SUBSONIC_SUBTYPES = Arrays.asList(1, 3);
-    private static final List<Integer> SUPERSONIC_SUBTYPES = Arrays.asList(2, 4);
-    private static final List<Integer> GROUND_SUBTYPES = Arrays.asList(1, 2);
-    private static final List<Integer> AIR_SUBTYPES = Arrays.asList(3, 4);
-    private static final List<Integer> VALID_SUBTYPES = Arrays.asList(1, 2, 3, 4);
+    private static final Set<Integer> SUBSONIC_SUBTYPES = Set.of(1, 3);
+    private static final Set<Integer> SUPERSONIC_SUBTYPES = Set.of(2, 4);
+    private static final Set<Integer> GROUND_SUBTYPES = Set.of(1, 2);
+    private static final Set<Integer> AIR_SUBTYPES = Set.of(3, 4);
+    private static final Set<Integer> VALID_SUBTYPES = Set.of(1, 2, 3, 4);
     private static final double SUBSONIC_SPEED = Units.Speed.KNOT;
     private static final double SUPERSONIC_SPEED = Units.Speed.KNOT * 4;
 
