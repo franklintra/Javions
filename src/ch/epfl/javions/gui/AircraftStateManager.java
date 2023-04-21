@@ -21,8 +21,7 @@ public final class AircraftStateManager {
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
         this.aircraftStateAccumulators = new HashMap<>();
         this.observableAircraftStates = FXCollections.observableSet(new HashSet<>());
-
-        // TODO: 4/10/2023 set fixed characteristics from databse
+        // TODO: 4/11/2023 set must contain aircraft whose position is known, not sure what to do here
     }
 
     public ObservableSet<ObservableAircraftState> states() {
@@ -30,7 +29,6 @@ public final class AircraftStateManager {
     }
 
     public void updateWithMessage(RawMessage message) {
-        // TODO: 4/10/2023 check if correct 
         IcaoAddress icaoAddress = message.icaoAddress();
         aircraftStateAccumulators.computeIfAbsent(icaoAddress, k-> {
             ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0);

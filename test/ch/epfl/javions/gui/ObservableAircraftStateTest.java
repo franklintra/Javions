@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.adsb.RawMessage;
+import ch.epfl.javions.aircraft.AircraftDatabase;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,11 +33,12 @@ public class ObservableAircraftStateTest {
                 throw new RuntimeException(e);
             }
     }
-/*
+
     @Test
     void updateTable() {
-        AircraftStateManager aircraftStateManager = new AircraftStateManager();
+
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
+            AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(s.toString())); // FIXME: 4/11/2023 this is incorrect, unsure
             int counter = 0;
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
@@ -48,5 +50,5 @@ public class ObservableAircraftStateTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }*/
+    }
 }
