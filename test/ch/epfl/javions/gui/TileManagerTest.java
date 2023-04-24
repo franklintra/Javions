@@ -2,7 +2,6 @@ package ch.epfl.javions.gui;
 
 
 import javafx.scene.image.Image;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
