@@ -83,12 +83,11 @@ public class BaseMapController {
 
             long currentTime = System.currentTimeMillis();
             if (currentTime < minScrollTime.get()) return;
-            minScrollTime.set(currentTime + 200);
+            minScrollTime.set(currentTime + 400);
             int previousZoom = parameters.getZoomLevel();
+            parameters.scroll(e.getX(), e.getY());
             parameters.changeZoomLevel(zoomDelta);
-            if (!(previousZoom == parameters.getZoomLevel())) {
-                parameters.scroll(e.getX(), e.getY());
-            }
+            parameters.scroll(-e.getX(), -e.getY());
             redrawOnNextPulse();
         });
 

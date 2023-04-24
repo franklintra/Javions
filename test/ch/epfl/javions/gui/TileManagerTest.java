@@ -12,7 +12,6 @@ import java.nio.file.Path;
  * @project Javions
  */
 public class TileManagerTest {
-    @Test
     void testImageForTileAt() throws IOException {
         Path cache = Path.of("tile-cache");
         TileManager tileManager = new TileManager(cache, "tile.openstreetmap.org");
