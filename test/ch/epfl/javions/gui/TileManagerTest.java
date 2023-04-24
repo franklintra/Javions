@@ -3,6 +3,8 @@ package ch.epfl.javions.gui;
 
 import javafx.scene.image.Image;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -11,13 +13,13 @@ import java.nio.file.Path;
  */
 public class TileManagerTest {
     @Test
-    void testImageForTileAt() {
-        Path cache = Path.of("/users/tranie/Desktop/cache/");
+    void testImageForTileAt() throws IOException {
+        Path cache = Path.of("tile-cache");
         TileManager tileManager = new TileManager(cache, "tile.openstreetmap.org");
-        TileManager.TileId tileId1 = new TileManager.TileId(5, 2, 0);
+        TileManager.TileId tileId1 = new TileManager.TileId(17, 67927, 46357);
         Image image = tileManager.imageForTileAt(tileId1);
         tileManager.imageForTileAt(tileId1);
         tileManager.imageForTileAt(tileId1);
-        //ImageDisplayer.display(image);
+        ImageDisplayer.display(image);
     }
 }
