@@ -30,7 +30,7 @@ public class TileManager {
      * @param tileServerUrl the url of the tile server
      */
     public TileManager(Path cacheDirectory, String tileServerUrl) {
-        this.cacheDirectory = cacheDirectory;
+        this.cacheDirectory = cacheDirectory.resolve(tileServerUrl);
         this.tileServerUrl = tileServerUrl;
         tiles.put(null, null); // this is to avoid the cache to be empty when we try to replace the least accessed element
     }
@@ -104,6 +104,7 @@ public class TileManager {
      */
     private void storeOnDrive(TileId tileId, byte[] image) {
         Path absolutePath = cacheDirectory.resolve(tileId.zoom + "/" + tileId.x + "/" + tileId.y + ".png");
+        createDirectoryIfItDoesntExist(absolutePath.getParent().getParent().getParent().getParent());
         createDirectoryIfItDoesntExist(absolutePath.getParent().getParent().getParent());
         createDirectoryIfItDoesntExist(absolutePath.getParent().getParent());
         createDirectoryIfItDoesntExist(absolutePath.getParent());
