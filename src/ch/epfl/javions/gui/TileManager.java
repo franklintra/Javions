@@ -11,19 +11,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author @franklintra (362694)
  * @project Javions
  */
 public class TileManager {
+    public static final int TILE_SIZE = 256; // the size of a tile in pixels
     private static final int MAX_CACHE_SIZE = 100; // maximum number of tiles in cache memory
     private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE + 1, .75F, false); // the cache memory
     private final String tileServerUrl; // the url of the tile server
     private final Path cacheDirectory; // the directory where the tiles are stored
 
+    /**
+     * This class represents the position and zoom level of a tile.
+     * @param cacheDirectory the directory where the tiles are stored
+     * @param tileServerUrl the url of the tile server
+     */
     public TileManager(Path cacheDirectory, String tileServerUrl) {
-        this.cacheDirectory = cacheDirectory;
+        this.cacheDirectory = cacheDirectory.resolve(tileServerUrl);
         this.tileServerUrl = tileServerUrl;
         tiles.put(null, null); // this is to avoid the cache to be empty when we try to replace the least accessed element
     }
@@ -33,7 +40,8 @@ public class TileManager {
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
-    public Image imageForTileAt(TileId tileId) {
+    public Image imageForTileAt(TileId tileId) throws IOException {
+        if (!(TileId.isValid(tileId.zoom, tileId.x, tileId.y))) return null;
         Image data;
         if ((data = findInMemory(tileId)) != null) {
             return data;
@@ -79,17 +87,12 @@ public class TileManager {
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
-    private Image findOnDrive(TileId tileId) {
+    private Image findOnDrive(TileId tileId) throws IOException {
         Path absolutePath = cacheDirectory.resolve(tileId.zoom + "/" + tileId.x + "/" + tileId.y + ".png");
-        try {
-            if (Files.exists(absolutePath)) {
-                Image i = new Image(new ByteArrayInputStream(Files.readAllBytes(absolutePath)));
-                storeInMemory(tileId, i);
-                return i;
-            }
-        }
-        catch(IOException e) {
-            e.printStackTrace(System.err);
+        if (Files.exists(absolutePath)) {
+            Image i = new Image(new ByteArrayInputStream(Files.readAllBytes(absolutePath)));
+            storeInMemory(tileId, i);
+            return i;
         }
         return null;
     }
@@ -101,6 +104,7 @@ public class TileManager {
      */
     private void storeOnDrive(TileId tileId, byte[] image) {
         Path absolutePath = cacheDirectory.resolve(tileId.zoom + "/" + tileId.x + "/" + tileId.y + ".png");
+        createDirectoryIfItDoesntExist(absolutePath.getParent().getParent().getParent().getParent());
         createDirectoryIfItDoesntExist(absolutePath.getParent().getParent().getParent());
         createDirectoryIfItDoesntExist(absolutePath.getParent().getParent());
         createDirectoryIfItDoesntExist(absolutePath.getParent());
@@ -117,22 +121,18 @@ public class TileManager {
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
-    private Image findOnServer(TileId tileId) {
+    private Image findOnServer(TileId tileId) throws IOException {
         byte[] data;
-        try {
-            URLConnection connection = urlForTileAt(tileId).openConnection();
-            connection.setRequestProperty("User-Agent", "Javions");
-            try (InputStream i = connection.getInputStream()) {
-                data = i.readAllBytes();
-            }
-            if (data != null) {
-                Image i = new Image(new ByteArrayInputStream(data));
-                storeOnDrive(tileId, data);
-                storeInMemory(tileId, i);
-                return i;
-            }
-        } catch(IOException e) {
-            e.printStackTrace(System.err);
+        URLConnection connection = Objects.requireNonNull(urlForTileAt(tileId)).openConnection();
+        connection.setRequestProperty("User-Agent", "Javions");
+        try (InputStream i = connection.getInputStream()) {
+            data = i.readAllBytes();
+        }
+        if (data != null) {
+            Image i = new Image(new ByteArrayInputStream(data));
+            storeOnDrive(tileId, data);
+            storeInMemory(tileId, i);
+            return i;
         }
         return null;
     }
@@ -172,11 +172,17 @@ public class TileManager {
     /**
      * This class represents the position and zoom level of a tile.
      */
-    public record TileId(int zoom, int x, int y) {
-        public static boolean isValid(short zoom, int x, int y) {
-            int maxIndex = 2 << zoom - 1; // equivalent to Math.pow(2, zoom) - 1 but faster
+    public record TileId(int zoom, long x, long y) {
+
+        public TileId {
+            if (!isValid(zoom, x, y)) {
+                throw new IllegalArgumentException("Invalid tile id");
+            }
+        }
+        public static boolean isValid(int zoom, long x, long y) {
+            long maxIndex = 2L << zoom - 1; // equivalent to Math.pow(2, zoom) - 1 but faster
             return ((x > 0 && y > 0) &&
-                    (0 <= zoom && zoom <= 19) &&
+                    (6 <= zoom && zoom <= 19) &&
                     (x < maxIndex && y < maxIndex));
         }
     }
