@@ -32,6 +32,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final ObservableList<AirbornePos> unmodifiableTrajectory;
     private AircraftStateAccumulator<AircraftStateSetter> accumulator;
 
+    /**
+     * The constructor of the ObservableAircraftState class
+     *
+     * @param icaoAddress the ICAO address of the aircraft
+     * @param callSign    the call sign of the aircraft
+     * @param category    the category of the aircraft
+     * @throws NullPointerException if the ICAO address is null
+     */
     public ObservableAircraftState(IcaoAddress icaoAddress, CallSign callSign, int category) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress.setValue(icaoAddress);
@@ -42,6 +50,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     public record AirbornePos(GeoPos pos, double altitude, long timeStampNs) {
+        /**
+         * The constructor of the AirbornePos class
+         *
+         * @param pos         the position of the aircraft
+         * @param altitude    the altitude of the aircraft
+         * @param timeStampNs the time stamp of the last message received from the aircraft
+         * @throws NullPointerException if the position is null
+         */
         public AirbornePos {
             Preconditions.checkArgument(altitude >= 0);
             Preconditions.checkArgument(timeStampNs >= 0);
@@ -49,6 +65,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
+    /**
+     * Updates the trajectory of the aircraft
+     */
     private void updateTrajectory() {
         ObservableList<AirbornePos> currentTrajectory = trajectory.getValue();
         double currentAltitude = getAltitude();
@@ -107,12 +126,24 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.callSign.setValue(callSign);
     }
 
+    /**
+     * Sets the position of the aircraft
+     *
+     * @param position the position of the aircraft
+     * @throws NullPointerException if the position is null
+     */
     @Override
     public void setPosition(GeoPos position) {
         this.position.setValue(position);
         updateTrajectory();
     }
 
+    /**
+     * Sets the altitude of the aircraft
+     *
+     * @param altitude the altitude of the aircraft
+     * @throws IllegalArgumentException if the altitude is negative
+     */
     @Override
     public void setAltitude(double altitude) {
         this.altitude.set(altitude);

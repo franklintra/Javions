@@ -17,19 +17,33 @@ import java.util.*;
 
 public final class AircraftStateManager {
     private final AircraftDatabase aircraftDatabase;
-    private final static double maxMessageAge = 60*10e9;
+    private final static double maxMessageAge = 6*10e9;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
     private final Set<ObservableAircraftState> observableAircraftStates;
+
+    /**
+     * Creates a new AircraftStateManager.
+     * @param aircraftDatabase the database of aircrafts.
+     */
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
         this.aircraftStateAccumulators = new HashMap<>();
         this.observableAircraftStates = FXCollections.observableSet(new HashSet<>());
         this.aircraftDatabase = aircraftDatabase;
     }
 
+    /**
+     * Returns the set of observable aircraft states.
+     * @return the set of observable aircraft states.
+     */
     public ObservableSet<ObservableAircraftState> states() {
         return (ObservableSet<ObservableAircraftState>) Collections.unmodifiableSet(observableAircraftStates);
     }
 
+    /**
+     * Updates the state of the aircraft with the given message.
+     * @param message the message to update the state with.
+     * @throws IOException if the aircraft database cannot be accessed.
+     */
     public void updateWithMessage(Message message) {
         if (message instanceof AirbornePositionMessage) {
             IcaoAddress icaoAddress = message.icaoAddress();
@@ -44,7 +58,10 @@ public final class AircraftStateManager {
         }
     }
 
+    /**
+     * Removes all the aircraft states that have not been updated for more than 60 seconds.
+     */
     public void purge() {
-        observableAircraftStates.removeIf(state -> maxMessageAge < state.getLastMessageTimeStampNs() + System.nanoTime());
+        observableAircraftStates.removeIf(state -> state.getLastMessageTimeStampNs() + maxMessageAge < System.nanoTime());
     }
 }
