@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Preconditions;
+import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.IcaoAddress;
@@ -29,7 +30,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
     private final Property<ObservableList<AirbornePos>> trajectory = new SimpleObjectProperty<>(FXCollections.observableList(new ArrayList<>()));
     private final ObservableList<AirbornePos> unmodifiableTrajectory;
-
+    private AircraftStateAccumulator<AircraftStateSetter> accumulator;
 
     public ObservableAircraftState(IcaoAddress icaoAddress, CallSign callSign, int category) {
         Objects.requireNonNull(icaoAddress);
@@ -37,6 +38,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.callSign.setValue(callSign);
         this.category.setValue(category);
         this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory.getValue());
+        this.accumulator = new AircraftStateAccumulator<>(this);
     }
 
     public record AirbornePos(GeoPos pos, double altitude, long timeStampNs) {

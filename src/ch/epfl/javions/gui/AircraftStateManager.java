@@ -6,6 +6,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -15,29 +16,31 @@ import java.util.*;
  */
 
 public final class AircraftStateManager {
+    private final AircraftDatabase aircraftDatabase;
     private final static double maxMessageAge = 60*10e9;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
     private final Set<ObservableAircraftState> observableAircraftStates;
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
         this.aircraftStateAccumulators = new HashMap<>();
         this.observableAircraftStates = FXCollections.observableSet(new HashSet<>());
-        // TODO: 4/11/2023 set must contain aircraft whose position is known, not sure what to do here
+        this.aircraftDatabase = aircraftDatabase;
     }
 
     public ObservableSet<ObservableAircraftState> states() {
         return (ObservableSet<ObservableAircraftState>) Collections.unmodifiableSet(observableAircraftStates);
     }
 
-    public void updateWithMessage(RawMessage message) {
-        IcaoAddress icaoAddress = message.icaoAddress();
-        aircraftStateAccumulators.computeIfAbsent(icaoAddress, k-> {
-            ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0);
-            observableAircraftStates.add(observableAircraftState);
-            return new AircraftStateAccumulator<>(observableAircraftState);
-        });
-        Message actual = MessageParser.parse(message);
-        if (actual != null) {
-            aircraftStateAccumulators.get(icaoAddress).update(actual);
+    public void updateWithMessage(Message message) {
+        if (message instanceof AirbornePositionMessage) {
+            IcaoAddress icaoAddress = message.icaoAddress();
+            aircraftStateAccumulators.computeIfAbsent(icaoAddress, k-> {
+                ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0);
+                observableAircraftStates.add(observableAircraftState);
+                if (observableAircraftState.getPosition() != null) {
+                    aircraftStateAccumulators.get(icaoAddress).update(message);
+                }
+                return new AircraftStateAccumulator<>(observableAircraftState);
+            });
         }
     }
 
