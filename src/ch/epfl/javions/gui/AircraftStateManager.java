@@ -1,6 +1,7 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.adsb.*;
+import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.collections.FXCollections;
@@ -48,7 +49,12 @@ public final class AircraftStateManager {
         if (message instanceof AirbornePositionMessage) {
             IcaoAddress icaoAddress = message.icaoAddress();
             aircraftStateAccumulators.computeIfAbsent(icaoAddress, k-> {
-                ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0);
+                ObservableAircraftState observableAircraftState = null;
+                try {
+                    observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0, aircraftDatabase.get(icaoAddress));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 observableAircraftStates.add(observableAircraftState);
                 if (observableAircraftState.getPosition() != null) {
                     aircraftStateAccumulators.get(icaoAddress).update(message);

@@ -5,6 +5,8 @@ import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
+import ch.epfl.javions.aircraft.AircraftData;
+import ch.epfl.javions.aircraft.AircraftRegistration;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -31,6 +33,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final Property<ObservableList<AirbornePos>> trajectory = new SimpleObjectProperty<>(FXCollections.observableList(new ArrayList<>()));
     private final ObservableList<AirbornePos> unmodifiableTrajectory;
     private AircraftStateAccumulator<AircraftStateSetter> accumulator;
+    private Property<AircraftData> aircraftData = new SimpleObjectProperty<>();
 
     /**
      * The constructor of the ObservableAircraftState class
@@ -40,13 +43,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * @param category    the category of the aircraft
      * @throws NullPointerException if the ICAO address is null
      */
-    public ObservableAircraftState(IcaoAddress icaoAddress, CallSign callSign, int category) {
+    public ObservableAircraftState(IcaoAddress icaoAddress, CallSign callSign, int category, AircraftData data) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress.setValue(icaoAddress);
         this.callSign.setValue(callSign);
         this.category.setValue(category);
         this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory.getValue());
         this.accumulator = new AircraftStateAccumulator<>(this);
+        this.aircraftData = new SimpleObjectProperty<>(data);
     }
 
     public record AirbornePos(GeoPos pos, double altitude, long timeStampNs) {
@@ -68,21 +72,38 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     /**
      * Updates the trajectory of the aircraft
      */
+
     private void updateTrajectory() {
-        ObservableList<AirbornePos> currentTrajectory = trajectory.getValue();
+        ObservableList<AirbornePos> currentTrajectory = getTrajectory();
         double currentAltitude = getAltitude();
         GeoPos currentPosition = getPosition();
         long currentTimestamp = getLastMessageTimeStampNs();
 
-        AirbornePos lastAirbornePos = currentTrajectory.get(currentTrajectory.size() - 1);
-        long lastTimestamp = lastAirbornePos.timeStampNs();
-        boolean sameTimestamp = currentTimestamp == lastTimestamp;
-
-        if (currentTrajectory.isEmpty() || !currentPosition.equals(currentTrajectory.get(currentTrajectory.size() - 1).pos())) {
+        if (currentTrajectory.isEmpty()) {
             currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-        } else if (sameTimestamp) {
-            currentTrajectory.set(currentTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
+        } else {
+            AirbornePos lastAirbornePos = currentTrajectory.get(currentTrajectory.size() - 1);
+            long lastTimestamp = lastAirbornePos.timeStampNs();
+            boolean sameTimestamp = currentTimestamp == lastTimestamp;
+
+            if (!currentPosition.equals(currentTrajectory.get(currentTrajectory.size() - 1).pos())) {
+                currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
+            } else if (sameTimestamp) {
+                currentTrajectory.set(currentTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
+            }
         }
+    }
+
+
+    public AircraftData getAircraftData() {
+        return aircraftData.getValue();
+    }
+
+    public Property<AircraftData> aircraftDataProperty() {
+        return aircraftData;
+    }
+    public AircraftRegistration getRegistration() {
+        return aircraftData.getValue().registration();
     }
 
     public long getLastMessageTimeStampNs() {
@@ -110,6 +131,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ObservableList<AirbornePos> getTrajectory() {
         return unmodifiableTrajectory;
     }
+
 
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
