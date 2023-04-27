@@ -1,12 +1,13 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.ByteString;
+import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.*;
 import java.util.Objects;
@@ -45,7 +46,8 @@ public class ObservableAircraftStateTest {
                 long timeStampNs = s.readLong();
                 int bytesRead = s.readNBytes(bytes, 0, bytes.length);
                 RawMessage rawMessage = RawMessage.of(timeStampNs, bytes);
-                aircraftStateManager.updateWithMessage(rawMessage);
+                Message message = MessageParser.parse(rawMessage);
+                aircraftStateManager.updateWithMessage(message);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

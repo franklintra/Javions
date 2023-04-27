@@ -63,12 +63,13 @@ public class BaseMapController {
      * @param position The position to center on
      */
     public void centerOn(GeoPos position) {
-        long centerX = (long) ((parameters.getMinX() + getPane().getHeight())/2);
-        long centerY = (long) (parameters.getMinY() + getPane().getWidth()/2);
-        parameters.scroll(
-                centerX - WebMercator.x(position.longitudeT32(), parameters.getZoomLevel()),
-                centerY - WebMercator.y(position.latitudeT32(), parameters.getZoomLevel())
-        );
+        int zoomLevel = parameters.getZoomLevel();
+        double xMercator = WebMercator.x(zoomLevel, position.longitude());
+        double yMercator = WebMercator.y(zoomLevel, position.latitude());
+        Point2D topLeft = parameters.getTopLeftCorner();
+        Point2D center = new Point2D(getPane().getWidth() / (2*TileManager.TILE_SIZE), getPane().getHeight() / (2*TileManager.TILE_SIZE));
+        parameters.scroll(xMercator - topLeft.getX(), yMercator - topLeft.getY());
+        parameters.scroll(center.getX(), center.getY()); //todo: check if it is meant to be negative or not
     }
 
     /**
@@ -83,7 +84,7 @@ public class BaseMapController {
 
             long currentTime = System.currentTimeMillis();
             if (currentTime < minScrollTime.get()) return;
-            minScrollTime.set(currentTime + 400);
+            minScrollTime.set(currentTime + 200);
             int previousZoom = parameters.getZoomLevel();
             parameters.scroll(e.getX(), e.getY());
             parameters.changeZoomLevel(zoomDelta);
