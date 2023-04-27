@@ -79,13 +79,12 @@ public class BaseMapController {
         // Gestion des événements de la souris
         LongProperty minScrollTime = new SimpleLongProperty();
         mapPane.setOnScroll(e -> {
-            int zoomDelta = (int) Math.signum(e.getDeltaY());
+            int zoomDelta = (int) - Math.signum(e.getDeltaY());
             if (zoomDelta == 0) return;
 
             long currentTime = System.currentTimeMillis();
             if (currentTime < minScrollTime.get()) return;
             minScrollTime.set(currentTime + 200);
-            int previousZoom = parameters.getZoomLevel();
             parameters.scroll(e.getX(), e.getY());
             parameters.changeZoomLevel(zoomDelta);
             parameters.scroll(-e.getX(), -e.getY());
