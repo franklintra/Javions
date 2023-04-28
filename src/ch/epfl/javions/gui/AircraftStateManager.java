@@ -20,11 +20,11 @@ public final class AircraftStateManager {
     private final AircraftDatabase aircraftDatabase;
     private final static double maxMessageAge = 6*10e9;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
-    private final Set<ObservableAircraftState> observableAircraftStates;
+    private final ObservableSet<ObservableAircraftState> observableAircraftStates;
 
     /**
      * Creates a new AircraftStateManager.
-     * @param aircraftDatabase the database of aircrafts.
+     * @param aircraftDatabase the database of aircraft.
      */
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
         this.aircraftStateAccumulators = new HashMap<>();
@@ -37,7 +37,7 @@ public final class AircraftStateManager {
      * @return the set of observable aircraft states.
      */
     public ObservableSet<ObservableAircraftState> states() {
-        return (ObservableSet<ObservableAircraftState>) Collections.unmodifiableSet(observableAircraftStates);
+        return FXCollections.unmodifiableObservableSet(observableAircraftStates);
     }
 
     /**
@@ -45,22 +45,20 @@ public final class AircraftStateManager {
      * @param message the message to update the state with.
      * @throws IOException if the aircraft database cannot be accessed.
      */
-    public void updateWithMessage(Message message) {
-        if (message instanceof AirbornePositionMessage) {
-            IcaoAddress icaoAddress = message.icaoAddress();
-            aircraftStateAccumulators.computeIfAbsent(icaoAddress, k-> {
-                ObservableAircraftState observableAircraftState = null;
-                try {
-                    observableAircraftState = new ObservableAircraftState(icaoAddress, new CallSign(""), 0, aircraftDatabase.get(icaoAddress));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                observableAircraftStates.add(observableAircraftState);
-                if (observableAircraftState.getPosition() != null) {
-                    aircraftStateAccumulators.get(icaoAddress).update(message);
-                }
-                return new AircraftStateAccumulator<>(observableAircraftState);
-            });
+    public void updateWithMessage(Message message) throws IOException{
+        IcaoAddress icaoAddress = message.icaoAddress();
+
+        if (!aircraftStateAccumulators.containsKey(icaoAddress)) {
+            AircraftData aircraftData = aircraftDatabase.get(icaoAddress);
+            if (aircraftData != null) {
+                ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, aircraftData);
+                aircraftStateAccumulators.put(icaoAddress, new AircraftStateAccumulator<>(observableAircraftState));
+            }
+        } else {
+            aircraftStateAccumulators.get(icaoAddress).update(message);
+            if (aircraftStateAccumulators.get(icaoAddress).stateSetter().getPosition() != null) {
+                observableAircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
+            }
         }
     }
 

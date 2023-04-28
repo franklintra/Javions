@@ -39,15 +39,11 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * The constructor of the ObservableAircraftState class
      *
      * @param icaoAddress the ICAO address of the aircraft
-     * @param callSign    the call sign of the aircraft
-     * @param category    the category of the aircraft
      * @throws NullPointerException if the ICAO address is null
      */
-    public ObservableAircraftState(IcaoAddress icaoAddress, CallSign callSign, int category, AircraftData data) {
+    public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData data) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress.setValue(icaoAddress);
-        this.callSign.setValue(callSign);
-        this.category.setValue(category);
         this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory.getValue());
         this.accumulator = new AircraftStateAccumulator<>(this);
         this.aircraftData = new SimpleObjectProperty<>(data);
@@ -94,7 +90,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
-
     public AircraftData getAircraftData() {
         return aircraftData.getValue();
     }
@@ -129,10 +124,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     public ObservableList<AirbornePos> getTrajectory() {
-        return unmodifiableTrajectory;
+        return trajectory.getValue();
     }
-
-
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         this.lastMessageTimeStampNs.set(timeStampNs);

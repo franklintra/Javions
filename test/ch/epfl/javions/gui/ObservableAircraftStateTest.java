@@ -74,7 +74,7 @@ public class ObservableAircraftStateTest {
 
                 long timeStampNs = s.readLong();
                 int bytesRead = s.readNBytes(bytes, 0, bytes.length);
-                assert bytesRead == RawMessage.LENGTH;
+                assertEquals(RawMessage.LENGTH, bytesRead);
                 ByteString message = new ByteString(bytes);
                 Message m = MessageParser.parse(new RawMessage(timeStampNs,message));
                 if (m!=null){
