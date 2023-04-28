@@ -1,5 +1,7 @@
 package ch.epfl.javions;
 
+import java.util.Objects;
+
 /**
  * @author @franklintra (362694)
  * @project ${PROJECT_NAME}
@@ -19,9 +21,7 @@ public final class Bits {
      */
     public static int extractUInt(long value, int start, int size) {
         Preconditions.checkArgument(0 < size && size < Integer.SIZE);
-        if (start < 0 || start + size > Long.SIZE) {
-            throw new IndexOutOfBoundsException("Invalid range: start=" + start + ", size=" + size);
-        }
+        Objects.checkFromIndexSize(start, size, Long.SIZE);
         final long mask = (1L << size) - 1;
         return (int) ((value >> start) & mask);
     }
@@ -35,9 +35,7 @@ public final class Bits {
      * @throws IndexOutOfBoundsException if the index is negative or greater than or equal to 64
      */
     public static boolean testBit(long value, int index) {
-        if (index < 0 || index >= Long.SIZE) {
-            throw new IndexOutOfBoundsException("Invalid index: " + index);
-        }
+        Objects.checkIndex(index, Long.SIZE);
         return (value & (1L << index)) != 0;
     }
 }

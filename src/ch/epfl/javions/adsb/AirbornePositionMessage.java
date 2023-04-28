@@ -1,14 +1,16 @@
-package ch.epfl.javions.adsb;/*
+package ch.epfl.javions.adsb;
 
 /**
- * @project Javions
  * @author @chukla (357550)
+ * @project Javions
  */
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
+
+import java.util.Objects;
 
 /**
  * Represents an ADS-B airborne position message.
@@ -47,9 +49,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         Preconditions.checkArgument(timeStampNs >= 0);
         Preconditions.checkArgument(parity == 0 || parity == 1);
         Preconditions.checkArgument(x >= 0 && x < 1 && y >= 0 && y < 1);
-        if (icaoAddress == null) {
-            throw new NullPointerException();
-        }
+        Objects.requireNonNull(icaoAddress);
     }
 
     /**
@@ -60,14 +60,13 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the decoded message, or null if the message cannot be decoded
      */
     public static AirbornePositionMessage of(RawMessage rawMessage) {
-
-        int Q = Bits.extractUInt(rawMessage.payload(), Q_INDEX_POSITION, 1);
+        long payload = rawMessage.payload();
+        int Q = Bits.extractUInt(payload, Q_INDEX_POSITION, 1);
         double altitude = 0;
 
-        switch (Q) {
-            case 0 -> {
+        if (Q == 0) {
                 // Unscramble
-                short sortedBits = unscramble(rawMessage.payload());
+                short sortedBits = unscramble(payload);
                 //separate into two groups, 3 bits from LSB, 9 bits from MSB
                 short multipleOfHundredFoots = grayCodeToDecimal(sortedBits & 0b111);
                 short multipleOfFiveHundredFoots = grayCodeToDecimal(sortedBits >> 3);
@@ -80,40 +79,37 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
                 if (multipleOfHundredFoots == 7) {
                     multipleOfHundredFoots = 5;
                 }
-                // Check if the value of multipleOfFiveHundredFoots is odd, and if so, change the value of multipleOfHundredFoots as per the specification
+                // Check if the value of multipleOfFiveHundredFoots is odd, and if so,
+                // change the value of multipleOfHundredFoots as per the specification
                 if (multipleOfFiveHundredFoots % 2 == 1) {
                     multipleOfHundredFoots = (short) (6 - multipleOfHundredFoots);
                 }
 
                 altitude = -1300 + (multipleOfHundredFoots * 100) + (multipleOfFiveHundredFoots * 500);
             }
-            case 1 -> {
+            else {
                 // calculate the altitude directly from the bits
-                altitude = getAltitudeForQ1(Bits.extractUInt(rawMessage.payload(), ALT_INDEX_START, NUM_ALT_BITS));
+                /*
+                 * This removes the Q-bit that is on the 4th position from the right, starting from 0, of the altitude bits in the ME attribute
+                 * Then it converts the remaining 11 bits to decimal, and multiplies it by 25 to get the altitude in foots
+                 * Finally, it subtracts 1000 to get the altitude from the ground (as it's stored as the altitude from 1000 foots)
+                 */
+                int value = Bits.extractUInt(payload, ALT_INDEX_START, NUM_ALT_BITS);
+                final long mask = ~(-1L << 4);
+                long alt =  (value & mask) | ((value >>> 1) & ~mask);
+                altitude = 25 * alt - 1000;
             }
-        }
+
         return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
                 Units.convertFrom(altitude, Units.Length.FOOT),
-                Bits.extractUInt(rawMessage.payload(), PARITY_BIT, 1),
-                Math.scalb(Bits.extractUInt(rawMessage.payload(), LONGITUDE_INDEX_START, LONG_OR_LAT_BIT_LENGTH), -17),
-                Math.scalb(Bits.extractUInt(rawMessage.payload(), LATITUDE_INDEX_START, LONG_OR_LAT_BIT_LENGTH), -17)
+                Bits.extractUInt(payload, PARITY_BIT, 1),
+                Math.scalb(Bits.extractUInt(payload, LONGITUDE_INDEX_START, LONG_OR_LAT_BIT_LENGTH), -17),
+                Math.scalb(Bits.extractUInt(payload, LATITUDE_INDEX_START, LONG_OR_LAT_BIT_LENGTH), -17)
         );
     }
 
-    /**
-     * This function removes the Q-bit that is on the 4th position from the right, starting from 0, of the altitude bits in the ME attribute
-     * Then it converts the remaining 11 bits to decimal, and multiplies it by 25 to get the altitude in foots
-     * Finally, it subtracts 1000 to get the altitude from the ground (as it's stored as the altitude from 1000 foots)
-     * @param value the long to remove the bit from
-     * @return the actual altitude in foots
-     */
-    private static long getAltitudeForQ1(long value) {
-        final long mask = ~(-1L << 4);
-        long alt =  (value & mask) | ((value >>> 1) & ~mask);
-        return 25 * alt - 1000;
-    }
 
     /**
      * Converts a gray code to decimal

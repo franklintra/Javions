@@ -15,6 +15,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     private static final int DF = 17; // downlink format of known-type ADS-B message
     private static final int PAYLOAD_START_BYTE = 4;
     private static final int PAYLOAD_END_BYTE = 11;
+    private static final Crc24 crc = new Crc24(Crc24.GENERATOR);
 
     public RawMessage {
         Preconditions.checkArgument(timeStampNs >= 0 && bytes.size() == LENGTH);
@@ -28,7 +29,6 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      * @return a RawMessage object if the CRC24 of the bytes is 0, null otherwise
      */
     public static RawMessage of(long timeStampNs, byte[] bytes) {
-        Crc24 crc = new Crc24(Crc24.GENERATOR);
         return crc.crc(bytes) == 0 ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 

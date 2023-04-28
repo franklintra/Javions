@@ -9,23 +9,16 @@ import java.util.regex.Pattern;
  * @author @chukla (357550)
  * @project Javions
  */
-public record AircraftRegistration(String registration) {
+public record AircraftRegistration(String string) {
     private static final Pattern REGEX = Pattern.compile("[A-Z0-9 .?/_+-]+");
 
     /**
      * The constructor of the AircraftRegistration class
      *
-     * @param registration ICAO aircraft description
+     * @param string ICAO aircraft description
      * @throws IllegalArgumentException if the description is not valid
      */
     public AircraftRegistration {
-        Preconditions.checkArgument(REGEX.matcher(registration).matches());
-    }
-
-    /**
-     * @return the description of the aircraft as a description
-     */
-    public String string() {
-        return registration;
+        Preconditions.checkArgument(REGEX.matcher(string).matches());
     }
 }

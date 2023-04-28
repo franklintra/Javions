@@ -1,5 +1,6 @@
 package ch.epfl.javions;
 
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.Objects;
 
@@ -18,8 +19,7 @@ public final class ByteString {
      * @param bytes the bytes to be stored in the byte description
      */
     public ByteString(byte[] bytes) {
-        data = new byte[bytes.length];
-        System.arraycopy(bytes, 0, data, 0, bytes.length); // This is to make sure that the byte array is immutable (the array is copied)
+        data = bytes.clone();
     }
 
     /**
@@ -35,7 +35,7 @@ public final class ByteString {
      */
     public int byteAt(int index) {
         Objects.checkIndex(index, data.length);
-        return data[index] & 0xFF;
+        return Byte.toUnsignedInt(data[index]);
     }
 
     /**
@@ -44,12 +44,12 @@ public final class ByteString {
      * @return the bytes in the range [fromIndex, toIndex[
      */
     public long bytesInRange(int fromIndex, int toIndex) {
-        Preconditions.checkArgument(toIndex - fromIndex < 8);
+        Preconditions.checkArgument(toIndex - fromIndex < Long.BYTES);
         Objects.checkFromToIndex(fromIndex, toIndex, data.length);
 
         long result = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            result <<= 8; // moving over the last byte calculated by one to have space for the next one
+            result <<= Byte.SIZE; // moving over the last byte calculated by one to have space for the next one
             result |= byteAt(i); // appending the new byte to the end of result
         }
         return result;
@@ -62,9 +62,6 @@ public final class ByteString {
      */
     public static ByteString ofHexadecimalString(String hexString) {
         Preconditions.checkArgument(hexString.length() % 2 == 0);
-        if (!hexString.matches("[0-9a-fA-F]+")) {
-            throw new NumberFormatException("Only hexadecimal characters are allowed");
-        }
         byte[] bytes = HEX_FORMAT.parseHex(hexString);
         return new ByteString(bytes);
     }
@@ -97,9 +94,6 @@ public final class ByteString {
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ByteString)) {
-            return false;
-        }
-        return java.util.Arrays.equals(data, ((ByteString) o).data);
+        return (o instanceof ByteString) && Arrays.equals(data, ((ByteString) o).data);
     }
 }

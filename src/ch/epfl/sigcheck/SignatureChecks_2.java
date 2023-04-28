@@ -18,7 +18,7 @@ final class SignatureChecks_2 {
         v04 = new ch.epfl.javions.aircraft.AircraftDescription(v05);
         v07 = v04.equals(v06);
         v02 = v04.hashCode();
-        v05 = v04.description();
+        v05 = v04.string();
         v05 = v04.toString();
     }
 
@@ -26,7 +26,7 @@ final class SignatureChecks_2 {
         v08 = new ch.epfl.javions.aircraft.AircraftRegistration(v05);
         v07 = v08.equals(v06);
         v02 = v08.hashCode();
-        v05 = v08.registration();
+        v05 = v08.string();
         v05 = v08.toString();
     }
 
@@ -34,7 +34,7 @@ final class SignatureChecks_2 {
         v09 = new ch.epfl.javions.aircraft.AircraftTypeDesignator(v05);
         v07 = v09.equals(v06);
         v02 = v09.hashCode();
-        v05 = v09.typeDesignator();
+        v05 = v09.string();
         v05 = v09.toString();
     }
 
@@ -42,7 +42,7 @@ final class SignatureChecks_2 {
         v10 = new ch.epfl.javions.aircraft.IcaoAddress(v05);
         v07 = v10.equals(v06);
         v02 = v10.hashCode();
-        v05 = v10.icaoAddress();
+        v05 = v10.string();
         v05 = v10.toString();
     }
 

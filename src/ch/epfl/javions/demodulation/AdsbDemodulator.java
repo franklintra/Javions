@@ -15,6 +15,7 @@ import java.io.InputStream;
 public final class AdsbDemodulator {
     // The window size is the length of an ADS-B Message to be able to properly decode it
     private final static int WINDOW_SIZE = 1200;
+    private final static int VALID_DOWNLINK_FORMAT = 17; // this is the Downlink Format of ADS-B messages
     private final PowerWindow powerWindow; // the power window used to demodulate the ADS-B messages
 
     /**
@@ -37,7 +38,7 @@ public final class AdsbDemodulator {
     public RawMessage nextMessage() throws IOException {
         int previousPower = 0; // this is used to compare the current power with the previous power
         while (powerWindow.isFull()) {
-            if (DF() == 17) { // first check that the Downlink Format is 17
+            if (DF() == VALID_DOWNLINK_FORMAT) { // first check that the Downlink Format is 17
                 if (sigmaP(0) >= previousPower && sigmaP(0) >= sigmaP(1)) { // this check that the current power is a local maximum
                     if (sigmaP(0) >= 2 * sigmaV()) { // this checks the necessary condition found in the ADS-B documentation
                         RawMessage message = RawMessage.of(powerWindow.position() * 100, getAllBytes());

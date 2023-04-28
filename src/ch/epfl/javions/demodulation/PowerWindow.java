@@ -4,19 +4,26 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * @author @franklintra (362694)
  * @project Javions
  */
+
+/**
+ * This class is used to compute the power of a stream of samples.
+ * The power is computed using a sliding window of a given size.
+ * It allows to demodulate messages from the samples in combination with the PowerComputer and SamplesDecoder classes.
+ */
 public final class PowerWindow {
-    private static final int BATCH_SIZE = (int) Math.scalb(1, 16);
+    private static final int BATCH_SIZE = 1 << 16; // 2^16
     private final PowerComputer computer;
     private final int[] evenWindow;
     private final int[] oddWindow;
     private final int windowSize;
     private final int[] window; //we will consider the window as a circular array
-    private int windowOldestIndex; // this is the index of the oldest sample in the window
+    private long windowOldestIndex; // this is the index of the oldest sample in the window
     private byte batchIndex; // this is used to alternate between the even and odd batch (alternates between 0 and 1 hence the byte type)
     private int samplesCalculated; // this is used to determine whether the window is full or not (if we have reached the end of the stream)
 
@@ -66,10 +73,8 @@ public final class PowerWindow {
      * @throws IndexOutOfBoundsException if the position is out of bounds
      */
     public int get(int position) {
-        if ((position < 0) || (position >= windowSize)) {
-            throw new IndexOutOfBoundsException("Position " + position + " is out of bounds.");
-        }
-        return window[baseWindowMod(windowOldestIndex + position)];
+        Objects.checkIndex(position, windowSize);
+        return window[baseWindowMod((int) (windowOldestIndex + position))];
     }
 
     /**
@@ -83,9 +88,9 @@ public final class PowerWindow {
             readBatch();
         }
         if (batchIndex % 2 == 0) {
-            window[baseWindowMod(windowOldestIndex)] = evenWindow[windowOldestIndex % BATCH_SIZE];
+            window[baseWindowMod(windowOldestIndex)] = evenWindow[baseBatchMod(windowOldestIndex)];
         } else {
-            window[baseWindowMod(windowOldestIndex)] = oddWindow[windowOldestIndex % BATCH_SIZE];
+            window[baseWindowMod(windowOldestIndex)] = oddWindow[baseBatchMod(windowOldestIndex)];
         }
         windowOldestIndex++;
     }
@@ -93,13 +98,13 @@ public final class PowerWindow {
     /**
      * Advances the window by the given number of samples by reading the next samples from the stream.
      *
-     * @param n the number of samples to advance by
+     * @param offset the number of samples to advance by
      * @throws IOException              if the stream cannot be read / if the window is full
      * @throws IllegalArgumentException if the number of samples to advance by is negative
      */
-    public void advanceBy(int n) throws IOException {
-        Preconditions.checkArgument(n >= 0);
-        for (int i = 0; i < n; i++) {
+    public void advanceBy(int offset) throws IOException {
+        Preconditions.checkArgument(offset >= 0);
+        for (int i = 0; i < offset; i++) {
             advance();
         }
     }
@@ -126,7 +131,11 @@ public final class PowerWindow {
      * @param index the number to calculate the modulus of
      * @return the modulus of the number base windowSize
      */
-    private int baseWindowMod(int index) {
-        return index % windowSize;
+    private int baseWindowMod(long index) {
+        return (int) index % windowSize;
+    }
+
+    private int baseBatchMod(long index) {
+        return (int) index % BATCH_SIZE;
     }
 }

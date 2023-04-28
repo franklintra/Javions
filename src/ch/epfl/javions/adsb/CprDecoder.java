@@ -34,17 +34,21 @@ public final class CprDecoder {
      */
     public static GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
         Preconditions.checkArgument(mostRecent == 0 || mostRecent == 1);
-        //need to calculate both latitudes because they are used to calculate nLong and check that the plane doesn't cross a longitude zone (rare case but still)
+        //need to calculate both latitudes because they are used to calculate nLong and
+        //check that the plane doesn't cross a longitude zone (rare case but still)
         double currentMessageLatitude = normalizeT32Angle(latitudeCalculator(y0, y1, mostRecent));
         double otherMessageLatitude = normalizeT32Angle(latitudeCalculator(y0, y1, 1 - mostRecent));
 
+        int currentMessageNumberOfLongitudes = numberOfLongitudeZones(currentMessageLatitude);
+        int otherMessageNumberOfLongitudes = numberOfLongitudeZones(otherMessageLatitude);
+
         if (!GeoPos.isValidLatitudeT32((int) Math.rint(Units.convert(currentMessageLatitude, Units.Angle.TURN, Units.Angle.T32)))
-                || numberOfLongitudeZones(currentMessageLatitude) != numberOfLongitudeZones(otherMessageLatitude)) {
+                || currentMessageNumberOfLongitudes != otherMessageNumberOfLongitudes) {
             return null;
         }
 
-        int nLong = numberOfLongitudeZones(mostRecent == 0 ? currentMessageLatitude : otherMessageLatitude); // the number of longitude zones for even messages (odd value is even - 1)
-        double currentMessageLong = normalizeT32Angle(longitudeCalculator(x0, x1, nLong, mostRecent)); //if the longitude is greater than 180°, then it should be 180° - the longitude so one turn is subtracted
+        //if the longitude is greater than 180°, then it should be 180° - the longitude so one turn is subtracted
+        double currentMessageLong = normalizeT32Angle(longitudeCalculator(x0, x1, currentMessageNumberOfLongitudes, mostRecent));
 
         return new GeoPos(
                 (int) Math.rint(Units.convert(currentMessageLong, Units.Angle.TURN, Units.Angle.T32)),
@@ -63,7 +67,8 @@ public final class CprDecoder {
      * @return the latitude in turn
      */
     private static double latitudeCalculator(double y0, double y1, int calcIndex) {
-        int lat = (int) Math.rint(y0 * NUMBER_OF_LATITUDE_ZONES[1] - y1 * NUMBER_OF_LATITUDE_ZONES[0]); // this is a temporary value used to compute latZone0 and latZone1
+        // this is a temporary value used to compute latZone0 and latZone1
+        int lat = (int) Math.rint(y0 * NUMBER_OF_LATITUDE_ZONES[1] - y1 * NUMBER_OF_LATITUDE_ZONES[0]);
         double currentMessageY = (calcIndex == 0) ? y0 : y1; // choose between y0 and y1 depending on calcIndex
         return WIDTH_OF_LATITUDE_ZONES[calcIndex] * ((lat < 0 ? lat + NUMBER_OF_LATITUDE_ZONES[calcIndex] : lat) + currentMessageY);
     }
@@ -96,10 +101,10 @@ public final class CprDecoder {
      */
     private static int numberOfLongitudeZones(double lat) {
         //the following formulas are both taken from the ADS-B specification
+        double cos = Math.cos(Units.convertFrom(lat, Units.Angle.TURN));
         double A = Math.acos(1 -
-                (1 - Math.cos(Math.PI * 2 * WIDTH_OF_LATITUDE_ZONES[0]))
-                        /
-                        Math.pow(Math.cos(Units.convert(lat, Units.Angle.TURN, Units.Angle.RADIAN)), 2)
+                (1 - Math.cos(Units.Angle.TURN * WIDTH_OF_LATITUDE_ZONES[0]))
+                        / (cos*cos)
         );
         return (Double.isNaN(A) ? 1 : (int) Math.floor((Math.PI * 2) / A));
     }

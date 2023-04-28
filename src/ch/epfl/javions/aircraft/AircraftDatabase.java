@@ -52,7 +52,7 @@ public final class AircraftDatabase {
                 ) {
                     String line;
                     while ((line = file.readLine()) != null) {
-                        int comparison = line.substring(0, IcaoAddress.LENGTH).compareTo(address.icaoAddress());
+                        int comparison = line.substring(0, IcaoAddress.LENGTH).compareTo(address.string());
                         if (comparison > 0) {
                             break nextZip; //Interrupts the loop and go to the next zip file if the current description is greater than the description we're looking for (because the database is sorted)
                         }

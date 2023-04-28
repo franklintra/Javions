@@ -4,6 +4,8 @@ import ch.epfl.javions.Bits;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
+import java.util.Objects;
+
 /**
  * @author @franklintra (362694)
  * @project Javions
@@ -24,12 +26,12 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
      * @param icaoAddress the ICAO description of the aircraft
      * @param category    the category of the aircraft
      * @param callSign    the call sign of the aircraft
+     * @throws NullPointerException if icaoAddress or callSign is null
      */
     public AircraftIdentificationMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
-        if (callSign == null || icaoAddress == null) {
-            throw new NullPointerException("One of the parameters is null");
-        }
+        Objects.requireNonNull(icaoAddress);
+        Objects.requireNonNull(callSign);
     }
 
     /**
@@ -39,18 +41,18 @@ public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAd
      * @return the corresponding AircraftIdentificationMessage
      */
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
-        Preconditions.checkArgument(rawMessage.downLinkFormat() == 17);
         StringBuilder callSignString = new StringBuilder();
+        long payload = rawMessage.payload();
         //this loop goes from 42 to 0, 6 by 6, to ensure we decode the characters in order (and use the .append method with the String Builder).
         //the most significant bits contain the characters on the left
         for (int i = 42; i >= 0; i = i - CHAR_LENGTH_ENCODED) {
-            Character ch = getChar(Bits.extractUInt(rawMessage.payload(), i, CHAR_LENGTH_ENCODED));
+            Character ch = getChar(Bits.extractUInt(payload, i, CHAR_LENGTH_ENCODED));
             if (ch == null) {
                 return null;
             }
             callSignString.append(ch);
         }
-        int category = (14 - (Bits.extractUInt(rawMessage.payload(), 51, 5)) << 4) + Bits.extractUInt(rawMessage.payload(), 48, 3);
+        int category = (14 - (Bits.extractUInt(payload, 51, 5)) << 4) + Bits.extractUInt(payload, 48, 3);
         CallSign callSign = new CallSign(callSignString.toString().stripTrailing());
         return new AircraftIdentificationMessage(rawMessage.timeStampNs(), rawMessage.icaoAddress(), category, callSign);
     }

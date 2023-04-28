@@ -70,7 +70,7 @@ public class ObservableAircraftStateTest {
             AircraftDatabase database = new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath());
             AircraftStateManager aircraftStateManager = new AircraftStateManager(database);
 
-            while (true) {
+            while (s.available() >= bytes.length) {
 
                 long timeStampNs = s.readLong();
                 int bytesRead = s.readNBytes(bytes, 0, bytes.length);
@@ -85,7 +85,9 @@ public class ObservableAircraftStateTest {
                 }
 
             }
-        } catch (EOFException e) { /* nothing to do */ }
+        } catch (EOFException e) {
+            System.out.println(e.getMessage());
+        }
         finally {
             List<ObservableAircraftState> states2 = new ArrayList<>(states);
             states2.sort(new AddressComparator());
