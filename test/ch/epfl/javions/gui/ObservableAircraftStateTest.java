@@ -28,19 +28,42 @@ public class ObservableAircraftStateTest {
 
     @Test
     void test() {
-            try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
-                int counter = 0;
-                byte[] bytes = new byte[RawMessage.LENGTH];
-                while (s.available() >= bytes.length) {
-                    long timeStampNs = s.readLong();
-                    int bytesRead = s.readNBytes(bytes, 0, bytes.length);
-                    assertEquals(RawMessage.LENGTH, bytesRead);
-                    ByteString message = new ByteString(bytes);
-                    if (counter++ < 3) System.out.printf("%13d: %s\n", timeStampNs, message);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
+            int counter = 0;
+            byte[] bytes = new byte[RawMessage.LENGTH];
+            while (s.available() >= bytes.length) {
+                long timeStampNs = s.readLong();
+                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
+                assertEquals(RawMessage.LENGTH, bytesRead);
+                ByteString message = new ByteString(bytes);
+                if (counter++ < 3) System.out.printf("%13d: %s\n", timeStampNs, message);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void etape7Test() throws IOException {
+        try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
+            byte[] bytes = new byte[RawMessage.LENGTH];
+
+            AircraftStateManager stateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
+
+            for (int i = 0; i < 100; i++) {
+                long timeStampNs = s.readLong();
+                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
+                assert bytesRead == RawMessage.LENGTH;
+                ByteString message = new ByteString(bytes);
+
+                stateManager.updateWithMessage(Objects.requireNonNull(MessageParser.parse(RawMessage.of(timeStampNs, bytes))));
+
+                System.out.println(stateManager.states());
+            }
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
 //    @Test
@@ -69,6 +92,7 @@ public class ObservableAircraftStateTest {
             byte[] bytes = new byte[RawMessage.LENGTH];
             AircraftDatabase database = new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath());
             AircraftStateManager aircraftStateManager = new AircraftStateManager(database);
+            states = aircraftStateManager.states();
 
             while (s.available() >= bytes.length) {
 
@@ -123,6 +147,7 @@ public class ObservableAircraftStateTest {
     private static String nullVelocity(Long p) {
         return p == null ? "" : String.valueOf(Units.convertTo(p, Units.Speed.KILOMETER_PER_HOUR));
     }
+
     private static String nullPosLon(GeoPos p) {
         return p == null ? "" : String.valueOf(Units.convertTo(p.longitude(), Units.Angle.DEGREE));
     }
@@ -131,11 +156,9 @@ public class ObservableAircraftStateTest {
         return p == null ? "" : String.valueOf(Units.convertTo(p.latitude(), Units.Angle.DEGREE));
     }
 
-    private static class AddressComparator
-            implements Comparator<ObservableAircraftState> {
+    private static class AddressComparator implements Comparator<ObservableAircraftState> {
         @Override
-        public int compare(ObservableAircraftState o1,
-                           ObservableAircraftState o2) {
+        public int compare(ObservableAircraftState o1, ObservableAircraftState o2) {
             String s1 = o1.getIcaoAddress().toString();
             String s2 = o2.getIcaoAddress().toString();
             return s1.compareTo(s2);

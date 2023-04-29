@@ -30,10 +30,11 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty trackOrHeading = new SimpleDoubleProperty();
     private final LongProperty lastMessageTimeStampNs = new SimpleLongProperty();
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
-    private final Property<ObservableList<AirbornePos>> trajectory = new SimpleObjectProperty<>(FXCollections.observableList(new ArrayList<>()));
-    private final ObservableList<AirbornePos> unmodifiableTrajectory;
+    private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
+    private final ObservableList<AirbornePos> unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
     private AircraftStateAccumulator<AircraftStateSetter> accumulator;
     private Property<AircraftData> aircraftData = new SimpleObjectProperty<>();
+    private long previousTimestamp;
 
     /**
      * The constructor of the ObservableAircraftState class
@@ -44,24 +45,20 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData data) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress.setValue(icaoAddress);
-        this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory.getValue());
         this.accumulator = new AircraftStateAccumulator<>(this);
         this.aircraftData = new SimpleObjectProperty<>(data);
     }
 
-    public record AirbornePos(GeoPos pos, double altitude, long timeStampNs) {
+    public record AirbornePos(GeoPos pos, double altitude) {
         /**
          * The constructor of the AirbornePos class
          *
          * @param pos         the position of the aircraft
          * @param altitude    the altitude of the aircraft
-         * @param timeStampNs the time stamp of the last message received from the aircraft
          * @throws NullPointerException if the position is null
          */
         public AirbornePos {
             Preconditions.checkArgument(altitude >= 0);
-            Preconditions.checkArgument(timeStampNs >= 0);
-            Objects.requireNonNull(pos);
         }
     }
 
@@ -70,25 +67,18 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
 
     private void updateTrajectory() {
-        ObservableList<AirbornePos> currentTrajectory = getTrajectory();
         double currentAltitude = getAltitude();
         GeoPos currentPosition = getPosition();
         long currentTimestamp = getLastMessageTimeStampNs();
 
-        if (currentTrajectory.isEmpty()) {
-            currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-        } else {
-            AirbornePos lastAirbornePos = currentTrajectory.get(currentTrajectory.size() - 1);
-            long lastTimestamp = lastAirbornePos.timeStampNs();
-            boolean sameTimestamp = currentTimestamp == lastTimestamp;
-
-            if (!currentPosition.equals(currentTrajectory.get(currentTrajectory.size() - 1).pos())) {
-                currentTrajectory.add(new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-            } else if (sameTimestamp) {
-                currentTrajectory.set(currentTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude, currentTimestamp));
-            }
+        if (trajectory.isEmpty() || (getPosition().equals(trajectory.get(trajectory.size() -1).pos())) ) {
+            trajectory.add(new AirbornePos(currentPosition, currentAltitude));
+            previousTimestamp = getLastMessageTimeStampNs();
+        } else if (currentTimestamp == previousTimestamp) {
+            trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
         }
     }
+
 
     public AircraftData getAircraftData() {
         return aircraftData.getValue();
@@ -97,6 +87,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public Property<AircraftData> aircraftDataProperty() {
         return aircraftData;
     }
+
     public AircraftRegistration getRegistration() {
         return aircraftData.getValue().registration();
     }
@@ -104,28 +95,35 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public long getLastMessageTimeStampNs() {
         return lastMessageTimeStampNs.get();
     }
+
     public int getCategory() {
         return category.get();
     }
+
     public CallSign getCallSign() {
         return callSign.getValue();
     }
+
     public GeoPos getPosition() {
         return position.getValue();
     }
+
     public double getAltitude() {
         return altitude.get();
     }
+
     public double getVelocity() {
         return velocity.get();
     }
+
     public double getTrackOrHeading() {
         return trackOrHeading.get();
     }
 
     public ObservableList<AirbornePos> getTrajectory() {
-        return trajectory.getValue();
+        return trajectory;
     }
+
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         this.lastMessageTimeStampNs.set(timeStampNs);
@@ -150,7 +148,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         this.position.setValue(position);
-        updateTrajectory();
+        if (getPosition() != null){
+            updateTrajectory();
+        }
     }
 
     /**
@@ -162,7 +162,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setAltitude(double altitude) {
         this.altitude.set(altitude);
-        updateTrajectory();
+        if (getPosition() != null){
+            updateTrajectory();
+        }
     }
 
     @Override
@@ -207,7 +209,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return lastMessageTimeStampNs;
     }
 
-    public ReadOnlyProperty<ObservableList<AirbornePos>> trajectoryProperty() {
-        return trajectory;
+    public ObservableList<AirbornePos> trajectoryProperty() {
+        return unmodifiableTrajectory;
     }
+
 }
