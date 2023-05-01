@@ -20,8 +20,7 @@ public final class  AircraftStateManager {
     private final AircraftDatabase aircraftDatabase;
     private final static double maxMessageAge = 6 * 10e9;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
-    private final ObservableSet<ObservableAircraftState> observableAircraftStates =FXCollections.observableSet(new HashSet<>());
-    private final ObservableSet<ObservableAircraftState> observableAircraftStates1 = FXCollections.unmodifiableObservableSet(observableAircraftStates);
+    private final ObservableSet<ObservableAircraftState> observableAircraftStates = FXCollections.observableSet(new HashSet<>());
 
     /**
      * Creates a new AircraftStateManager.
@@ -39,7 +38,7 @@ public final class  AircraftStateManager {
      * @return the set of observable aircraft states.
      */
     public ObservableSet<ObservableAircraftState> states() {
-        return observableAircraftStates1;
+        return FXCollections.unmodifiableObservableSet(observableAircraftStates);
     }
 
     /**

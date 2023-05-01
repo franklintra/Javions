@@ -44,7 +44,7 @@ public class ObservableAircraftStateTest {
     }
 
     @Test
-    void etape7Test() throws IOException {
+    void etape7Test() {
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
 
@@ -93,9 +93,7 @@ public class ObservableAircraftStateTest {
             AircraftDatabase database = new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath());
             AircraftStateManager aircraftStateManager = new AircraftStateManager(database);
             states = aircraftStateManager.states();
-
             while (s.available() >= bytes.length) {
-
                 long timeStampNs = s.readLong();
                 int bytesRead = s.readNBytes(bytes, 0, bytes.length);
                 assertEquals(RawMessage.LENGTH, bytesRead);
