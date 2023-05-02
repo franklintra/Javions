@@ -3,8 +3,6 @@ package ch.epfl.javions.aircraft;
 //import jdk.internal.icu.impl.Punycode;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -37,26 +35,20 @@ public final class AircraftDatabase {
      */
     public AircraftData get(IcaoAddress address) throws IOException {
         Objects.requireNonNull(address);
+        String identifier = address.string().substring(4, 6) + ".csv";
         try (ZipFile zipFile = new ZipFile(new File(filename))) {
-            Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-            while (zipEntries.hasMoreElements()) {
-                nextZip:
-                try (
-                        BufferedReader file = new BufferedReader(new InputStreamReader(
-                                zipFile.getInputStream(
-                                        zipEntries.nextElement()
-                                )
-                        ))
-                ) {
-                    String line;
-                    while ((line = file.readLine()) != null) {
-                        int comparison = line.substring(0, IcaoAddress.LENGTH).compareTo(address.string());
-                        if (comparison > 0) {
-                            break nextZip; //Interrupts the loop and go to the next zip file if the current description is greater than the description we're looking for (because the database is sorted)
-                        }
-                        if (comparison == 0) {
-                            return parseAircraftData(line);
-                        }
+            ZipEntry zipEntry = zipFile.getEntry(identifier);
+            try (
+                    BufferedReader file = new BufferedReader(new InputStreamReader(zipFile.getInputStream(zipEntry)))
+            ) {
+                String line;
+                while ((line = file.readLine()) != null) {
+                    int comparison = line.substring(0, IcaoAddress.LENGTH).compareTo(address.string());
+                    if (comparison > 0) {
+                        return null; //Interrupts the loop and go to the next zip file if the current description is greater than the description we're looking for (because the database is sorted)
+                    }
+                    if (comparison == 0) {
+                        return parseAircraftData(line);
                     }
                 }
             }
