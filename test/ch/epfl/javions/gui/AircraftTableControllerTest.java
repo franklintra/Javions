@@ -1,8 +1,12 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.ByteString;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 
+import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.adsb.MessageParser;
+import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
@@ -11,6 +15,12 @@ import javafx.collections.ObservableSet;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author @franklintra (362694)
@@ -22,15 +32,28 @@ public class AircraftTableControllerTest extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase("aircraft.zip"));
-        ObservableSet<ObservableAircraftState> observableAircraftStates = aircraftStateManager.states();
+        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
         ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
 
-        var root = new BorderPane(new AircraftTableController(observableAircraftStates, selectedAircraftState).getPane());
+        var root = new BorderPane(new AircraftTableController(aircraftStateManager.states(), selectedAircraftState).getPane());
         primaryStage.setScene(new Scene(root));
         primaryStage.setTitle("TestBaseMapController");
         primaryStage.setWidth(1920);
         primaryStage.setHeight(1080);
         primaryStage.show();
+        try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
+            byte[] bytes = new byte[RawMessage.LENGTH];
+            while (s.available() >= bytes.length) {
+                long timeStampNs = s.readLong();
+                s.readNBytes(bytes, 0, bytes.length);
+                ByteString message = new ByteString(bytes);
+                Message m = MessageParser.parse(new RawMessage(timeStampNs, message));
+                if (m == null) continue;
+                aircraftStateManager.updateWithMessage(m);
+                aircraftStateManager.purge();
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

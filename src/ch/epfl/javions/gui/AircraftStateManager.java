@@ -22,6 +22,8 @@ public final class  AircraftStateManager {
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
     private final ObservableSet<ObservableAircraftState> observableAircraftStates = FXCollections.observableSet(new HashSet<>());
 
+    private final Map<ObservableAircraftState, Long> lastTime = new HashMap<>();
+
     /**
      * Creates a new AircraftStateManager.
      *
@@ -62,7 +64,7 @@ public final class  AircraftStateManager {
                 }
             }
             aircraftStateAccumulators.get(icaoAddress).update(message);
-
+            lastTime.merge(aircraftStateAccumulators.get(icaoAddress).stateSetter(), System.nanoTime(), (a, b) -> b);
 
         }
     }
@@ -71,6 +73,6 @@ public final class  AircraftStateManager {
      * Removes all the aircraft states that have not been updated for more than 60 seconds.
      */
     public void purge() {
-        observableAircraftStates.removeIf(state -> state.getLastMessageTimeStampNs() + maxMessageAge < System.nanoTime());
+        observableAircraftStates.removeIf(state -> lastTime.get(state) + maxMessageAge < System.nanoTime());
     }
 }

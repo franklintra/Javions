@@ -103,7 +103,7 @@ public class MapParameters {
     public void changeZoomLevel(int deltaZoom) {
         int newZoom = Math2.clamp(MIN_ZOOM, zoomLevel.get() + deltaZoom, MAX_ZOOM);
         //if (newZoom == zoomLevel.get()) return;
-        double scaleFactor = Math.pow(2, newZoom - zoomLevel.get());
+        double scaleFactor = Math.scalb(1, newZoom - zoomLevel.get());
         minX.set(minX.get() * scaleFactor);
         minY.set(minY.get() * scaleFactor);
         zoomLevel.set(newZoom);

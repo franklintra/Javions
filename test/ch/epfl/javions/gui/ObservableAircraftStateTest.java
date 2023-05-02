@@ -13,12 +13,14 @@ import javafx.collections.ObservableSet;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author @franklintra (362694)
@@ -85,54 +87,57 @@ public class ObservableAircraftStateTest {
 //        }
 //    }
     @Test
-    public void test1() throws IOException{
+    public void printTable() throws IOException{
         ObservableSet<ObservableAircraftState> states = null;
-        int count= 0;
+        int counter = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
             byte[] bytes = new byte[RawMessage.LENGTH];
             AircraftDatabase database = new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath());
             AircraftStateManager aircraftStateManager = new AircraftStateManager(database);
-            states = aircraftStateManager.states();
             while (s.available() >= bytes.length) {
+                counter++;
                 long timeStampNs = s.readLong();
-                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
-                assertEquals(RawMessage.LENGTH, bytesRead);
+                s.readNBytes(bytes, 0, bytes.length);
                 ByteString message = new ByteString(bytes);
                 Message m = MessageParser.parse(new RawMessage(timeStampNs,message));
-                if (m!=null){
-                    //count++;
-                    aircraftStateManager.updateWithMessage(m);
-                    aircraftStateManager.purge();
-                    states = aircraftStateManager.states();
-                }
-
+                if (m == null) continue;
+                aircraftStateManager.updateWithMessage(m);
+                aircraftStateManager.purge();
+                states = aircraftStateManager.states();
+                if (100 < counter++ && counter < 600) printStatesAndClear(System.out, states);
             }
         } catch (EOFException e) {
             System.out.println(e.getMessage());
         }
         finally {
-            List<ObservableAircraftState> states2 = new ArrayList<>(states);
-            states2.sort(new AddressComparator());
-            for(ObservableAircraftState o: states2){
-                count++;
-                AircraftData data = o.getAircraftData();
-                if (data != null) {
-                    //System.out.println(count);
-                    GeoPos p = o.getPosition();
-                    String registration = o.getRegistration()!=null ? o.getRegistration().string() : "";
-
-                    System.out.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().toString(), nullCallSign(o.getCallSign()), registration, data.model(), nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
-                }
-                else {
-                    GeoPos p = o.getPosition();
-                    System.out.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().toString(), nullCallSign(o.getCallSign()), "", "", nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
-
-                }
-            }
-            System.out.println(count);
+            assertNotNull(states);
+            printStatesAndClear(System.out, states);
         }
     }
 
+    private void printStatesAndClear(PrintStream printer, ObservableSet<ObservableAircraftState> states) {
+        Set<ObservableAircraftState> sortedStates = new TreeSet<>(Comparator.comparing(o -> o.getIcaoAddress().getValue().string()));
+        sortedStates.addAll(states);
+        //clearTerminal(System.out);
+        printer.println("ICAO    CALLSIGN REGISTRATION                        MODEL            LONGITUDE                LATITUDE     ALTITUDE  SPEED");
+        sortedStates.forEach(o -> {
+            AircraftData data = o.getAircraftData();
+            GeoPos p = o.getPosition();
+            if (data != null) {
+                String registration = o.getRegistration()!=null ? o.getRegistration().string() : "";
+                printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().getValue().string(), nullCallSign(o.getCallSign()), registration, data.model(), nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
+            }
+            else {
+                printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().getValue().string(), nullCallSign(o.getCallSign()), "", "", nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
+            }
+        });
+    }
+
+    private void clearTerminal(PrintStream printer) {
+        for (int i = 0; i < 20; i++) {
+            printer.println();
+        }
+    }
 
     private static String nullParser(Object s) {
         return s == null ? "" : s.toString();
