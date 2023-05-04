@@ -22,6 +22,7 @@ public final class AircraftController {
     private final double speed;
     private final AircraftIcon icon;
     private final ObservableList<ObservableAircraftState.AirbornePos> trajectory;
+    // TODO: 5/4/2023 might need to add ICAO address and callsign in case registration is not known 
 
 
     public AircraftController(AircraftIcon icon, AircraftStateManager states, ObservableAircraftState observableAircraftState, ObjectProperty<AircraftStateSetter> selectedAircraft) {
