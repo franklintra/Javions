@@ -13,8 +13,12 @@ import javafx.collections.SetChangeListener;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
 
+import java.awt.*;
 import java.util.Set;
 
 public final class AircraftController {
@@ -48,19 +52,38 @@ public final class AircraftController {
 
     }
     private void createGroup(ObservableAircraftState state) {
+
+        //main group for aircraft
         Group group = new Group();
         pane.getChildren().add(group);
+
+        //group for trajectory
         Group trajectory = new Group();
         group.getChildren().add(trajectory);
+        //group.getChildren().add();
+
+        //group for label and icon
         Group labelIcon = new Group();
-        Group label = new Group();
-        labelIcon.getChildren().add(labelIcon);
+        group.getChildren().add(labelIcon);
+
+        //icon
         SVGPath icon = new SVGPath();
         labelIcon.getChildren().add(icon);
+        getAircraftIcon(state);
 
-       AircraftIcon icon1 = AircraftIcon.iconFor(state.getAircraftData().typeDesignator(), state.getAircraftData().description(), state.getCategory(), state.getAircraftData().wakeTurbulenceCategory());
-        icon1.svgPath();
+        //label
+        Group label = new Group();
+        labelIcon.getChildren().add(label);
+        label.getChildren().add(new Rectangle());
+        label.getChildren().add(new Text());
+
     }
 
+    private void getAircraftIcon(ObservableAircraftState state) {
+        AircraftIcon icon = AircraftIcon.iconFor(state.getAircraftData().typeDesignator(), state.getAircraftData().description(), state.getCategory(), state.getAircraftData().wakeTurbulenceCategory());
+        icon.svgPath();
+        //WebMercator, doubleBindings, calcualte x and y positions
+        // TODO: 5/5/2023 style classes
+    }
 
 }
