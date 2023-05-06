@@ -67,7 +67,7 @@ public final class ByteString {
     }
 
     /**
-     * Allow to use the byte description as a key in a hash map for example
+     * Allow to use the byte description as a key in a hash MAP for example
      *
      * @return : the hash code of the byte description
      */

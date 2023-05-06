@@ -1,5 +1,7 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.CONFIGURATION;
+import ch.epfl.constants;
 import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,9 +20,9 @@ import java.util.Objects;
  * @project Javions
  */
 public class TileManager {
-    public static final int TILE_SIZE = 256; // the size of a tile in pixels
-    private static final int MAX_CACHE_SIZE = 100; // maximum number of tiles in cache memory
-    private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE + 1, .75F, false); // the cache memory
+    public static final int TILE_SIZE = constants.TILE_SIZE; // the size of a tile in pixels
+    private static final int MAX_CACHE_SIZE = CONFIGURATION.MAP.TILES_CACHE_SIZE; // maximum number of tiles in cache memory
+    private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE, .75F, false); // the cache memory
     private final String tileServerUrl; // the url of the tile server
     private final Path cacheDirectory; // the directory where the tiles are stored
 
@@ -73,7 +75,7 @@ public class TileManager {
      */
     private void storeInMemory(TileId tileId, Image image) {
         if (tiles.containsKey(tileId)) return;
-        if (tiles.size() >= MAX_CACHE_SIZE) {
+        if (tiles.size() > MAX_CACHE_SIZE) {
             TileId leastUsed = tiles.keySet().iterator().next();
             if (leastUsed != null) {
                 tiles.remove(leastUsed);

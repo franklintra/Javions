@@ -1,7 +1,6 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.Units;
+import ch.epfl.CONFIGURATION;
 import javafx.application.Application;
 import java.nio.file.Path;
 
@@ -15,14 +14,13 @@ import javafx.stage.Stage;
  */
 public final class TestBaseMapController extends Application {
 
-    private static final GeoPos maison = new GeoPos((int) Units.convert(2.2794736259693136, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(48.88790023468289, Units.Angle.DEGREE, Units.Angle.T32));
     public static void main(String[] args) { launch(args); }
 
     @Override
-    public void start(Stage primaryStage) throws InterruptedException {
+    public void start(Stage primaryStage) {
         Path tileCache = Path.of("tile-cache");
         TileManager tm =
-                new TileManager(tileCache, "tile.openstreetmap.org");
+                new TileManager(tileCache, CONFIGURATION.MAP.TILE_SERVER_URL);
         MapParameters mp =
                 new MapParameters(17, 17_389_327, 11_867_430);
         BaseMapController bmc = new BaseMapController(tm, mp);
@@ -32,6 +30,6 @@ public final class TestBaseMapController extends Application {
         primaryStage.setWidth(1920);
         primaryStage.setHeight(1080);
         primaryStage.show();
-        bmc.centerOn(maison);
+        bmc.centerOn(CONFIGURATION.MAP.INITIAL_POSITION);
     }
 }

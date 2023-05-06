@@ -12,7 +12,7 @@ public final class WebMercator {
     /**
      * @param zoomLevel the zoom level
      * @param longitude the longitude in radians
-     * @return the x coordinate on the map
+     * @return the x coordinate on the MAP
      */
     public static double x(int zoomLevel, double longitude) {
         return Math.scalb(
@@ -24,7 +24,7 @@ public final class WebMercator {
     /**
      * @param zoomLevel the zoom level
      * @param latitude  the latitude in radians
-     * @return the y coordinate on the map
+     * @return the y coordinate on the MAP
      */
     public static double y(int zoomLevel, double latitude) {
         return Math.scalb(

@@ -12,15 +12,15 @@ import javafx.geometry.Point2D;
 public class MapParameters {
     private static final int MIN_ZOOM = 6; // 6 is the minimum zoom level for this project (we will not zoom out further because the radio signal is too weak)
     private static final int MAX_ZOOM = 19; // 19 is the maximum zoom level for this project (it's not necessary to zoom in further + we're close to OpenStreetMap's limit)
-    private final IntegerProperty zoomLevel; // The zoom level of the map
-    private final DoubleProperty minX; // The x coordinate of the top left corner of the map
-    private final DoubleProperty minY; // The y coordinate of the top left corner of the map
+    private final IntegerProperty zoomLevel; // The zoom level of the MAP
+    private final DoubleProperty minX; // The x coordinate of the top left corner of the MAP
+    private final DoubleProperty minY; // The y coordinate of the top left corner of the MAP
 
     /**
      * The constructor of the MapParameters class
-     * @param zoomLevel the zoom level of the map
-     * @param minX the x coordinate of the top left corner of the map
-     * @param minY the y coordinate of the top left corner of the map
+     * @param zoomLevel the zoom level of the MAP
+     * @param minX the x coordinate of the top left corner of the MAP
+     * @param minY the y coordinate of the top left corner of the MAP
      */
     public MapParameters(int zoomLevel, double minX, double minY) {
         Preconditions.checkArgument(MIN_ZOOM <= zoomLevel && zoomLevel <= MAX_ZOOM);
@@ -46,7 +46,7 @@ public class MapParameters {
     }
 
     /**
-     * A read-only property for the x coordinate of the top left corner of the map
+     * A read-only property for the x coordinate of the top left corner of the MAP
      * @return the read-only property
      */
     public ReadOnlyDoubleProperty minXProperty() {
@@ -54,15 +54,15 @@ public class MapParameters {
     }
 
     /**
-     * A getter for the x coordinate of the top left corner of the map
-     * @return the x coordinate of the top left corner of the map
+     * A getter for the x coordinate of the top left corner of the MAP
+     * @return the x coordinate of the top left corner of the MAP
      */
     public double getMinX() {
         return minX.get();
     }
 
     /**
-     * A read-only property for the y coordinate of the top left corner of the map
+     * A read-only property for the y coordinate of the top left corner of the MAP
      * @return the read-only property
      */
     public ReadOnlyDoubleProperty minYProperty() {
@@ -70,17 +70,17 @@ public class MapParameters {
     }
 
     /**
-     * A getter for the y coordinate of the top left corner of the map
-     * @return the y coordinate of the top left corner of the map
+     * A getter for the y coordinate of the top left corner of the MAP
+     * @return the y coordinate of the top left corner of the MAP
      */
     public double getMinY() {
         return minY.get();
     }
 
     /**
-     * A method to scroll the map
-     * @param deltaX the x coordinate of the top left corner of the map
-     * @param deltaY the y coordinate of the top left corner of the map
+     * A method to scroll the MAP
+     * @param deltaX the x coordinate of the top left corner of the MAP
+     * @param deltaY the y coordinate of the top left corner of the MAP
      */
     public void scroll(double deltaX, double deltaY) {
         minX.set(minX.get() + deltaX);
@@ -88,16 +88,16 @@ public class MapParameters {
     }
 
     /**
-     * A method to get the top left corner of the map. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
-     * @return the top left corner of the map
+     * A method to get the top left corner of the MAP. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
+     * @return the top left corner of the MAP
      */
     public Point2D getTopLeftCorner() {
         return new Point2D(minX.get(), minY.get());
     }
 
     /**
-     * A method to change the zoom level of the map
-     * It also changes the x and y coordinates of the top left corner of the map so that this corner still shows the same part of the map
+     * A method to change the zoom level of the MAP
+     * It also changes the x and y coordinates of the top left corner of the MAP so that this corner still shows the same part of the MAP
      * @param deltaZoom the change in zoom level (will always be 1 or -1;
      */
     public void changeZoomLevel(int deltaZoom) {

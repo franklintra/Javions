@@ -21,15 +21,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class BaseMapController {
     private final TileManager tiles; // The tile manager for ram and disk caching
-    private final MapParameters parameters; // The map parameters
-    private final Pane mapPane; // The pane that contains the map
+    private final MapParameters parameters; // The MAP parameters
+    private final Pane mapPane; // The pane that contains the MAP
     private final Canvas canvas; // The canvas that is drawn on
     private boolean redrawNeeded; // Whether redrawing is needed or not (optimization purposes)
 
     /**
      * The constructor to make a new BaseMapController
      * @param tileProvider The tile manager for ram and disk caching
-     * @param mapParameters The map parameters (zoom level, center, etc.)
+     * @param mapParameters The MAP parameters (zoom level, center, etc.)
      */
     public BaseMapController(TileManager tileProvider, MapParameters mapParameters) {
         this.tiles = tileProvider;
@@ -50,16 +50,16 @@ public class BaseMapController {
     }
 
     /**
-     * This method is a getter for the map pane
-     * @return The map pane
+     * This method is a getter for the MAP pane
+     * @return The MAP pane
      */
     public Pane getPane() {
         return mapPane;
     }
 
     /**
-     * This method is used to center the map on a given position
-     * todo: test it + should it center on the center of the map or the mouse position?
+     * This method is used to center the MAP on a given position
+     * todo: test it + should it center on the center of the MAP or the mouse position?
      * @param position The position to center on
      */
     public void centerOn(GeoPos position) {
@@ -130,12 +130,12 @@ public class BaseMapController {
     }
 
     /**
-     * This method is used to draw the map on the canvas with the current parameters
+     * This method is used to draw the MAP on the canvas with the current parameters
      */
     private void draw() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         // it is not necessary to clear the canvas because the tiles are drawn over each other.
-        // It is slightly more optimized this way but only works because we are drawing a map.
+        // It is slightly more optimized this way but only works because we are drawing a MAP.
         // If we were drawing a game for example, we would need to clear the canvas.
         //gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
