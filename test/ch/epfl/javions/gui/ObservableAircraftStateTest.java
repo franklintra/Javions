@@ -58,7 +58,7 @@ public class ObservableAircraftStateTest {
                 assert bytesRead == RawMessage.LENGTH;
                 ByteString message = new ByteString(bytes);
 
-                stateManager.updateWithMessage(Objects.requireNonNull(MessageParser.parse(RawMessage.of(timeStampNs, bytes))));
+                stateManager.updateWithMessage(Objects.requireNonNull(MessageParser.parse(Objects.requireNonNull(RawMessage.of(timeStampNs, bytes)))));
 
                 System.out.println(stateManager.states());
             }
@@ -68,31 +68,13 @@ public class ObservableAircraftStateTest {
         }
     }
 
-//    @Test
-//    void updateTable() {
-//
-//        try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
-//            AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(s.toString())); // FIXME: 4/11/2023 this is incorrect, unsure
-//            int counter = 0;
-//            byte[] bytes = new byte[RawMessage.LENGTH];
-//            while (s.available() >= bytes.length) {
-//                long timeStampNs = s.readLong();
-//                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
-//                RawMessage rawMessage = RawMessage.of(timeStampNs, bytes);
-//                Message message = MessageParser.parse(rawMessage);
-//                aircraftStateManager.updateWithMessage(message);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
     @Test
     public void printTable() throws IOException{
         ObservableSet<ObservableAircraftState> states = null;
         int counter = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
             byte[] bytes = new byte[RawMessage.LENGTH];
-            AircraftDatabase database = new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath());
+            AircraftDatabase database = new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath());
             AircraftStateManager aircraftStateManager = new AircraftStateManager(database);
             while (s.available() >= bytes.length) {
                 counter++;
