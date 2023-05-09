@@ -76,14 +76,7 @@ public final class AircraftController {
         Text text = new Text();
         label.getChildren().add(background);
         label.getChildren().add(text);
-        // height should be bound to an expression whose value is equal to the height of the text of the label, plus 4.
-        background.widthProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
-
-        // ensures text of altitude always is in metres
-        text.textProperty().bind(Bindings.format("%f meters" , state.altitudeProperty()));
-
-        //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11
-        text.visibleProperty().bind(mapParameters.zoomLevelProperty().greaterThan(10));
+        getLabel(state, background, text);
     }
 
     private SVGPath getAircraftIcon(ObservableAircraftState state) {
@@ -110,6 +103,17 @@ public final class AircraftController {
         iconSVG.getStyleClass().add("aircraft.css");
 
         return iconSVG;
+    }
+
+    private void getLabel(ObservableAircraftState state, Rectangle background, Text text) {
+        // height should be bound to an expression whose value is equal to the height of the text of the label, plus 4.
+        background.heightProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
+
+        // ensures text of altitude always is in metres
+        text.textProperty().bind(Bindings.format("%f meters" , state.altitudeProperty()));
+
+        //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
+        text.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get() == state, mapParameters.zoomLevelProperty(), selectedAircraft));
     }
 
     private void removeGroup(ObservableAircraftState state) {
