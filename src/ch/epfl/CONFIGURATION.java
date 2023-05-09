@@ -21,7 +21,7 @@ public final class CONFIGURATION {
         /**
          * The max memory size of the MAP in tiles loaded in the cache memory.
          */
-        public static final int TILES_CACHE_SIZE = (int) (MAP_MEMORY_SIZE / constants.TILE_MEMORY_SIZE);
+        public static final int TILES_CACHE_SIZE = (int) (MAP_MEMORY_SIZE / Constants.TILE_MEMORY_SIZE);
 
         /**
          * The default position of the MAP.

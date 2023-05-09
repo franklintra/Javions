@@ -48,7 +48,7 @@ public final class SamplesDecoder {
      * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException if the size of the batch doesn't match the required size
      */
-    public int readBatch(short[] batch) throws IOException {
+    public int readBatch(short... batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize); //throws IllegalArgumentException if the size of the batch doesn't match the required size
         int data = stream.readNBytes(buffer, 0, Short.BYTES * batchSize);
         //if the number of bytes data is not equal to 2*batchSize, then we have reached the end of the stream

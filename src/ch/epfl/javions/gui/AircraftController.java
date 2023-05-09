@@ -1,7 +1,4 @@
-package ch.epfl.javions.gui;/*
- * Author: Krish Chawla
- * Date:
- */
+package ch.epfl.javions.gui;
 
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
@@ -15,6 +12,12 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
+
+/**
+ * @author @chukla (357550)
+ * @project Javions
+ */
+
 
 public final class AircraftController {
 

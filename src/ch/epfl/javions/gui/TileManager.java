@@ -1,7 +1,7 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.CONFIGURATION;
-import ch.epfl.constants;
+import ch.epfl.Constants;
 import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.Objects;
  * @project Javions
  */
 public class TileManager {
-    public static final int TILE_SIZE = constants.TILE_SIZE; // the size of a tile in pixels
+    public static final int TILE_SIZE = Constants.TILE_SIZE; // the size of a tile in pixels
     private static final int MAX_CACHE_SIZE = CONFIGURATION.MAP.TILES_CACHE_SIZE; // maximum number of tiles in cache memory
     private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE, .75F, false); // the cache memory
     private final String tileServerUrl; // the url of the tile server

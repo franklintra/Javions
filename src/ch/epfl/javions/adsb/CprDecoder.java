@@ -9,7 +9,7 @@ import ch.epfl.javions.Units;
  * @project Javions
  */
 public final class CprDecoder {
-    //these values never change so they are declared as class constants to be used in the static methods
+    //these values never change so they are declared as class Constants to be used in the static methods
     // the number of latitude zones for even and odd messages
     private static final int[] NUMBER_OF_LATITUDE_ZONES = {60, 59};
     // the width of each of these latitude zones for even and odd messages

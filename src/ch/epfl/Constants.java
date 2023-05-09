@@ -4,8 +4,8 @@ package ch.epfl;
  * @author @franklintra (362694)
  * @project Javions
  */
-public final class constants {
-    private constants() {}
+public final class Constants {
+    private Constants() {}
 
     /**
      * The size of a tile in pixels.

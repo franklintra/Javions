@@ -6,7 +6,7 @@ package ch.epfl.javions;
  */
 
 /**
- * This class contains constants and methods for unit conversions.
+ * This class contains Constants and methods for unit conversions.
  * The methods are static and the class is not instantiable.
  */
 public final class Units {
@@ -50,7 +50,7 @@ public final class Units {
 
     /**
      * Angle units.
-     * The constants are the number of radians in one unit.
+     * The Constants are the number of radians in one unit.
      * For example, 1 radian is 1 radian, 1 turn is 2π radians, 1 degree is 2π/360 radians, etc.
      */
     public static final class Angle {
@@ -78,7 +78,7 @@ public final class Units {
 
     /**
      * Time units.
-     * The constants are the number of seconds in one unit.
+     * The Constants are the number of seconds in one unit.
      * For example, 1 second is 1 second, 1 minute is 60 seconds, 1 hour is 3600 seconds, etc.
      */
     public static final class Time {
@@ -101,7 +101,7 @@ public final class Units {
 
     /**
      * Length units.
-     * The constants are the number of meters in one unit.
+     * The Constants are the number of meters in one unit.
      * For example, 1 meter is 1 meter, 1 centimeter is 1/100 meter, 1 inch is 2.54 centimeters, etc.
      */
     public static final class Length {
@@ -136,7 +136,7 @@ public final class Units {
 
     /**
      * Speed units.
-     * The constants are the number of meters per second in one unit.
+     * The Constants are the number of meters per second in one unit.
      * For example, 1 meter per second is 1 meter per second, 1 kilometer per hour is 1/3.6 meters per second, 1 knot is 1852/3600 meters per second, etc.
      */
     public static final class Speed {

@@ -2,11 +2,6 @@ package ch.epfl.javions.gui;
 
 import javafx.scene.paint.Color;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public final class ColorRamp {
     private final Color[] colours;
 
