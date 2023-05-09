@@ -6,6 +6,7 @@ package ch.epfl.javions.gui;/*
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
@@ -22,9 +23,9 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
     private final Pane pane;
     private final double maxAltitude = 12000;
-    private final double lowAltDefiner = (double) 1/ 3;
+    private final double lowAltDefiner = (double) 1 / 3;
 
-    AircraftController(MapParameters mapParameters, ObservableSet<ObservableAircraftState> states, ObjectProperty<ObservableAircraftState> selectedAircraft) {
+    public AircraftController(MapParameters mapParameters, ObservableSet<ObservableAircraftState> states, ObjectProperty<ObservableAircraftState> selectedAircraft) {
         this.selectedAircraft = selectedAircraft;
         this.states = states;
         this.mapParameters = mapParameters;
@@ -48,7 +49,6 @@ public final class AircraftController {
     }
 
     private void createGroup(ObservableAircraftState state) {
-
         // create the group
         Group group = new Group();
         pane.getChildren().add(group);
@@ -56,23 +56,29 @@ public final class AircraftController {
         // set the view order property to the negation of the altitude
         group.viewOrderProperty().bind(state.altitudeProperty().negate());
 
-        // create the trajectory group and add it to the aircraft group
+        // trajectory group creation and add it to the aircraft group
         Group trajectory = new Group();
         group.getChildren().add(trajectory);
         trajectory.getChildren().add(createTrajectory(state));
         // TODO: 5/9/2023 when working on trajectory, format it using Bindings 
 
-        // create the label and icon group and add it to the aircraft group
+        // label and icon group creation and add it to the aircraft group
         Group labelIcon = new Group();
         group.getChildren().add(labelIcon);
 
-        // create the aircraft icon and add it to the label and icon group
+        // position the icon/label group
+        // TODO: 5/9/2023 figure out how to use layoutXProperty() and layoutYProperty() or to use it in getScreenCoordinates()
+        Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
+        labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(screenCoordinates::getX, mapParameters.zoomLevelProperty()));
+        labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(screenCoordinates::getY, mapParameters.zoomLevelProperty()));
+
+
+        // icon creation and add it to the label and icon group
         labelIcon.getChildren().add(constructIcon(state));
 
         // create the label and add it to the label and icon group
         Group label = new Group();
         labelIcon.getChildren().add(label);
-
         // create and add background and text to the group of label
         Rectangle background = new Rectangle();
         Text text = new Text();
@@ -96,11 +102,6 @@ public final class AircraftController {
         // set fill color based on altitude
         iconSVG.fillProperty().bind(state.altitudeProperty().map(alt -> ColorRamp.PLASMA.at((Math.pow((double) alt / maxAltitude, lowAltDefiner)))));
 
-        // position the icon/label group
-        Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
-        iconSVG.setLayoutX(screenCoordinates.getX());
-        iconSVG.setLayoutY(screenCoordinates.getY());
-
         // TODO: 5/5/2023 check if correct style class and add relevant style classes for other elements
         iconSVG.getStyleClass().add("aircraft.css");
 
@@ -108,22 +109,22 @@ public final class AircraftController {
     }
 
     private void constructLabel(ObservableAircraftState state, Rectangle background, Text text) {
-        // height should be bound to an expression whose value is equal to the height of the text of the label, plus 4.
+        // height and width should be bound to an expression whose value is equal to the height/width of the text of the label, plus 4.
         background.heightProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
+        background.widthProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getWidth() + 4));
 
         // ensures text of altitude always is in metres
-        text.textProperty().bind(Bindings.format("%f meters" , state.altitudeProperty()));
+        text.textProperty().bind(Bindings.format("%f meters", state.altitudeProperty()));
 
         //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
         text.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get() == state, mapParameters.zoomLevelProperty(), selectedAircraft));
-        // TODO: 5/9/2023 implement label drawing using unicode 
+        // TODO: 5/9/2023 implement label drawing using unicode
     }
 
     private void removeGroup(ObservableAircraftState state) {
         //remove the group from the pane
         // TODO: 5/8/2023 check if need to remove icon or entire state 
         states.remove(state);
-
     }
 
     private Point2D getScreenCoordinates(ObservableAircraftState state, MapParameters mapParams) {
@@ -133,7 +134,7 @@ public final class AircraftController {
         double longitude = state.getPosition().longitude();
         double latitude = state.getPosition().latitude();
 
-        double x = (WebMercator.x(zoomLevel,longitude) - minX);
+        double x = (WebMercator.x(zoomLevel, longitude) - minX);
         double y = (WebMercator.y(zoomLevel, latitude) - minY);
 
         return new Point2D(x, y);
@@ -141,8 +142,9 @@ public final class AircraftController {
 
     private SVGPath createTrajectory(ObservableAircraftState state) {
         SVGPath trajectory = new SVGPath();
-        // TODO: 5/9/2023 complete trajectory implementattion
-        // TODO: 5/9/2023 implement colouring of trajectory 
+
+                // TODO: 5/9/2023 complete trajectory implementattion
+                // TODO: 5/9/2023 implement colouring of trajectory
         return trajectory;
     }
 }
