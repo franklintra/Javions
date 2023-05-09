@@ -22,6 +22,7 @@ import java.util.function.Function;
  * @author @franklintra (362694)
  * @project Javions
  */
+
 public class AircraftTableController {
     private final int ERROR = -1;
     private final TableView<ObservableAircraftState> tableView;
