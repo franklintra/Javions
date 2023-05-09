@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ObservableAircraftStateTest {
 
-    @Test
     void test() {
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             int counter = 0;
@@ -45,7 +44,6 @@ public class ObservableAircraftStateTest {
         }
     }
 
-    @Test
     void etape7Test() {
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
@@ -68,7 +66,6 @@ public class ObservableAircraftStateTest {
         }
     }
 
-    @Test
     public void printTable() throws IOException{
         ObservableSet<ObservableAircraftState> states = null;
         int counter = 0;

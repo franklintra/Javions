@@ -46,7 +46,7 @@ public final class PowerComputer {
      * @throws IOException              if input or output error occurs
      * @throws IllegalArgumentException if the size of the batch doesn't match the required size
      */
-    public int readBatch(int[] batch) throws IOException {
+    public int readBatch(int... batch) throws IOException {
         Preconditions.checkArgument(batch.length == batchSize);
         int read = decoder.readBatch(sampleBuffer);
         int lastNIndex = 0; // this is the index of the last sample that was added in the last8Samples buffer

@@ -84,7 +84,7 @@ public final class AdsbDemodulator {
 
     /**
      * This method returns the i-th bit that can be decoded from the ADS-B message
-     * The 80 + 10i and 85 + 10i come from the instruction set. As they are only used in this method we chose not to implement class constants
+     * The 80 + 10i and 85 + 10i come from the instruction set. As they are only used in this method we chose not to implement class Constants
      *
      * @param i the index of the bit
      * @return the i-th bit that can be decoded from the ADS-B message

@@ -2,24 +2,14 @@ package ch.epfl.javions.gui;/*
  * Author: Krish Chawla
  * Date:
  */
-import ch.epfl.javions.adsb.AircraftStateSetter;
-import ch.epfl.javions.aircraft.AircraftDatabase;
-import ch.epfl.javions.aircraft.AircraftRegistration;
 import javafx.beans.property.ObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
-
-import java.awt.*;
-import java.util.Set;
 
 public final class AircraftController {
 

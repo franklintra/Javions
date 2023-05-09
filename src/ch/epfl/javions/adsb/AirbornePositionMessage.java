@@ -62,7 +62,7 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
     public static AirbornePositionMessage of(RawMessage rawMessage) {
         long payload = rawMessage.payload();
         int Q = Bits.extractUInt(payload, Q_INDEX_POSITION, 1);
-        double altitude = 0;
+        double altitude;
 
         if (Q == 0) {
                 // Unscramble
@@ -118,12 +118,12 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
      * @return the decimal value of the gray code
      */
     private static short grayCodeToDecimal(int grayCode) {
-        short decimal = 0;
+        short value = 0;
         while (grayCode != 0) {
-            decimal ^= grayCode;
-            grayCode = grayCode >> 1;
+            value ^= grayCode;
+            grayCode >>= 1; //NOPMD - suppressed AvoidReassigningParameters - In this case, the parameter is meant to be reassigned and it is done on purpose
         }
-        return decimal;
+        return value;
     }
 
     /**
