@@ -59,6 +59,7 @@ public final class AircraftController {
         // create the trajectory group and add it to the aircraft group
         Group trajectory = new Group();
         group.getChildren().add(trajectory);
+        trajectory.getChildren().add(createTrajectory(state));
         // TODO: 5/9/2023 when working on trajectory, format it using Bindings 
 
         // create the label and icon group and add it to the aircraft group
@@ -66,20 +67,21 @@ public final class AircraftController {
         group.getChildren().add(labelIcon);
 
         // create the aircraft icon and add it to the label and icon group
-        labelIcon.getChildren().add(getAircraftIcon(state));
+        labelIcon.getChildren().add(constructIcon(state));
 
         // create the label and add it to the label and icon group
         Group label = new Group();
         labelIcon.getChildren().add(label);
 
+        // create and add background and text to the group of label
         Rectangle background = new Rectangle();
         Text text = new Text();
         label.getChildren().add(background);
         label.getChildren().add(text);
-        getLabel(state, background, text);
+        constructLabel(state, background, text);
     }
 
-    private SVGPath getAircraftIcon(ObservableAircraftState state) {
+    private SVGPath constructIcon(ObservableAircraftState state) {
         SVGPath iconSVG = new SVGPath();
         AircraftIcon icon = AircraftIcon.iconFor(state.getAircraftData().typeDesignator(), state.getAircraftData().description(), state.getCategory(), state.getAircraftData().wakeTurbulenceCategory());
         icon.svgPath();
@@ -99,13 +101,13 @@ public final class AircraftController {
         iconSVG.setLayoutX(screenCoordinates.getX());
         iconSVG.setLayoutY(screenCoordinates.getY());
 
-        // TODO: 5/5/2023 check if correct style class
+        // TODO: 5/5/2023 check if correct style class and add relevant style classes for other elements
         iconSVG.getStyleClass().add("aircraft.css");
 
         return iconSVG;
     }
 
-    private void getLabel(ObservableAircraftState state, Rectangle background, Text text) {
+    private void constructLabel(ObservableAircraftState state, Rectangle background, Text text) {
         // height should be bound to an expression whose value is equal to the height of the text of the label, plus 4.
         background.heightProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
 
@@ -114,6 +116,7 @@ public final class AircraftController {
 
         //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
         text.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get() == state, mapParameters.zoomLevelProperty(), selectedAircraft));
+        // TODO: 5/9/2023 implement label drawing using unicode 
     }
 
     private void removeGroup(ObservableAircraftState state) {
@@ -134,5 +137,12 @@ public final class AircraftController {
         double y = (WebMercator.y(zoomLevel, latitude) - minY);
 
         return new Point2D(x, y);
+    }
+
+    private SVGPath createTrajectory(ObservableAircraftState state) {
+        SVGPath trajectory = new SVGPath();
+        // TODO: 5/9/2023 complete trajectory implementattion
+        // TODO: 5/9/2023 implement colouring of trajectory 
+        return trajectory;
     }
 }
