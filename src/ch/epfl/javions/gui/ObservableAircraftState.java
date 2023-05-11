@@ -20,6 +20,7 @@ import java.util.*;
  * @project Javions
  */
 
+
 public final class ObservableAircraftState implements AircraftStateSetter {
     private final IcaoAddress icaoAddress;
     private AircraftData aircraftData;
