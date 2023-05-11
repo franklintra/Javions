@@ -8,10 +8,6 @@ import javafx.geometry.Point2D;
 /**
  * @author @franklintra (362694)
  * @project Javions
- */
-
-
-/**
  * This class is used to store the parameters of the MAP. It is used in BaseMapController.
  * @see BaseMapController
  * This is used to:

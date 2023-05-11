@@ -91,11 +91,14 @@ public class TileManager {
      * @param image the tile image
      */
     private void storeInMemory(TileId tileId, Image image) {
-        if (tiles.containsKey(tileId)) return;
-        if (tiles.size() > MAX_CACHE_SIZE) {
-            TileId leastUsed = tiles.keySet().iterator().next();
-            if (leastUsed != null) {
-                tiles.remove(leastUsed);
+        if (tiles.containsKey(tileId)) {
+            tiles.remove(tileId); // this is to make sure the tile is the most recently used
+        }
+        else if (tiles.size() >= MAX_CACHE_SIZE) {
+            Iterator<TileId> it = tiles.keySet().iterator();
+            if (it.hasNext()) {
+                it.next();
+                it.remove();
             }
         }
         tiles.put(tileId, image);
@@ -106,7 +109,7 @@ public class TileManager {
      * @param tileId the position and zoom level of the tile
      * @param image the tile image to be stored in byte[] format
      */
-    private void storeOnDrive(TileId tileId, byte[] image) throws IOException {
+    private void storeOnDrive(TileId tileId, byte[] image) {
         Path tilePath = cacheDirectory
                 .resolve(String.valueOf(tileId.zoom))
                 .resolve(Long.toString(tileId.x))
@@ -116,7 +119,7 @@ public class TileManager {
             Files.write(tilePath, image);
         }
         catch (IOException ignored) {
-            System.err.println("Could not write tile to disk");
+            System.err.printf("Could not write tile to %s on the disk \n", tilePath);
             //does not throw exception because if the file couldn't be stored on the disk, it is not critical
             //and it is an OS permission problem on the user's computer (not our fault)
         }
@@ -153,7 +156,7 @@ public class TileManager {
                 storeInMemory(tileId, i);
                 return Optional.of(i);
             } catch (IOException e) {
-                e.printStackTrace(System.err);
+                System.err.printf("Could not read tile %s from disk \n", tileId);
             }
         }
         return Optional.empty();
@@ -175,20 +178,16 @@ public class TileManager {
             data = i.readAllBytes();
             i.close();
         } catch (IOException e) {
-            // this is because the tile server returns a 404 error if the tile is not found
-            // this is not an error and might happen because of internet connection issues
+            // this is because the tile server did not respond in time (or at all)
+            // this is not an error and might happen because of internet connection issues or server overload
+            // it could also be because the tile server does not have the specific tile
             return Optional.empty();
         }
         if (data != null) {
             Image i = new Image(new ByteArrayInputStream(data));
-            try {
-                storeOnDrive(tileId, data);
-                storeInMemory(tileId, i);
-                return Optional.of(i);
-            } catch (IOException e) {
-                // this is because the path might not exist
-                e.printStackTrace(System.err);
-            }
+            storeOnDrive(tileId, data);
+            storeInMemory(tileId, i);
+            return Optional.of(i);
         }
         return Optional.empty();
     }

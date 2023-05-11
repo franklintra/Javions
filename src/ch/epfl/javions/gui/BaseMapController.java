@@ -19,9 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author @franklintra (362694)
  * @project Javions
- */
-
-/**
  * This class is the controller for the MAP. It handles the drawing of the MAP and the event handlers for zooming and scrolling around.
  * It uses a TileManager to cache the tiles most recent tiles in Random Access Memory and optimize tiles loading time.
  * It uses a MapParameters to store the zoom level, the center of the MAP and the top left corner of the MAP.
@@ -217,20 +214,16 @@ public class BaseMapController {
         if (gridImage == null) {
             Canvas canvas = new Canvas(rectWidth, rectHeight);
             GraphicsContext gc = canvas.getGraphicsContext2D();
-
             gc.setStroke(Color.GRAY);
             gc.setLineWidth(1);
-
             // Draw vertical lines within the given rectangle
             for (int x = 0; x <= rectWidth; x += gridSize) {
                 gc.strokeLine(x, 0, x, rectHeight);
             }
-
             // Draw horizontal lines within the given rectangle
             for (int y = 0; y <= rectHeight; y += gridSize) {
                 gc.strokeLine(0, y, rectWidth, y);
             }
-
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT);
             gridImage = canvas.snapshot(params, null);
