@@ -10,6 +10,7 @@ import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.collections.ObservableSet;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

@@ -19,6 +19,10 @@ import java.util.Objects;
  * @author @franklintra (362694)
  * @project Javions
  */
+
+/**
+ *
+ */
 public class TileManager {
     public static final int TILE_SIZE = Constants.TILE_SIZE; // the size of a tile in pixels
     private static final int MAX_CACHE_SIZE = CONFIGURATION.MAP.TILES_CACHE_SIZE; // maximum number of tiles in cache memory
