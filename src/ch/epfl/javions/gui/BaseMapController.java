@@ -194,9 +194,6 @@ public class BaseMapController {
                 double tilePosX = x * TileManager.TILE_SIZE - topLeftMercator.getX();
                 double tilePosY = y * TileManager.TILE_SIZE - topLeftMercator.getY();
                 try {
-                    if (!(TileManager.TileId.isValid(zoom, x, y))) {
-                        throw new IOException("Invalid tile");
-                    }
                     Image tile = tiles.imageForTileAt(new TileManager.TileId(zoom, x, y));
                     gc.drawImage(tile, tilePosX, tilePosY);
                     // Draw the coordinates of the tile in the middle of the tile for debugging purposes

@@ -11,65 +11,78 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author @franklintra (362694)
  * @project Javions
- */
-
-/**
- *
+ * This class manages the tiles of the map. It is used to:
+ *  - download the ones not already downloaded to the disk
+ *  - cache the most recently used ones in memory
+ *  - load the tiles from the disk if they are already downloaded and not in memory
+ * @see BaseMapController
  */
 public class TileManager {
-    public static final int TILE_SIZE = Constants.TILE_SIZE; // the size of a tile in pixels
-    private static final int MAX_CACHE_SIZE = CONFIGURATION.MAP.TILES_CACHE_SIZE; // maximum number of tiles in cache memory
-    private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE, .75F, false); // the cache memory
-    private final String tileServerUrl; // the url of the tile server
-    private final Path cacheDirectory; // the directory where the tiles are stored
+    /**
+     * This is the size of the side of a tile in pixels.
+     */
+    public static final int TILE_SIZE = Constants.TILE_SIZE;
+    /**
+     * This is the max size of the cache memory in tiles (not bytes).
+     * It is stored as an attribute so we can change it easily.
+     * @see CONFIGURATION
+     */
+    private static final int MAX_CACHE_SIZE = CONFIGURATION.MAP.TILES_CACHE_SIZE;
+    /**
+     * This is the cache memory of the tiles. (For a given tile id, it stores the corresponding tile image)
+     * it is a LinkedHashMap so we can easily remove the least recently used element.
+     * @see LinkedHashMap
+     */
+    private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE, .75F, false);
+    /**
+     * This is the url of the tile server from where to download the tiles. (For example: "tile.openstreetmap.org")
+     */
+    private final String tileServerUrl;
+    /**
+     * This is the extension of the tile files. By default if using the openstreetmap tile server, it is ".png".
+     */
+    private final String tileExtension = ".png";
+    /**
+     * This is the directory where the downloaded tiles need to be stored.
+     * (they will actually be stored in a subdirectory of this directory named after the tile server url)
+     * For example: ~/Javions/tile-cache/tile.openstreetmap.org/
+     */
+    private final Path cacheDirectory;
 
     /**
-     * This class represents the position and zoom level of a tile.
+     * This is the constructor of the class.
+     * It initializes the cache directory and the tile server url according to the parameters.
      * @param cacheDirectory the directory where the tiles are stored
      * @param tileServerUrl the url of the tile server
      */
     public TileManager(Path cacheDirectory, String tileServerUrl) {
         this.cacheDirectory = cacheDirectory.resolve(tileServerUrl);
         this.tileServerUrl = tileServerUrl;
-        tiles.put(null, null); // this is to avoid the cache to be empty when we try to replace the least accessed element
     }
 
     /**
-     * This method tries to find the tile image in the cache memory, on the drive and on the server in this order.
+     * This method tries to find the tile image respectively :
+     *  - in the cache memory
+     *  - on the drive
+     *  - on the server
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
     public Image imageForTileAt(TileId tileId) throws IOException {
-        if (!(TileId.isValid(tileId.zoom, tileId.x, tileId.y))) return null;
-        Image data;
-        if ((data = findInMemory(tileId)) != null) {
-            return data;
-        } else if ((data = findOnDrive(tileId)) != null) {
-            return data;
-        } else if ((data = findOnServer(tileId)) != null) {
-            return data;
+        if (!(TileId.isValid(tileId.zoom, tileId.x, tileId.y))) throw new IOException("Invalid tile id");
+        Optional<Image> data = findInMemory(tileId)
+                .or(() -> findOnDrive(tileId))
+                .or(() -> findOnServer(tileId));
+        if (data.isPresent()) {
+            return data.get();
         } else {
-            return null;
+            throw new IOException("Tile not found");
         }
-    }
-
-    /**
-     * This method tries to find the tile image on the server.
-     * @param tileId the position and zoom level of the tile
-     * @return the tile image or null if the tile is not found
-     */
-    private Image findInMemory(TileId tileId) {
-        if (tiles.containsKey(tileId)) {
-            return tiles.get(tileId);
-        }
-        return null;
     }
 
     /**
@@ -89,37 +102,61 @@ public class TileManager {
     }
 
     /**
-     * This method searches for the tile image on the user drive cache.
-     * @param tileId the position and zoom level of the tile
-     * @return the tile image or null if the tile is not found
-     */
-    private Image findOnDrive(TileId tileId) throws IOException {
-        Path absolutePath = cacheDirectory.resolve(tileId.zoom + "/" + tileId.x + "/" + tileId.y + ".png");
-        if (Files.exists(absolutePath)) {
-            Image i = new Image(new ByteArrayInputStream(Files.readAllBytes(absolutePath)));
-            storeInMemory(tileId, i);
-            return i;
-        }
-        return null;
-    }
-
-    /**
      * This method stores the tile image on the user drive cache.
      * @param tileId the position and zoom level of the tile
      * @param image the tile image to be stored in byte[] format
      */
-    private void storeOnDrive(TileId tileId, byte[] image) {
-        Path absolutePath = cacheDirectory.resolve(tileId.zoom + "/" + tileId.x + "/" + tileId.y + ".png");
-        createDirectoryIfItDoesntExist(absolutePath.getParent().getParent().getParent().getParent());
-        createDirectoryIfItDoesntExist(absolutePath.getParent().getParent().getParent());
-        createDirectoryIfItDoesntExist(absolutePath.getParent().getParent());
-        createDirectoryIfItDoesntExist(absolutePath.getParent());
+    private void storeOnDrive(TileId tileId, byte[] image) throws IOException {
+        Path tilePath = cacheDirectory
+                .resolve(String.valueOf(tileId.zoom))
+                .resolve(Long.toString(tileId.x))
+                .resolve(tileId.y + tileExtension);
         try {
-            Files.write(absolutePath, image);
+            Files.createDirectories(tilePath.getParent()); // create the directories if they don't exist all the way up to the file
+            Files.write(tilePath, image);
         }
-        catch(IOException e) {
-            e.printStackTrace(System.err);
+        catch (IOException ignored) {
+            System.err.println("Could not write tile to disk");
+            //does not throw exception because if the file couldn't be stored on the disk, it is not critical
+            //and it is an OS permission problem on the user's computer (not our fault)
         }
+    }
+
+    /**
+     * This method tries to find the tile image on the server.
+     * @param tileId the position and zoom level of the tile
+     * @return the tile image or null if the tile is not found
+     */
+    private Optional<Image> findInMemory(TileId tileId) {
+        Image tile = tiles.get(tileId);
+        if (tile != null) {
+            return Optional.of(tile);
+        }
+        return Optional.empty(); // this is because a LinkedHashMap accepts a null key hence we don't need to check if the key exists
+    }
+
+    /**
+     * This method searches for the tile image on the user drive cache.
+     * @param tileId the position and zoom level of the tile
+     * @return the tile image or null if the tile is not found
+     */
+    private Optional<Image> findOnDrive(TileId tileId) {
+        Path absolutePath = cacheDirectory
+                .resolve(Integer.toString(tileId.zoom))
+                .resolve(Long.toString(tileId.x))
+                .resolve(tileId.y + tileExtension);
+        if (Files.exists(absolutePath)) {
+            try {
+                InputStream data = Files.newInputStream(absolutePath);
+                Image i = new Image(data);
+                data.close();
+                storeInMemory(tileId, i);
+                return Optional.of(i);
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -127,20 +164,33 @@ public class TileManager {
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
-    private Image findOnServer(TileId tileId) throws IOException {
+    private Optional<Image> findOnServer(TileId tileId) {
+        URL tileUrl = urlForTileAt(tileId);
+        if (tileUrl == null) return Optional.empty();
         byte[] data;
-        URLConnection connection = Objects.requireNonNull(urlForTileAt(tileId)).openConnection();
-        connection.setRequestProperty("User-Agent", "Javions");
-        try (InputStream i = connection.getInputStream()) {
+        try {
+            URLConnection connection = tileUrl.openConnection();
+            connection.setRequestProperty("User-Agent", "Javions");
+            InputStream i = connection.getInputStream();
             data = i.readAllBytes();
+            i.close();
+        } catch (IOException e) {
+            // this is because the tile server returns a 404 error if the tile is not found
+            // this is not an error and might happen because of internet connection issues
+            return Optional.empty();
         }
         if (data != null) {
             Image i = new Image(new ByteArrayInputStream(data));
-            storeOnDrive(tileId, data);
-            storeInMemory(tileId, i);
-            return i;
+            try {
+                storeOnDrive(tileId, data);
+                storeInMemory(tileId, i);
+                return Optional.of(i);
+            } catch (IOException e) {
+                // this is because the path might not exist
+                e.printStackTrace(System.err);
+            }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -149,10 +199,9 @@ public class TileManager {
      * @return the URL of the tile image
      */
     private URL urlForTileAt(TileId tileId) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("https://").append(tileServerUrl).append("/").append(tileId.zoom).append("/").append(tileId.x).append("/").append(tileId.y).append(".png");
+        String url = String.format("https://%s/%d/%d/%d%s", tileServerUrl, tileId.zoom, tileId.x, tileId.y, tileExtension);
         try {
-            return new URL(sb.toString());
+            return new URL(url);
         }
         catch (MalformedURLException e) {
             e.printStackTrace(System.err);
@@ -161,34 +210,35 @@ public class TileManager {
     }
 
     /**
-     * This method creates the directory if it doesn't exist. It is used to create the cache directory.
-     * @param path the path of the directory
-     */
-    private void createDirectoryIfItDoesntExist(Path path) {
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            }
-            catch(IOException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-    }
-
-    /**
-     * This class represents the position and zoom level of a tile.
+     * This immutable record represents the position and zoom level of a tile.
+     * It is used to identify a tile.
+     * @see TileManager#imageForTileAt(TileId)
      */
     public record TileId(int zoom, long x, long y) {
 
+        /**
+         * This constructor checks if the tile id is valid.
+         * @param zoom the zoom level of the tile
+         * @param x the x position of the tile
+         * @param y the y position of the tile
+         */
         public TileId {
             if (!isValid(zoom, x, y)) {
                 throw new IllegalArgumentException("Invalid tile id");
             }
         }
+
+        /**
+         * This method checks if the tile id is valid.
+         * @param zoom the zoom level of the tile
+         * @param x the x position of the tile
+         * @param y the y position of the tile
+         * @return true if the tile's attribute are valid, false otherwise
+         */
         public static boolean isValid(int zoom, long x, long y) {
             long maxIndex = 2L << zoom - 1; // equivalent to Math.pow(2, zoom) - 1 but faster
             return ((x > 0 && y > 0) &&
-                    (6 <= zoom && zoom <= 19) &&
+                    (MapParameters.MIN_ZOOM <= zoom && zoom <= MapParameters.MAX_ZOOM) &&
                     (x < maxIndex && y < maxIndex));
         }
     }
