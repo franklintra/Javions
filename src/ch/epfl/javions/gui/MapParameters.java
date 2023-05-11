@@ -114,6 +114,7 @@ public class MapParameters {
     /**
      * A method to get the top left corner of the MAP. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
      * @return the top left corner of the MAP as a Point2D in javaFX.
+     * This specific public method was not required in the project statement but it is used in BaseMapController to make the code easier to read.
      */
     public Point2D getTopLeftCorner() {
         return new Point2D(minX.get(), minY.get());
