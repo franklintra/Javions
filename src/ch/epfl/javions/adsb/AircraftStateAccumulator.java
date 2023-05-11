@@ -66,8 +66,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 stateSetter.setVelocity(avm.speed());
                 stateSetter.setTrackOrHeading(avm.trackOrHeading());
             }
-            default -> System.err.println("Other type of Message");
+            default -> {}
         }
-
     }
 }

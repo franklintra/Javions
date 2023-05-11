@@ -10,6 +10,9 @@ import ch.epfl.javions.Units;
 public final class CONFIGURATION {
     private CONFIGURATION() {}
 
+    /**
+     * This class contains all the constants used in the map part of the gui.
+     */
     public static final class MAP {
         private MAP() {}
 

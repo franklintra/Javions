@@ -23,7 +23,7 @@ import java.util.*;
 
 public final class ObservableAircraftState implements AircraftStateSetter {
     private final IcaoAddress icaoAddress;
-    private AircraftData aircraftData;
+    private final AircraftData aircraftData;
     private final IntegerProperty category = new SimpleIntegerProperty();
     private final Property<CallSign> callSign = new SimpleObjectProperty<>();
     private final DoubleProperty altitude = new SimpleDoubleProperty();
@@ -33,7 +33,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
     private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     private final ObservableList<AirbornePos> unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
-    private AircraftStateAccumulator<AircraftStateSetter> accumulator;
+    private final AircraftStateAccumulator<AircraftStateSetter> accumulator; // todo: why is this here ?
     private long previousTimestamp;
 
     /**

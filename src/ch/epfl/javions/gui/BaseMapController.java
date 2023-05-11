@@ -52,7 +52,7 @@ public class BaseMapController {
      * The image of an empty tile (used to fill the MAP when the tiles are loading and/or a tile is missing)
      * It stores the grid as an Image and doesn't redraw it everytime because displaying an image is hardware-accelerated in java.
      */
-    private Image gridImage = null;
+    private Image gridImage;
 
     /**
      * The constructor to make a new BaseMapController.

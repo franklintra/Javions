@@ -119,7 +119,6 @@ public class TileManager {
             Files.write(tilePath, image);
         }
         catch (IOException ignored) {
-            System.err.printf("Could not write tile to %s on the disk \n", tilePath);
             //does not throw exception because if the file couldn't be stored on the disk, it is not critical
             //and it is an OS permission problem on the user's computer (not our fault)
         }
@@ -150,13 +149,17 @@ public class TileManager {
                 .resolve(tileId.y + tileExtension);
         if (Files.exists(absolutePath)) {
             try {
-                InputStream data = Files.newInputStream(absolutePath);
-                Image i = new Image(data);
-                data.close();
-                storeInMemory(tileId, i);
+                Image i;
+                try (InputStream data = Files.newInputStream(absolutePath)) {
+                    i = new Image(data);
+                    storeInMemory(tileId, i);
+                }
                 return Optional.of(i);
-            } catch (IOException e) {
-                System.err.printf("Could not read tile %s from disk \n", tileId);
+            } catch (IOException ignored) {
+                //does not throw exception because if the file couldn't be read from the disk, it is not critical and
+                // certainly an OS permission problem on the user's computer (not our fault)
+                // or the file is corrupted (not our fault)
+                // todo: we however might want to think of a way to delete the corrupted file :)
             }
         }
         return Optional.empty();
@@ -174,9 +177,9 @@ public class TileManager {
         try {
             URLConnection connection = tileUrl.openConnection();
             connection.setRequestProperty("User-Agent", "Javions");
-            InputStream i = connection.getInputStream();
-            data = i.readAllBytes();
-            i.close();
+            try (InputStream i = connection.getInputStream()) {
+                data = i.readAllBytes();
+            }
         } catch (IOException e) {
             // this is because the tile server did not respond in time (or at all)
             // this is not an error and might happen because of internet connection issues or server overload

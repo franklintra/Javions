@@ -6,6 +6,7 @@ import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static ch.epfl.javions.aircraft.WakeTurbulenceCategory.HEAVY;
 
@@ -416,7 +417,7 @@ public enum AircraftIcon {
         if (maybeDesignatorIcon != null) return maybeDesignatorIcon;
 
         var description = typeDescription.string();
-        if (description.startsWith("H")) return HELICOPTER;
+        if (Objects.equals('H', description.charAt(0))) return HELICOPTER;
 
         var maybeDescriptionIcon = switch (description) {
             case "L1P", "L1T" -> CESSNA;

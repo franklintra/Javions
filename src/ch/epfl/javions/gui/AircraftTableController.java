@@ -24,7 +24,6 @@ import java.util.function.Function;
  */
 
 public class AircraftTableController {
-    private final int ERROR = -1;
     private final TableView<ObservableAircraftState> tableView;
     private final ObservableSet<ObservableAircraftState> aircraftStates;
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
@@ -131,7 +130,5 @@ public class AircraftTableController {
         tableView.getColumns().add(createNumericColumn("Latitude (°)", 70, 4, state -> new SimpleDoubleProperty(state.getPosition().latitude())));
         tableView.getColumns().add(createNumericColumn("Altitude (m)", 70, 0, state -> new SimpleDoubleProperty(state.getAltitude())));
         tableView.getColumns().add(createNumericColumn("Vitesse (km/h)", 70, 0, state -> new SimpleDoubleProperty(state.getVelocity())));
-        System.out.println("Columns created");
-        System.out.println(tableView.getColumns().size() + " columns");
     }
 }

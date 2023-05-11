@@ -35,23 +35,4 @@ public final class MessageParser {
         }
         return null;
     }
-
-    //todo : remove that method (just to prove a point)
-    public static Message parseAsTheyWant(RawMessage message) {
-        int typeCode = message.typeCode();
-        switch (typeCode) {
-            case 1, 2, 3, 4 -> {
-                return AircraftIdentificationMessage.of(message);
-            }
-            case 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 -> {
-                return AirbornePositionMessage.of(message);
-            }
-            case 19 -> {
-                return AirborneVelocityMessage.of(message);
-            }
-            default -> {
-                return null;
-            }
-        }
-    }
 }

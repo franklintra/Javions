@@ -2,10 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
@@ -14,7 +11,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
-import org.junit.jupiter.api.Test;
 
 /**
  * @author @chukla (357550)
@@ -28,7 +24,7 @@ public final class AircraftController {
     private final ObservableSet<ObservableAircraftState> states;
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
     private final Pane pane;
-    private final double maxAltitude = 12000;
+    private final static double maxAltitude = 12000;
     private final double lowAltDefiner = (double) 1 / 3;
 
     public AircraftController(MapParameters mapParameters, ObservableSet<ObservableAircraftState> states, ObjectProperty<ObservableAircraftState> selectedAircraft) {
@@ -42,7 +38,7 @@ public final class AircraftController {
         createPane();
     }
 
-    public Pane pane() {
+    public Pane getPane() {
         return pane;
     }
 

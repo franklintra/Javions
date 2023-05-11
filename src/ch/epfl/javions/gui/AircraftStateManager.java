@@ -58,7 +58,7 @@ public final class  AircraftStateManager {
                 ObservableAircraftState observableAircraftState = new ObservableAircraftState(icaoAddress, aircraftData);
                 aircraftStateAccumulators.put(icaoAddress, new AircraftStateAccumulator<>(observableAircraftState));
             }
-            else{
+            else {
                 if (aircraftStateAccumulators.get(icaoAddress).stateSetter().getPosition() != null) {
                     observableAircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
                 }

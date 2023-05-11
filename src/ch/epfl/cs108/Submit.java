@@ -1,8 +1,6 @@
 package ch.epfl.cs108;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -42,7 +40,7 @@ public final class Submit {
     private static final int TIMEOUT_SECONDS = 5;
 
     private static final LocalDate SEMESTER_START_DATE = LocalDate.of(2023, Month.FEBRUARY, 20);
-    private static final URI baseUri = URI.create("https://cs108.epfl.ch/");
+    private static final URI baseUri = URI.create("https://cs108.epfl.ch/"); //NOPMD - suppressed VariableNamingConventions
 
     private static final String BASE32_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
     private static final Pattern SUBMISSION_ID_RX =
@@ -56,11 +54,11 @@ public final class Submit {
         var token2 = args.length >= 2 ? args[1] : TOKEN_2;
 
         if (token1.length() != TOKEN_LENGTH) {
-            System.err.println("Erreur : vous n'avez correctement défini TOKEN_1 dans Submit.java !");
+            System.err.println("Erreur : vous n'avez correctement défini TOKEN_1 dans Submit.java !"); //NOPMD - suppressed SystemPrintln
             System.exit(1);
         }
         if (token2.length() != TOKEN_LENGTH) {
-            System.err.println("Erreur : vous n'avez correctement défini TOKEN_2 dans Submit.java !");
+            System.err.println("Erreur : vous n'avez correctement défini TOKEN_2 dans Submit.java !"); //NOPMD - suppressed SystemPrintln
             System.exit(1);
         }
 
@@ -73,7 +71,7 @@ public final class Submit {
                 try {
                     Files.createDirectory(submissionsDir);
                 } catch (FileAlreadyExistsException e) {
-                    System.err.printf("Erreur : impossible de créer le dossier %s !\n", submissionsDir);
+                    System.err.printf("Erreur : impossible de créer le dossier %s !\n", submissionsDir); //NOPMD - suppressed SystemPrintln
                 }
             }
 
@@ -84,7 +82,7 @@ public final class Submit {
             var backupName = "%tF_%tH%tM%tS".formatted(
                     submissionTimeStamp, submissionTimeStamp, submissionTimeStamp, submissionTimeStamp);
             var backupPath = submissionsDir.resolve(backupName + ".zip");
-            writeZip(backupPath, zipArchive);
+            Files.write(backupPath, zipArchive);
 
             var response = submitZip(token1 + token2, zipArchive);
             var wasCreated = response.statusCode() == HTTP_CREATED;
@@ -116,7 +114,7 @@ public final class Submit {
                     projectRoot.relativize(backupPath));
             System.exit(wasCreated ? 0 : 1);
         } catch (IOException | InterruptedException e) {
-            System.err.println("Erreur inattendue !");
+            System.err.println("Erreur inattendue !"); //NOPMD - suppressed SystemPrintln
             e.printStackTrace(System.err);
             System.exit(1);
         }
@@ -159,7 +157,7 @@ public final class Submit {
                         .map(Path::toString)
                         .collect(Collectors.joining("/", ZIP_ENTRY_NAME_PREFIX, ""));
                 zipStream.putNextEntry(new ZipEntry(entryPath));
-                try (var fileStream = new FileInputStream(path.toFile())) {
+                try (var fileStream = Files.newInputStream(path)){
                     fileStream.transferTo(zipStream);
                 }
                 zipStream.closeEntry();
@@ -181,11 +179,5 @@ public final class Submit {
 
         return HttpClient.newHttpClient()
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
-    }
-
-    private static void writeZip(Path filePath, byte[] zipArchive) throws IOException {
-        try (var c = new FileOutputStream(filePath.toFile())) {
-            c.write(zipArchive);
-        }
     }
 }

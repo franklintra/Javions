@@ -7,11 +7,13 @@ package ch.epfl.javions;
  */
 public final class Crc24 {
     /**
-     * This is the default generator used to generate the CRC (it has to be given by the user upon construction with new Crc24(Crc24.GENERATOR))
+     * This is the default generator used to generate the CRC
+     * (it has to be given by the user upon construction with new Crc24(Crc24.GENERATOR))
      */
     public static final int GENERATOR = 0xFFF409;
     /**
-     * This is the table used to optimize the algorithm (see instruction set 2.4.4). It was generated using the crc_bitwise and buildTable methods.
+     * This is the table used to optimize the algorithm
+     * (see instruction set 2.4.4). It was generated using the crc_bitwise and buildTable methods.
      */
     private final int[] buildTable;
 
