@@ -9,11 +9,39 @@ import javafx.geometry.Point2D;
  * @author @franklintra (362694)
  * @project Javions
  */
+
+
+/**
+ * This class is used to store the parameters of the MAP. It is used in BaseMapController.
+ * @see BaseMapController
+ * This is used to:
+ *  - store the zoom level of the MAP
+ *  - store the x and y coordinates of the top left corner of the MAP
+ *  - scroll around the MAP
+ *  - zoom in and out of the MAP
+ */
 public class MapParameters {
-    private static final int MIN_ZOOM = 6; // 6 is the minimum zoom level for this project (we will not zoom out further because the radio signal is too weak)
-    private static final int MAX_ZOOM = 19; // 19 is the maximum zoom level for this project (it's not necessary to zoom in further + we're close to OpenStreetMap's limit)
-    private final IntegerProperty zoomLevel; // The zoom level of the MAP
-    private final DoubleProperty minX; // The x coordinate of the top left corner of the MAP
+    /**
+     * The minimum zoom level for this project
+     * 6 is the minimum zoom level for this project (we will not zoom out further because the radio signal is too weak)
+     */
+    public static final int MIN_ZOOM = 6;
+    /**
+     * The maximum zoom level for this project
+     * 19 is the maximum zoom level of OpenStreetMap hence the maximum zoom level for this project
+     */
+    public static final int MAX_ZOOM = 19;
+    /**
+     * The current zoom level of the MAP
+     */
+    private final IntegerProperty zoomLevel;
+    /**
+     * The x coordinate of the top left corner of the MAP in Web Mercator projection
+     */
+    private final DoubleProperty minX;
+    /**
+     * The y coordinate of the top left corner of the MAP in Web Mercator projection
+     */
     private final DoubleProperty minY; // The y coordinate of the top left corner of the MAP
 
     /**
@@ -89,7 +117,7 @@ public class MapParameters {
 
     /**
      * A method to get the top left corner of the MAP. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
-     * @return the top left corner of the MAP
+     * @return the top left corner of the MAP as a Point2D in javaFX.
      */
     public Point2D getTopLeftCorner() {
         return new Point2D(minX.get(), minY.get());
@@ -102,7 +130,6 @@ public class MapParameters {
      */
     public void changeZoomLevel(int deltaZoom) {
         int newZoom = Math2.clamp(MIN_ZOOM, zoomLevel.get() + deltaZoom, MAX_ZOOM);
-        //if (newZoom == zoomLevel.get()) return;
         double scaleFactor = Math.scalb(1, newZoom - zoomLevel.get());
         minX.set(minX.get() * scaleFactor);
         minY.set(minY.get() * scaleFactor);
