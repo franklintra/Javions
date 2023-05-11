@@ -21,7 +21,8 @@ import java.util.*;
  */
 
 public final class ObservableAircraftState implements AircraftStateSetter {
-    private final Property<IcaoAddress> icaoAddress = new SimpleObjectProperty<>();
+    private final IcaoAddress icaoAddress;
+    private AircraftData aircraftData;
     private final IntegerProperty category = new SimpleIntegerProperty();
     private final Property<CallSign> callSign = new SimpleObjectProperty<>();
     private final DoubleProperty altitude = new SimpleDoubleProperty();
@@ -32,7 +33,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     private final ObservableList<AirbornePos> unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
     private AircraftStateAccumulator<AircraftStateSetter> accumulator;
-    private Property<AircraftData> aircraftData = new SimpleObjectProperty<>();
     private long previousTimestamp;
 
     /**
@@ -43,9 +43,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData data) {
         Objects.requireNonNull(icaoAddress);
-        this.icaoAddress.setValue(icaoAddress);
+        this.icaoAddress = icaoAddress;
+        this.aircraftData = data;
         this.accumulator = new AircraftStateAccumulator<>(this);
-        this.aircraftData = new SimpleObjectProperty<>(data);
     }
 
     public record AirbornePos(GeoPos pos, double altitude) {
@@ -78,17 +78,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
-
     public AircraftData getAircraftData() {
-        return aircraftData.getValue();
-    }
-
-    public Property<AircraftData> aircraftDataProperty() {
         return aircraftData;
     }
 
     public AircraftRegistration getRegistration() {
-        return aircraftData.getValue().registration();
+        return aircraftData.registration();
     }
 
     public long getLastMessageTimeStampNs() {
@@ -176,7 +171,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.trackOrHeading.set(trackOrHeading);
     }
 
-    public ReadOnlyProperty<IcaoAddress> getIcaoAddress() {
+    public IcaoAddress getIcaoAddress() {
         return icaoAddress;
     }
 

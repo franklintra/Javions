@@ -10,7 +10,6 @@ import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.collections.ObservableSet;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,7 +19,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author @franklintra (362694)
@@ -95,7 +93,7 @@ public class ObservableAircraftStateTest {
     }
 
     private void printStatesAndClear(PrintStream printer, ObservableSet<ObservableAircraftState> states) {
-        Set<ObservableAircraftState> sortedStates = new TreeSet<>(Comparator.comparing(o -> o.getIcaoAddress().getValue().string()));
+        Set<ObservableAircraftState> sortedStates = new TreeSet<>(Comparator.comparing(o -> o.getIcaoAddress().string()));
         sortedStates.addAll(states);
         //clearTerminal(System.out);
         printer.println("ICAO    CALLSIGN REGISTRATION                        MODEL            LONGITUDE                LATITUDE     ALTITUDE  SPEED");
@@ -104,10 +102,10 @@ public class ObservableAircraftStateTest {
             GeoPos p = o.getPosition();
             if (data != null) {
                 String registration = o.getRegistration()!=null ? o.getRegistration().string() : "";
-                printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().getValue().string(), nullCallSign(o.getCallSign()), registration, data.model(), nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
+                printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().string(), nullCallSign(o.getCallSign()), registration, data.model(), nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
             }
             else {
-                printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().getValue().string(), nullCallSign(o.getCallSign()), "", "", nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
+                printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().string(), nullCallSign(o.getCallSign()), "", "", nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
             }
         });
     }
@@ -146,4 +144,6 @@ public class ObservableAircraftStateTest {
             return s1.compareTo(s2);
         }
     }
+
+
 }

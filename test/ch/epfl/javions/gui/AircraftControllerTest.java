@@ -11,7 +11,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -33,7 +32,7 @@ public final class AircraftControllerTest extends Application {
                 new BufferedInputStream(
                         new FileInputStream(fileName)))){
             byte[] bytes = new byte[RawMessage.LENGTH];
-            while (true) {
+            while (s.available() > bytes.length) {
                 long timeStampNs = s.readLong();
                 int bytesRead = s.readNBytes(bytes, 0, bytes.length);
                 assert bytesRead == RawMessage.LENGTH;
@@ -41,7 +40,10 @@ public final class AircraftControllerTest extends Application {
 
                 finalList.add(new RawMessage(timeStampNs, message));
             }
-        } catch (EOFException e) { return finalList; }
+        } catch (Exception e) {
+            System.err.println("You mf");
+        }
+        return finalList;
     }
 
     @Override
@@ -58,13 +60,10 @@ public final class AircraftControllerTest extends Application {
         var db = new AircraftDatabase(f);
 
         AircraftStateManager asm = new AircraftStateManager(db);
-        ObjectProperty<ObservableAircraftState> sap =
-                new SimpleObjectProperty<>();
         st = asm.states();
-        AircraftTableController ac =
-                new AircraftTableController(st, sap);
-        var root = new StackPane(bmc.getPane(), ac.getPane());
-        primaryStage.setScene(new Scene(root));
+        //AircraftTableController ac = new AircraftTableController(st, sap);
+        //var root = new StackPane(bmc.getPane(), ac.getPane());
+        primaryStage.setScene(new Scene(bmc.getPane()));
         primaryStage.show();
 
         var mi = readAllMessages("messages_20230318_0915.bin")
