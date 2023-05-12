@@ -3,6 +3,7 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
@@ -53,51 +54,50 @@ public final class AircraftController {
         });
     }
 
+
+
     private void createGroup(ObservableAircraftState state) {
         // create the group
         Group group = new Group();
         pane.getChildren().add(group);
-        group.setId(state.getIcaoAddress().string()); // TODO: 5/11/2023 check if correct
+        group.setId(state.getIcaoAddress().string());
 
         // set the view order property to the negation of the altitude
         group.viewOrderProperty().bind(state.altitudeProperty().negate());
 
-        // trajectory group creation and add it to the aircraft group
-        Group trajectory = new Group();
-        group.getChildren().add(trajectory);
-        trajectory.getChildren().add(createTrajectory(state));
-
-        // associate style class with trajectory node
-        trajectory.getStyleClass().add("trajectory");
-
         // label and icon group creation and add it to the aircraft group
         Group labelIcon = new Group();
         group.getChildren().add(labelIcon);
-
         // position the icon/label group
-        // TODO: 5/9/2023 figure out how to use layoutXProperty() and layoutYProperty() or to use it in getScreenCoordinates()
-        Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
-        labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(screenCoordinates::getX, mapParameters.zoomLevelProperty()));
-        labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(screenCoordinates::getY, mapParameters.zoomLevelProperty()));
-
+        positionLabelIcon(state, labelIcon);
 
         // icon creation and add it to the label and icon group
         labelIcon.getChildren().add(constructIcon(state));
 
-        // create the label and add it to the label and icon group
-        Group label = new Group();
-        labelIcon.getChildren().add(label);
+        // construct trajectory
+        constructTrajectory(state, group);
 
-        // associate style class with label node
-        label.getStyleClass().add("label");
-
-        // create and add background and text to the group of label
-        Rectangle background = new Rectangle();
-        Text text = new Text();
-        constructLabel(state, background, text);
-        label.getChildren().add(background);
-        label.getChildren().add(text);
+        // construct label
+        constructLabel(state,labelIcon);
     }
+
+
+
+
+
+    private void positionLabelIcon(ObservableAircraftState state, Group labelIcon) {
+        // position the icon/label group
+        labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
+            Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
+            return screenCoordinates.getX();
+        }, mapParameters.zoomLevelProperty()));
+
+        labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
+            Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
+            return screenCoordinates.getY();
+        }, mapParameters.zoomLevelProperty()));
+    }
+
 
     private SVGPath constructIcon(ObservableAircraftState state) {
         SVGPath iconSVG = new SVGPath();
@@ -123,35 +123,50 @@ public final class AircraftController {
         return iconSVG;
     }
 
-    private void constructLabel(ObservableAircraftState state, Rectangle background, Text text) {
+
+
+    private void constructLabel(ObservableAircraftState state, Group labelIcon) {
+        // TODO: 5/12/2023 need a semi transparent background for the label
+        // create the label and add it to the label and icon group
+        Group label = new Group();
+        // associate style class with label node
+        label.getStyleClass().add("label");
+        labelIcon.getChildren().add(label);
+
+        // create and add background and text to the group of label
+        Rectangle background = new Rectangle();
+        Text text = new Text();
+        label.getChildren().add(background);
+        label.getChildren().add(text);
+
+        // drawing of the label i.e. background and text
+        // TODO: 5/11/2023 check if correct
+        text.textProperty().bind(Bindings.createStringBinding(() -> {
+            String velocity = Double.compare(state.getVelocity(), Double.NaN) == 0 ? "? km/h" : String.format("%f km/h", state.getVelocity());
+            String altitude = Double.compare(state.getAltitude(), Double.NaN) == 0 ? "? meters" : String.format("%f meters", state.getAltitude());
+            return labelFirstLine(state) + "\n" + velocity + "\u2002" + altitude;
+        }, state.velocityProperty(), state.altitudeProperty()));
 
         // height and width should be bound to an expression whose value is equal to the height/width of the text of the label, plus 4.
         background.heightProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
         background.widthProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getWidth() + 4));
 
         // ensures text of altitude always is in metres and velocity is in km/h
-        // TODO: 5/11/2023 how to do format for two things
         text.textProperty().bind(
                 Bindings.createStringBinding(
-                        () -> String.format("%f meters", "%km/h meters",
+                        () -> String.format("%f meters %f km/h meters",
                                 state.altitudeProperty().get(),
-                                state.velocityProperty().get(),
+                                state.velocityProperty().get()),
                         state.altitudeProperty(), state.velocityProperty()
                 )
-        ));
+        );
 
         //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
-        text.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get() == state, mapParameters.zoomLevelProperty(), selectedAircraft));
-
-        // drawing of the label i.e. background and text
-        // TODO: 5/11/2023 check if correct 
-        String velocity = Double.compare(state.getVelocity(), Double.NaN) == 0 ? "? km/h" : String.format("%f km/h", state.getVelocity());
-        String altitude = Double.compare(state.getAltitude(), Double.NaN) == 0 ? "? meters" : String.format("%f meters", state.getAltitude());
-
-        text.textProperty().bind(Bindings.createStringBinding(() ->
-                        labelFirstLine(state) + "\n" + velocity + "\u2002" + altitude,
-                state.velocityProperty(), state.altitudeProperty()));
+        label.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get().equals(state), mapParameters.zoomLevelProperty(), selectedAircraft));
     }
+
+
+
 
     private String labelFirstLine(ObservableAircraftState state) {
         if (state.getRegistration() != null) {
@@ -163,10 +178,16 @@ public final class AircraftController {
         }
     }
 
+
+
+
     private void removeGroup(ObservableAircraftState state) {
         //remove the group from the pane
         states.remove(state);
     }
+
+
+
 
     private Point2D getScreenCoordinates(ObservableAircraftState state, MapParameters mapParams) {
         int zoomLevel = mapParams.getZoomLevel();
@@ -181,30 +202,42 @@ public final class AircraftController {
         return new Point2D(x, y);
     }
 
-    private SVGPath createTrajectory(ObservableAircraftState state) {
-        SVGPath trajectory = new SVGPath();
 
 
-        // trajectory has to be visible then the graphical representation of trajectory is recreated each time trajectory or zoom level changes
-        // FIXME: 5/11/2023 fix this
+
+    private void constructTrajectory(ObservableAircraftState state, Group group) {
+
+        Group trajectory = new Group();
+        // associate style class with trajectory node
+        trajectory.getStyleClass().add("trajectory");
+        group.getChildren().add(trajectory);
+        trajectory.visibleProperty().bind(selectedAircraft.isEqualTo(state));
+
+
+
         trajectory.visibleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                // add listeners to zoomLevelProperty() and trajectoryProperty()
-                mapParameters.zoomLevelProperty().addListener((observable1, oldValue1, newValue1) -> {
-                    trajectory.setContent(state.getTrajectory().toString());
-                });
-//                state.trajectoryProperty().addListener((observable2, oldValue2, newValue2) -> {
-////                    trajectory.setContent(state.getTrajectory().toString());
-////                });
+                // draw trajectory
+            } else {
+                // remove trajectory
             }
         });
 
-        // visible property only true when its own state is contained in property passed to constructor
-        trajectory.visibleProperty().bind(Bindings.createBooleanBinding(() -> selectedAircraft.get() == state, selectedAircraft));
+        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
+            if (trajectory.isVisible()) {
+                // draw trajectory
+            }
+        });
 
+        state.trajectoryProperty().addListener((observable, oldValue, newValue) -> {
+            if (trajectory.isVisible()) {
+                // draw trajectory
+            }
+        });
 
-        // TODO: 5/9/2023 complete trajectory implementattion
-        // TODO: 5/9/2023 implement colouring of trajectory
-        return trajectory;
+        trajectory.layoutXProperty().bind(mapParameters.minXProperty().negate());
+        trajectory.layoutYProperty().bind(mapParameters.minXProperty().negate());
+        //draw line, colour gradient
+        //create line
     }
 }
