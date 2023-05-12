@@ -12,22 +12,21 @@ import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.*;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author @franklintra (362694)
  * @project Javions
  */
 public class ObservableAircraftStateTest {
-    public static void main (String[] args) throws IOException {
-        new ObservableAircraftStateTest().test();
+    public static void main (String[] args) {
+        //new ObservableAircraftStateTest().test();
         new ObservableAircraftStateTest().printTable();
     }
 
@@ -47,22 +46,22 @@ public class ObservableAircraftStateTest {
         }
     }
 
-    @Test
     public void printTable() {
         long lastMessage = 0;
         AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
         ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
         long lastTime = 0;
+        long counter = 0; // to print every 10 messages
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
                 long timeStampNs = s.readLong();
-                /*long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
+                long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
                 try {
                     Thread.sleep(timeDifference);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }*/
+                }
                 lastMessage = timeStampNs;
                 s.readNBytes(bytes, 0, bytes.length);
                 ByteString message = new ByteString(bytes);
@@ -72,6 +71,7 @@ public class ObservableAircraftStateTest {
                 if (m == null) continue;
                 aircraftStateManager.updateWithMessage(m);
                 aircraftStateManager.purge();
+                if (counter++ % 10 == 0) printStatesAndClear(System.out, aircraftStateManager.states());
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

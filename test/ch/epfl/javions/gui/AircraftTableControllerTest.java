@@ -9,6 +9,7 @@ import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
@@ -18,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author @franklintra (362694)
@@ -25,31 +27,38 @@ import java.util.Objects;
  */
 public class AircraftTableControllerTest extends Application {
     private static final GeoPos maison = new GeoPos((int) Units.convert(2.2794736259693136, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(48.88790023468289, Units.Angle.DEGREE, Units.Angle.T32));
+    private final AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath()));
+
     public static void main(String[] args) { launch(args); }
 
     @Override
     public void start(Stage primaryStage) {
-        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath()));
         ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
 
-        var root = new BorderPane(new AircraftTableController(aircraftStateManager.states(), selectedAircraftState).getPane());
-        primaryStage.setScene(new Scene(root));
-        primaryStage.setTitle("TestBaseMapController");
-        primaryStage.setWidth(1920);
-        primaryStage.setHeight(1080);
-        primaryStage.show();
-        //il faut mettre le code de lecture des messages dans des méthodes séparés sur différents threads.
+        Platform.runLater(() -> {
+            var root = new BorderPane(new AircraftTableController(aircraftStateManager.states(), selectedAircraftState).getPane());
+            primaryStage.setScene(new Scene(root));
+            primaryStage.setTitle("TestBaseMapController");
+            primaryStage.setWidth(1920);
+            primaryStage.setHeight(1080);
+            primaryStage.show();
+        });
+
+        new Thread(this::readAndProcessMessages).start();
+    }
+
+    private void readAndProcessMessages() {
         long lastMessage = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
                 long timeStampNs = s.readLong();
-                /*long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
+                long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
                 try {
                     Thread.sleep(timeDifference);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }*/
+                }
                 lastMessage = timeStampNs;
                 s.readNBytes(bytes, 0, bytes.length);
                 ByteString message = new ByteString(bytes);
