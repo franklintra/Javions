@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author @franklintra (362694)
@@ -49,10 +48,11 @@ public class ObservableAircraftStateTest {
     }
 
     @Test
-    public void printTable() throws IOException {
+    public void printTable() {
         long lastMessage = 0;
         AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
         ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
+        long lastTime = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
@@ -66,7 +66,9 @@ public class ObservableAircraftStateTest {
                 lastMessage = timeStampNs;
                 s.readNBytes(bytes, 0, bytes.length);
                 ByteString message = new ByteString(bytes);
-                Message m = MessageParser.parse(new RawMessage(timeStampNs, message));
+                RawMessage rawMessage = new RawMessage(timeStampNs, message);
+                Message m = null;
+                m = MessageParser.parse(rawMessage);
                 if (m == null) continue;
                 aircraftStateManager.updateWithMessage(m);
                 aircraftStateManager.purge();

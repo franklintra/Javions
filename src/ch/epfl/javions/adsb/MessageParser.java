@@ -1,17 +1,10 @@
 package ch.epfl.javions.adsb;
 
-import java.util.Set;
-
 /**
  * @author @franklintra (362694)
  * @project Javions
  */
 public final class MessageParser {
-
-    private final static Set<Integer> IDENTIFICATION_MESSAGES_TYPECODES = Set.of(1, 2, 3, 4);
-    private final static Set<Integer> AIRBORNE_POSITION_MESSAGE_TYPECODES = Set.of(9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22);
-    private final static Set<Integer> AIRBORNE_VELOCITY_MESSAGE_TYPECODES = Set.of(19);
-
     /**
      * This class is not instantiable hence the private constructor.
      */
@@ -26,13 +19,28 @@ public final class MessageParser {
      */
     public static Message parse(RawMessage message) {
         int typeCode = message.typeCode();
-        if (IDENTIFICATION_MESSAGES_TYPECODES.contains(typeCode)) {
-            return AircraftIdentificationMessage.of(message);
-        } else if (AIRBORNE_POSITION_MESSAGE_TYPECODES.contains(typeCode)) {
-            return AirbornePositionMessage.of(message);
-        } else if (AIRBORNE_VELOCITY_MESSAGE_TYPECODES.contains(typeCode)) {
-            return AirborneVelocityMessage.of(message);
+        switch (typeCode) {
+            /*
+             * Aircraft identification message
+             */
+            case 1, 2, 3, 4 -> {
+                return AircraftIdentificationMessage.of(message);
+            }
+            /*
+             * Airborne position message
+             */
+            case 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22 -> {
+                return AirbornePositionMessage.of(message);
+            }
+            /*
+             * Airborne velocity message
+             */
+            case 19 -> {
+                return AirborneVelocityMessage.of(message);
+            }
+            default -> {
+                return null;
+            }
         }
-        return null;
     }
 }

@@ -18,7 +18,6 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author @franklintra (362694)
@@ -30,7 +29,7 @@ public class AircraftTableControllerTest extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
+        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath()));
         ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
 
         var root = new BorderPane(new AircraftTableController(aircraftStateManager.states(), selectedAircraftState).getPane());
@@ -39,6 +38,7 @@ public class AircraftTableControllerTest extends Application {
         primaryStage.setWidth(1920);
         primaryStage.setHeight(1080);
         primaryStage.show();
+        //il faut mettre le code de lecture des messages dans des méthodes séparés sur différents threads.
         long lastMessage = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
