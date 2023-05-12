@@ -11,16 +11,14 @@ import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ObservableSet;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author @franklintra (362694)
@@ -41,10 +39,18 @@ public class AircraftTableControllerTest extends Application {
         primaryStage.setWidth(1920);
         primaryStage.setHeight(1080);
         primaryStage.show();
+        long lastMessage = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
                 long timeStampNs = s.readLong();
+                /*long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
+                try {
+                    Thread.sleep(timeDifference);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
+                lastMessage = timeStampNs;
                 s.readNBytes(bytes, 0, bytes.length);
                 ByteString message = new ByteString(bytes);
                 Message m = MessageParser.parse(new RawMessage(timeStampNs, message));

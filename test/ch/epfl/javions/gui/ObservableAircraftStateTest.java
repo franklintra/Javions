@@ -9,23 +9,28 @@ import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.AircraftDatabase;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.io.*;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author @franklintra (362694)
  * @project Javions
  */
 public class ObservableAircraftStateTest {
+    public static void main (String[] args) throws IOException {
+        new ObservableAircraftStateTest().test();
+        new ObservableAircraftStateTest().printTable();
+    }
 
     void test() {
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
@@ -43,58 +48,36 @@ public class ObservableAircraftStateTest {
         }
     }
 
-    void etape7Test() {
+    @Test
+    public void printTable() throws IOException {
+        long lastMessage = 0;
+        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
+        ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
-
-            AircraftStateManager stateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
-
-            for (int i = 0; i < 100; i++) {
-                long timeStampNs = s.readLong();
-                int bytesRead = s.readNBytes(bytes, 0, bytes.length);
-                assert bytesRead == RawMessage.LENGTH;
-                ByteString message = new ByteString(bytes);
-
-                stateManager.updateWithMessage(Objects.requireNonNull(MessageParser.parse(Objects.requireNonNull(RawMessage.of(timeStampNs, bytes)))));
-
-                System.out.println(stateManager.states());
-            }
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    public void printTable() throws IOException{
-        ObservableSet<ObservableAircraftState> states = null;
-        int counter = 0;
-        try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))){
-            byte[] bytes = new byte[RawMessage.LENGTH];
-            AircraftDatabase database = new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath());
-            AircraftStateManager aircraftStateManager = new AircraftStateManager(database);
             while (s.available() >= bytes.length) {
-                counter++;
                 long timeStampNs = s.readLong();
+                /*long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
+                try {
+                    Thread.sleep(timeDifference);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
+                lastMessage = timeStampNs;
                 s.readNBytes(bytes, 0, bytes.length);
                 ByteString message = new ByteString(bytes);
-                Message m = MessageParser.parse(new RawMessage(timeStampNs,message));
+                Message m = MessageParser.parse(new RawMessage(timeStampNs, message));
                 if (m == null) continue;
                 aircraftStateManager.updateWithMessage(m);
                 aircraftStateManager.purge();
-                states = aircraftStateManager.states();
-                if (100 < counter++ && counter < 600) printStatesAndClear(System.out, states);
             }
-        } catch (EOFException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        finally {
-            assertNotNull(states);
-            printStatesAndClear(System.out, states);
-        }
     }
-
     private void printStatesAndClear(PrintStream printer, ObservableSet<ObservableAircraftState> states) {
-        Set<ObservableAircraftState> sortedStates = new TreeSet<>(Comparator.comparing(o -> o.getIcaoAddress().string()));
+        clearTerminal(printer);
+        Set<ObservableAircraftState> sortedStates = new TreeSet<>(new AddressComparator());
         sortedStates.addAll(states);
         //clearTerminal(System.out);
         printer.println("ICAO    CALLSIGN REGISTRATION                        MODEL            LONGITUDE                LATITUDE     ALTITUDE  SPEED");
@@ -112,9 +95,9 @@ public class ObservableAircraftStateTest {
     }
 
     private void clearTerminal(PrintStream printer) {
-        for (int i = 0; i < 20; i++) {
-            printer.println();
-        }
+        String CSI = "\u001B[";
+        String CLEAR_SCREEN = CSI + "2J";
+        printer.println(CLEAR_SCREEN);
     }
 
     private static String nullParser(Object s) {
@@ -145,6 +128,4 @@ public class ObservableAircraftStateTest {
             return s1.compareTo(s2);
         }
     }
-
-
 }

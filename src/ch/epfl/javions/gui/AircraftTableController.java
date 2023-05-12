@@ -1,5 +1,6 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.CallSign;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -95,11 +96,19 @@ public class AircraftTableController {
                 return value != null ? format.format(value) : "";
         }, numberValue);});
 
-        column.setCellFactory(columnOriginal -> {
-            TableCell<ObservableAircraftState, String> cell = new TableCell<>();
-            cell.getStyleClass().add("numeric");
-            return cell;
+        column.setCellFactory(columnOriginal -> new TableCell<ObservableAircraftState, String>() {
+            {this.getStyleClass().add("numeric");}
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    this.setText(null);
+                } else {
+                    this.setText(item);
+                }
+            }
         });
+
 
         column.setComparator((s1, s2) -> {
             if (s1.isEmpty() || s2.isEmpty()) {
@@ -123,12 +132,10 @@ public class AircraftTableController {
         tableView.getColumns().add(createTextColumn("OACI", 60, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string())));
         tableView.getColumns().add(createTextColumn("Indicatif", 70, state -> state.callSignProperty().map(CallSign::string)));
         tableView.getColumns().add(createTextColumn("Immatriculation", 90, state -> new ReadOnlyStringWrapper(state.getRegistration().string())));
-        // modèle 230
-        // type 50
-        // description 70
-        tableView.getColumns().add(createNumericColumn("Longitude (°)", 70, 4, state -> new SimpleDoubleProperty(state.getPosition().longitude())));
-        tableView.getColumns().add(createNumericColumn("Latitude (°)", 70, 4, state -> new SimpleDoubleProperty(state.getPosition().latitude())));
+        // Numeric columns
+        tableView.getColumns().add(createNumericColumn("Longitude (°)", 70, 4, state -> new SimpleDoubleProperty(Units.convertTo(state.getPosition().longitude(), Units.Angle.DEGREE))));
+        tableView.getColumns().add(createNumericColumn("Latitude (°)", 70, 4, state -> new SimpleDoubleProperty(Units.convertTo(state.getPosition().latitude(), Units.Angle.DEGREE))));
         tableView.getColumns().add(createNumericColumn("Altitude (m)", 70, 0, state -> new SimpleDoubleProperty(state.getAltitude())));
-        tableView.getColumns().add(createNumericColumn("Vitesse (km/h)", 70, 0, state -> new SimpleDoubleProperty(state.getVelocity())));
+        tableView.getColumns().add(createNumericColumn("Vitesse (km/h)", 70, 0, state -> new SimpleDoubleProperty(Units.convertTo(state.getVelocity(), Units.Speed.KILOMETER_PER_HOUR))));
     }
 }
