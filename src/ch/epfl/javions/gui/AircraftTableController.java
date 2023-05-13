@@ -29,6 +29,13 @@ public class AircraftTableController {
     private final TableView<ObservableAircraftState> tableView;
     private final ObservableSet<ObservableAircraftState> aircraftStates;
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
+    private static final int ICAO_COLUMN_WIDTH = 60;
+    private static final int CALLSIGN_COLUMN_WIDTH = 70;
+    private static final int REGISTRATION_COLUMN_WIDTH = 90;
+    private static final int MODEL_COLUMN_WIDTH = 230;
+    private static final int TYPE_COLUMN_WIDTH = 50;
+    private static final int DESCRIPTION_COLUMN_WIDTH = 70;
+    private static final int NUMERIC_COLUMNS_WIDTH = 85;
 
     /**
      * The constructor of the controller
@@ -73,12 +80,12 @@ public class AircraftTableController {
      */
     private void createColumns() {
         // Text columns
-        tableView.getColumns().add(createTextColumn("OACI", 60, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string())));
-        tableView.getColumns().add(createTextColumn("Indicatif", 70, state -> state.callSignProperty().map(CallSign::string)));
-        tableView.getColumns().add(createTextColumn("Immatriculation", 90, state -> new ReadOnlyStringWrapper(state.aircraftData().registration().string())));
-        tableView.getColumns().add(createTextColumn("Modèle", 230, state -> new ReadOnlyStringWrapper(state.aircraftData().model())));
-        tableView.getColumns().add(createTextColumn("Type", 50, state -> new ReadOnlyStringWrapper(state.aircraftData().typeDesignator().string())));
-        tableView.getColumns().add(createTextColumn("Description", 70, state -> new ReadOnlyStringWrapper(state.aircraftData().description().string())));
+        tableView.getColumns().add(createTextColumn("OACI", ICAO_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string())));
+        tableView.getColumns().add(createTextColumn("Indicatif", CALLSIGN_COLUMN_WIDTH, state -> state.callSignProperty().map(CallSign::string)));
+        tableView.getColumns().add(createTextColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().registration().string())));
+        tableView.getColumns().add(createTextColumn("Modèle", MODEL_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().model())));
+        tableView.getColumns().add(createTextColumn("Type", TYPE_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().typeDesignator().string())));
+        tableView.getColumns().add(createTextColumn("Description", DESCRIPTION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().description().string())));
 
         // Numeric columns
         tableView.getColumns().add(createNumericColumn("Longitude (°)", 4, state -> state.positionProperty().map(position -> Units.convertTo(position.longitude(), Units.Angle.DEGREE))));
@@ -141,7 +148,7 @@ public class AircraftTableController {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(title);
         column.getStyleClass().add("numeric");
         NumberFormat format = NumberFormat.getInstance();
-        column.setPrefWidth(85); // this is for all numeric columns
+        column.setPrefWidth(NUMERIC_COLUMNS_WIDTH); // this is for all numeric columns
         column.setCellValueFactory(cellData -> {
             ObservableValue<Number> numberValue = cellValueFactory.apply(cellData.getValue());
             format.setMinimumFractionDigits(decimalPlaces);
