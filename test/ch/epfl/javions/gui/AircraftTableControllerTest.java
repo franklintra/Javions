@@ -44,6 +44,11 @@ public class AircraftTableControllerTest extends Application {
                 Platform.exit();
                 System.exit(0);
             });
+            Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+                throwable.printStackTrace();
+                Platform.exit();
+                System.exit(1);
+            });
         });
         messageDecoding.start();
     }
