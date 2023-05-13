@@ -31,7 +31,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
     private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     private final ObservableList<AirbornePos> unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
-    private final AircraftStateAccumulator<AircraftStateSetter> accumulator;
+    private final AircraftStateAccumulator<AircraftStateSetter> accumulator; // todo: why is this even here?
     private long previousTimestamp;
 
     /**
