@@ -5,11 +5,9 @@ import ch.epfl.javions.adsb.CallSign;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
@@ -78,13 +76,16 @@ public class AircraftTableController {
                                                                           Function<ObservableAircraftState, ObservableValue<String>> cellValueFactory) {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(title);
         column.setPrefWidth(prefWidth);
-        column.setCellValueFactory(cellData -> cellValueFactory.apply(cellData.getValue()));
+        column.setCellValueFactory(cellData -> {
+            return cellValueFactory.apply(cellData.getValue());
+        });
         return column;
     }
 
     private TableColumn<ObservableAircraftState, String> createNumericColumn(String title, int prefWidth, int decimalPlaces,
                                                                              Function<ObservableAircraftState, ObservableValue<Number>> cellValueFactory) {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(title);
+        column.getStyleClass().add("numeric");
         NumberFormat format = NumberFormat.getInstance();
         column.setPrefWidth(prefWidth);
         column.setCellValueFactory(cellData -> {
@@ -95,20 +96,6 @@ public class AircraftTableController {
                 Number value = numberValue.getValue();
                 return value != null ? format.format(value) : "";
         }, numberValue);});
-
-        column.setCellFactory(columnOriginal -> new TableCell<ObservableAircraftState, String>() {
-            {this.getStyleClass().add("numeric");}
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (item == null || empty) {
-                    this.setText(null);
-                } else {
-                    this.setText(item);
-                }
-            }
-        });
-
 
         column.setComparator((s1, s2) -> {
             if (s1.isEmpty() || s2.isEmpty()) {
@@ -133,9 +120,9 @@ public class AircraftTableController {
         tableView.getColumns().add(createTextColumn("Indicatif", 70, state -> state.callSignProperty().map(CallSign::string)));
         tableView.getColumns().add(createTextColumn("Immatriculation", 90, state -> new ReadOnlyStringWrapper(state.getRegistration().string())));
         // Numeric columns
-        tableView.getColumns().add(createNumericColumn("Longitude (°)", 70, 4, state -> new SimpleDoubleProperty(Units.convertTo(state.getPosition().longitude(), Units.Angle.DEGREE))));
-        tableView.getColumns().add(createNumericColumn("Latitude (°)", 70, 4, state -> new SimpleDoubleProperty(Units.convertTo(state.getPosition().latitude(), Units.Angle.DEGREE))));
-        tableView.getColumns().add(createNumericColumn("Altitude (m)", 70, 0, state -> new SimpleDoubleProperty(state.getAltitude())));
-        tableView.getColumns().add(createNumericColumn("Vitesse (km/h)", 70, 0, state -> new SimpleDoubleProperty(Units.convertTo(state.getVelocity(), Units.Speed.KILOMETER_PER_HOUR))));
+        tableView.getColumns().add(createNumericColumn("Longitude (°)", 85, 4, state -> state.positionProperty().map(position -> Units.convertTo(position.longitude(), Units.Angle.DEGREE))));
+        tableView.getColumns().add(createNumericColumn("Latitude (°)", 85, 4, state -> state.positionProperty().map(position -> Units.convertTo(position.latitude(), Units.Angle.DEGREE))));
+        tableView.getColumns().add(createNumericColumn("Altitude (m)", 85, 0, ObservableAircraftState::altitudeProperty));
+        tableView.getColumns().add(createNumericColumn("Vitesse (km/h)", 85, 0, state -> state.velocityProperty().map(speed -> Units.convertTo((Double) speed, Units.Speed.KILOMETER_PER_HOUR))));
     }
 }

@@ -20,7 +20,8 @@ public final class  AircraftStateManager {
     private final AircraftDatabase database;
     private final static double maxMessageAge = 60 * 10e9;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
-    private final ObservableSet<ObservableAircraftState> observableAircraftStates = FXCollections.observableSet(new HashSet<>());
+    private final ObservableSet<ObservableAircraftState> observableModifiableAircraftStates = FXCollections.observableSet(new HashSet<>());
+    private final ObservableSet<ObservableAircraftState> observableUnmodifiableAircraftStates = FXCollections.unmodifiableObservableSet(observableModifiableAircraftStates);
     private long lastTimeStampNs;
 
 
@@ -40,7 +41,7 @@ public final class  AircraftStateManager {
      * @return the set of observable aircraft states.
      */
     public ObservableSet<ObservableAircraftState> states() {
-        return FXCollections.unmodifiableObservableSet(observableAircraftStates);
+        return observableUnmodifiableAircraftStates;
     }
 
     /**
@@ -63,7 +64,7 @@ public final class  AircraftStateManager {
 
         // We only add the aircraft to the observableAircraftStates if it has a position
         if (aircraftStateAccumulators.get(icaoAddress).stateSetter().getPosition() != null) {
-            observableAircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
+            observableModifiableAircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
         }
 
         aircraftStateAccumulators.get(icaoAddress).update(message);
@@ -73,6 +74,6 @@ public final class  AircraftStateManager {
      * Removes all the aircraft states that have not been updated for more than 60 seconds.
      */
     public void purge() {
-        observableAircraftStates.removeIf(state -> state.getLastMessageTimeStampNs() < lastTimeStampNs - maxMessageAge);
+        observableModifiableAircraftStates.removeIf(state -> state.getLastMessageTimeStampNs() < lastTimeStampNs - maxMessageAge);
     }
 }
