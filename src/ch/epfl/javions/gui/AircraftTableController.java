@@ -118,7 +118,9 @@ public class AircraftTableController {
         // Text columns
         tableView.getColumns().add(createTextColumn("OACI", 60, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string())));
         tableView.getColumns().add(createTextColumn("Indicatif", 70, state -> state.callSignProperty().map(CallSign::string)));
-        tableView.getColumns().add(createTextColumn("Immatriculation", 90, state -> new ReadOnlyStringWrapper(state.getRegistration().string())));
+        tableView.getColumns().add(createTextColumn("Immatriculation", 90, state -> new ReadOnlyStringWrapper(state.aircraftData().registration().string())));
+        tableView.getColumns().add(createTextColumn("Modèle", 90, state -> new ReadOnlyStringWrapper(state.aircraftData().model())));
+        tableView.getColumns().add(createTextColumn("Type", 90, state -> new ReadOnlyStringWrapper(state.aircraftData().typeDesignator().string())));
         // Numeric columns
         tableView.getColumns().add(createNumericColumn("Longitude (°)", 85, 4, state -> state.positionProperty().map(position -> Units.convertTo(position.longitude(), Units.Angle.DEGREE))));
         tableView.getColumns().add(createNumericColumn("Latitude (°)", 85, 4, state -> state.positionProperty().map(position -> Units.convertTo(position.latitude(), Units.Angle.DEGREE))));

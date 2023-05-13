@@ -29,7 +29,7 @@ public final class CONFIGURATION {
         /**
          * The default position of the MAP.
          */
-        public static final GeoPos INITIAL_POSITION = new GeoPos((int) Units.convert(2.2794736259693136, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(48.88790023468289, Units.Angle.DEGREE, Units.Angle.T32));
+        public static final GeoPos INITIAL_POSITION = new GeoPos((int) Units.convert(6.5648, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(46.5213, Units.Angle.DEGREE, Units.Angle.T32));
         /**
          * The url of the tile server.
          */

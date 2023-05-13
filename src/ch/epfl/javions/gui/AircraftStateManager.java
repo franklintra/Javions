@@ -74,6 +74,13 @@ public final class  AircraftStateManager {
      * Removes all the aircraft states that have not been updated for more than 60 seconds.
      */
     public void purge() {
-        observableModifiableAircraftStates.removeIf(state -> state.getLastMessageTimeStampNs() < lastTimeStampNs - maxMessageAge);
+        observableModifiableAircraftStates.removeIf(state -> {
+            if (lastTimeStampNs - state.getLastMessageTimeStampNs() > maxMessageAge) {
+                // If the last message is too old: Remove the aircraft from the accumulator as well
+                aircraftStateAccumulators.remove(state.getIcaoAddress());
+                return true; // Remove the aircraft from the observableAircraftStates
+            }
+            return false; // Do not remove the aircraft from the observableAircraftStates (it is still active)
+        });
     }
 }

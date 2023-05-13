@@ -6,12 +6,10 @@ import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
-import ch.epfl.javions.aircraft.AircraftRegistration;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import java.util.*;
 
 /**
@@ -66,7 +64,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * Updates the trajectory of the aircraft
      */
 
-    private void updateTrajectory() {
+    /*private void updateTrajectory() {
         double currentAltitude = getAltitude();
         GeoPos currentPosition = getPosition();
         long currentTimestamp = getLastMessageTimeStampNs();
@@ -77,14 +75,11 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         } else if (currentTimestamp == previousTimestamp) {
             trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
         }
-    }
+    }*/
 
-    public AircraftData getAircraftData() {
+
+    public AircraftData aircraftData() {
         return aircraftData;
-    }
-
-    public AircraftRegistration getRegistration() {
-        return aircraftData.registration();
     }
 
     public long getLastMessageTimeStampNs() {
@@ -143,9 +138,10 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         this.position.setValue(position);
-        if (getPosition() != null){
-            updateTrajectory();
+        if (!Double.isNaN(getAltitude())){
+            trajectory.add(new AirbornePos(position, getAltitude()));
         }
+        previousTimestamp = getLastMessageTimeStampNs();
     }
 
     /**
@@ -157,8 +153,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setAltitude(double altitude) {
         this.altitude.set(altitude);
-        if (getPosition() != null){
-            updateTrajectory();
+        if (trajectory.isEmpty()) {
+            trajectory.add(new AirbornePos(getPosition(), altitude));
+            previousTimestamp = getLastMessageTimeStampNs();
+        }
+        if (lastMessageTimeStampNs.get() == previousTimestamp) {
+            trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), altitude));
         }
     }
 

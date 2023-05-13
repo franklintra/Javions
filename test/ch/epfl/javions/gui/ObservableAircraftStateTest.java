@@ -47,28 +47,32 @@ public class ObservableAircraftStateTest {
     }
 
     public void printTable() {
-        long lastMessage = 0;
-        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(getClass().getResource("/aircraft.zip").getPath()));
-        ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
+        int counter = 0;
+        AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath()));
+        long lastMessageTimeStampNs = 0;
         long lastTime = 0;
-        long counter = 0; // to print every 10 messages
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
+                // Sleep to simulate real time
                 long timeStampNs = s.readLong();
-                long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
-                try {
-                    Thread.sleep(timeDifference);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                long currentTime = System.nanoTime();
+                long messageTimeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessageTimeStampNs);
+                long programTimeDifference = TimeUnit.NANOSECONDS.toMillis(currentTime - lastTime);
+                if (messageTimeDifference > programTimeDifference) {
+                    try {
+                        Thread.sleep(messageTimeDifference-programTimeDifference);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
                 }
-                lastMessage = timeStampNs;
+                lastTime = currentTime;
+                lastMessageTimeStampNs = timeStampNs;
+                // End of sleep to simulate real time
                 s.readNBytes(bytes, 0, bytes.length);
-                ByteString message = new ByteString(bytes);
-                RawMessage rawMessage = new RawMessage(timeStampNs, message);
-                Message m = null;
-                m = MessageParser.parse(rawMessage);
-                if (m == null) continue;
+                Message m = MessageParser.parse(new RawMessage(timeStampNs, new ByteString(bytes)));
+                if (Objects.isNull(m)) continue;
                 aircraftStateManager.updateWithMessage(m);
                 aircraftStateManager.purge();
                 if (counter++ % 10 == 0) printStatesAndClear(System.out, aircraftStateManager.states());
@@ -84,10 +88,10 @@ public class ObservableAircraftStateTest {
         //clearTerminal(System.out);
         printer.println("ICAO    CALLSIGN REGISTRATION                        MODEL            LONGITUDE                LATITUDE     ALTITUDE  SPEED");
         sortedStates.forEach(o -> {
-            AircraftData data = o.getAircraftData();
+            AircraftData data = o.aircraftData();
             GeoPos p = o.getPosition();
             if (data != null) {
-                String registration = o.getRegistration()!=null ? o.getRegistration().string() : "";
+                String registration = o.aircraftData().registration()!=null ? o.aircraftData().registration().string() : "";
                 printer.printf("%5s %9s %7s %35s %20s %20s %9.0f %9.0f\n", o.getIcaoAddress().string(), nullCallSign(o.getCallSign()), registration, data.model(), nullPosLon(p), nullPosLat(o.getPosition()), (o.getAltitude()), (Units.convertTo(o.getVelocity(), Units.Speed.KILOMETER_PER_HOUR)));
             }
             else {
