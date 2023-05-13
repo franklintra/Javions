@@ -24,14 +24,13 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final AircraftData aircraftData;
     private final IntegerProperty category = new SimpleIntegerProperty();
     private final Property<CallSign> callSign = new SimpleObjectProperty<>();
-    private final DoubleProperty altitude = new SimpleDoubleProperty();
-    private final DoubleProperty velocity = new SimpleDoubleProperty();
-    private final DoubleProperty trackOrHeading = new SimpleDoubleProperty();
+    private final DoubleProperty altitude = new SimpleDoubleProperty(Double.NaN);
+    private final DoubleProperty velocity = new SimpleDoubleProperty(Double.NaN);
+    private final DoubleProperty trackOrHeading = new SimpleDoubleProperty(Double.NaN);
     private final LongProperty lastMessageTimeStampNs = new SimpleLongProperty();
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
     private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     private final ObservableList<AirbornePos> unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
-    private final AircraftStateAccumulator<AircraftStateSetter> accumulator; // todo: why is this even here?
     private long previousTimestamp;
 
     /**
@@ -44,7 +43,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress = icaoAddress;
         this.aircraftData = data;
-        this.accumulator = new AircraftStateAccumulator<>(this);
     }
 
     public record AirbornePos(GeoPos pos, double altitude) {
