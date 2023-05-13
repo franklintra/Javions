@@ -14,8 +14,11 @@ import java.util.*;
  * @author @franklintra (362694)
  * @author @chukla (357550)
  * @project Javions
+ * This class is responsible for managing the state of the aircrafts.
+ * It links the aircrafts to their state accumulators.
+ * It also removes the aircrafts that have not been updated for more than 60 seconds.
+ * It also gives the unmodifiable observable set of aircraft states that is used by JavaFX.
  */
-
 public final class  AircraftStateManager {
     private final AircraftDatabase database;
     private final static double maxMessageAge = 60 * 10e9;

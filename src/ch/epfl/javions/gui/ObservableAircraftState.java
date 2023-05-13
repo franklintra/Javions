@@ -2,7 +2,6 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Preconditions;
-import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
@@ -39,10 +38,10 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * @param icaoAddress the ICAO address of the aircraft
      * @throws NullPointerException if the ICAO address is null
      */
-    public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData data) {
+    public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress = icaoAddress;
-        this.aircraftData = data;
+        this.aircraftData = aircraftData;
     }
 
     public record AirbornePos(GeoPos pos, double altitude) {
@@ -57,24 +56,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
             Preconditions.checkArgument(altitude >= 0);
         }
     }
-
-    /**
-     * Updates the trajectory of the aircraft
-     */
-
-    /*private void updateTrajectory() {
-        double currentAltitude = getAltitude();
-        GeoPos currentPosition = getPosition();
-        long currentTimestamp = getLastMessageTimeStampNs();
-
-        if (trajectory.isEmpty() || (getPosition().equals(trajectory.get(trajectory.size() -1).pos())) ) {
-            trajectory.add(new AirbornePos(currentPosition, currentAltitude));
-            previousTimestamp = getLastMessageTimeStampNs();
-        } else if (currentTimestamp == previousTimestamp) {
-            trajectory.set(trajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
-        }
-    }*/
-
 
     public AircraftData aircraftData() {
         return aircraftData;
@@ -114,7 +95,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
-        this.lastMessageTimeStampNs.set(timeStampNs);
+        lastMessageTimeStampNs.set(timeStampNs);
     }
 
     @Override
@@ -135,6 +116,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     @Override
     public void setPosition(GeoPos position) {
+        Objects.requireNonNull(position);
         this.position.setValue(position);
         if (!Double.isNaN(getAltitude())){
             trajectory.add(new AirbornePos(position, getAltitude()));
@@ -150,6 +132,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     @Override
     public void setAltitude(double altitude) {
+        Preconditions.checkArgument(altitude >= 0);
         this.altitude.set(altitude);
         if (trajectory.isEmpty()) {
             trajectory.add(new AirbornePos(getPosition(), altitude));
