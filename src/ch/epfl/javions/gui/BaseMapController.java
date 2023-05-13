@@ -193,8 +193,8 @@ public class BaseMapController {
                 try {
                     Image tile = tiles.imageForTileAt(new TileManager.TileId(zoom, x, y));
                     gc.drawImage(tile, tilePosX, tilePosY);
-                    // Draw the coordinates of the tile in the middle of the tile for debugging purposes
-                    gc.fillText("(" + x + ", " + y + ")", tilePosX + TileManager.TILE_SIZE/2f, tilePosY + TileManager.TILE_SIZE/2f);
+                    // Draw the coordinates of the tile in the middle of the tile for debugging purposes. (todo: to remove for production)
+                    //gc.fillText("(" + x + ", " + y + ")", tilePosX + TileManager.TILE_SIZE/2f, tilePosY + TileManager.TILE_SIZE/2f);
                 } catch (IOException e) {
                     // The tile could not be drawn, draw a grid instead.
                     // In the future if we want to still be able to move around the map as the tiles are loading,
