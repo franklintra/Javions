@@ -3,15 +3,18 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.*;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
+
+import java.util.List;
 
 /**
  * @author @chukla (357550)
@@ -213,31 +216,74 @@ public final class AircraftController {
         group.getChildren().add(trajectory);
         trajectory.visibleProperty().bind(selectedAircraft.isEqualTo(state));
 
-
-
         trajectory.visibleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                // draw trajectory
+                drawTrajectory(state, trajectory);
             } else {
-                // remove trajectory
+                trajectory.getChildren().clear();
             }
         });
 
         mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
             if (trajectory.isVisible()) {
-                // draw trajectory
+                drawTrajectory(state, trajectory);
             }
         });
 
-        state.trajectoryProperty().addListener((observable, oldValue, newValue) -> {
+        state.observableTrajectoryProperty().addListener((observable, oldValue, newValue) -> {
             if (trajectory.isVisible()) {
-                // draw trajectory
+                    drawTrajectory(state, trajectory);
             }
         });
 
         trajectory.layoutXProperty().bind(mapParameters.minXProperty().negate());
         trajectory.layoutYProperty().bind(mapParameters.minXProperty().negate());
-        //draw line, colour gradient
-        //create line
+    }
+
+    private void drawTrajectory(ObservableAircraftState state, Group trajectory) {
+
+        List<ObservableAircraftState.AirbornePos> positions = state.getObservableTrajectory();
+        if (positions == null || positions.isEmpty()) {
+            return;
+        }
+
+        Line line = new Line();
+        double x = WebMercator.x(mapParameters.getZoomLevel(),positions.get(0).pos().longitude());
+        double y = WebMercator.y(mapParameters.getZoomLevel(),positions.get(0).pos().latitude());
+        line.setStartX(x);
+        line.setStartY(y);
+
+        for (int i = 1; i < positions.size() -1; i++) {
+            double endX = WebMercator.x(mapParameters.getZoomLevel(),positions.get(i).pos().longitude());
+            double endY = WebMercator.y(mapParameters.getZoomLevel(),positions.get(i).pos().latitude());
+            line.setEndX(endX);
+            line.setEndY(endY);
+            trajectory.getChildren().add(line);
+
+            line = new Line();
+            line.setStartX(x);
+            line.setStartY(y);
+
+
+            double p1 = positions.get(i - 1).altitude();
+            double p2 = positions.get(i).altitude();
+
+            Color c1 = ColorRamp.PLASMA.at(p1);
+            if (p1 == p2) {
+                line.setStroke(c1);
+            } else {
+                Color c2 = ColorRamp.PLASMA.at(p2);
+                Stop s1 = new Stop(0, c1);
+                Stop s2 = new Stop(1, c2);
+                LinearGradient lg = new LinearGradient(x, y, endX, endY, false, CycleMethod.NO_CYCLE, s1, s2);
+                line.setStroke(lg);
+            }
+        }
+
+        double lastX = WebMercator.x(mapParameters.getZoomLevel(),positions.get(positions.size() - 1).pos().longitude());
+        double lastY = WebMercator.y(mapParameters.getZoomLevel(),positions.get(positions.size() - 1).pos().latitude());
+        line.setEndX(lastX);
+        line.setEndY(lastY);
+        trajectory.getChildren().add(line);
     }
 }
