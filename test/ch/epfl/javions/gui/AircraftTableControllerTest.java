@@ -1,9 +1,6 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.ByteString;
-import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.Units;
-
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
@@ -26,7 +23,6 @@ import java.util.concurrent.TimeUnit;
  * @project Javions
  */
 public class AircraftTableControllerTest extends Application {
-    private static final GeoPos maison = new GeoPos((int) Units.convert(2.2794736259693136, Units.Angle.DEGREE, Units.Angle.T32), (int) Units.convert(48.88790023468289, Units.Angle.DEGREE, Units.Angle.T32));
     private final AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(getClass().getResource("/aircraft.zip")).getPath()));
 
     public static void main(String[] args) { launch(args); }
@@ -35,6 +31,8 @@ public class AircraftTableControllerTest extends Application {
     public void start(Stage primaryStage) {
         ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
 
+        Thread messageDecoding = new Thread(this::readAndProcessMessages);
+
         Platform.runLater(() -> {
             var root = new BorderPane(new AircraftTableController(aircraftStateManager.states(), selectedAircraftState).getPane());
             primaryStage.setScene(new Scene(root));
@@ -42,28 +40,44 @@ public class AircraftTableControllerTest extends Application {
             primaryStage.setWidth(1920);
             primaryStage.setHeight(1080);
             primaryStage.show();
+            primaryStage.setOnCloseRequest(event -> {
+                Platform.exit();
+                System.exit(0);
+            });
+            Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+                throwable.printStackTrace();
+                Platform.exit();
+                System.exit(1);
+            });
         });
-
-        new Thread(this::readAndProcessMessages).start();
+        messageDecoding.start();
     }
 
     private void readAndProcessMessages() {
-        long lastMessage = 0;
+        long lastMessageTimeStampNs = 0;
+        long lastTime = 0;
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
             byte[] bytes = new byte[RawMessage.LENGTH];
             while (s.available() >= bytes.length) {
+                // Sleep to simulate real time
                 long timeStampNs = s.readLong();
-                long timeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessage);
-                try {
-                    Thread.sleep(timeDifference);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                long currentTime = System.nanoTime();
+                long messageTimeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessageTimeStampNs);
+                long programTimeDifference = TimeUnit.NANOSECONDS.toMillis(currentTime - lastTime);
+                if (messageTimeDifference > programTimeDifference) {
+                    try {
+                        Thread.sleep(messageTimeDifference-programTimeDifference);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
                 }
-                lastMessage = timeStampNs;
+                lastTime = currentTime;
+                lastMessageTimeStampNs = timeStampNs;
+                // End of sleep to simulate real time
                 s.readNBytes(bytes, 0, bytes.length);
-                ByteString message = new ByteString(bytes);
-                Message m = MessageParser.parse(new RawMessage(timeStampNs, message));
-                if (m == null) continue;
+                Message m = MessageParser.parse(new RawMessage(timeStampNs, new ByteString(bytes)));
+                if (Objects.isNull(m)) continue;
                 aircraftStateManager.updateWithMessage(m);
                 aircraftStateManager.purge();
             }

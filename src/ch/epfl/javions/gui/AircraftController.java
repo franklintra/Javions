@@ -21,7 +21,6 @@ import java.util.List;
  * @project Javions
  */
 
-
 public final class AircraftController {
 
     private final MapParameters mapParameters;
@@ -104,7 +103,7 @@ public final class AircraftController {
 
     private SVGPath constructIcon(ObservableAircraftState state) {
         SVGPath iconSVG = new SVGPath();
-        AircraftIcon icon = AircraftIcon.iconFor(state.getAircraftData().typeDesignator(), state.getAircraftData().description(), state.getCategory(), state.getAircraftData().wakeTurbulenceCategory());
+        AircraftIcon icon = AircraftIcon.iconFor(state.aircraftData().typeDesignator(), state.aircraftData().description(), state.getCategory(), state.aircraftData().wakeTurbulenceCategory());
         // set the icon's path to the icon's SVG path
         iconSVG.setContent(icon.svgPath());
 
@@ -172,8 +171,8 @@ public final class AircraftController {
 
 
     private String labelFirstLine(ObservableAircraftState state) {
-        if (state.getRegistration() != null) {
-            return state.getRegistration().string();
+        if (state.aircraftData().registration() != null) {
+            return state.aircraftData().registration().string();
         } else if (state.getCallSign() != null) {
             return state.getCallSign().string();
         } else {

@@ -26,9 +26,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final AircraftData aircraftData;
     private final IntegerProperty category = new SimpleIntegerProperty();
     private final Property<CallSign> callSign = new SimpleObjectProperty<>();
-    private final DoubleProperty altitude = new SimpleDoubleProperty();
-    private final DoubleProperty velocity = new SimpleDoubleProperty();
-    private final DoubleProperty trackOrHeading = new SimpleDoubleProperty();
+    private final DoubleProperty altitude = new SimpleDoubleProperty(Double.NaN);
+    private final DoubleProperty velocity = new SimpleDoubleProperty(Double.NaN);
+    private final DoubleProperty trackOrHeading = new SimpleDoubleProperty(Double.NaN);
     private final LongProperty lastMessageTimeStampNs = new SimpleLongProperty();
     private final Property<GeoPos> position = new SimpleObjectProperty<>();
     private final ObservableList<AirbornePos> ObservableTrajectory = FXCollections.observableArrayList();
@@ -43,11 +43,10 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * @param icaoAddress the ICAO address of the aircraft
      * @throws NullPointerException if the ICAO address is null
      */
-    public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData data) {
+    public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         Objects.requireNonNull(icaoAddress);
         this.icaoAddress = icaoAddress;
-        this.aircraftData = data;
-        this.accumulator = new AircraftStateAccumulator<>(this);
+        this.aircraftData = aircraftData;
     }
 
     public record AirbornePos(GeoPos pos, double altitude) {
@@ -63,24 +62,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
-    /**
-     * Updates the trajectory of the aircraft
-     */
-
-    private void updateTrajectory() {
-        double currentAltitude = getAltitude();
-        GeoPos currentPosition = getPosition();
-        long currentTimestamp = getLastMessageTimeStampNs();
-
-        if (ObservableTrajectory.isEmpty() || (getPosition().equals(ObservableTrajectory.get(ObservableTrajectory.size() -1).pos())) ) {
-            ObservableTrajectory.add(new AirbornePos(currentPosition, currentAltitude));
-            previousTimestamp = getLastMessageTimeStampNs();
-        } else if (currentTimestamp == previousTimestamp) {
-            ObservableTrajectory.set(ObservableTrajectory.size() - 1, new AirbornePos(currentPosition, currentAltitude));
-        }
-    }
-
-    public AircraftData getAircraftData() {
+    public AircraftData aircraftData() {
         return aircraftData;
     }
 
@@ -122,7 +104,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
-        this.lastMessageTimeStampNs.set(timeStampNs);
+        lastMessageTimeStampNs.set(timeStampNs);
     }
 
     @Override
@@ -143,10 +125,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     @Override
     public void setPosition(GeoPos position) {
+        Objects.requireNonNull(position);
         this.position.setValue(position);
-        if (getPosition() != null){
-            updateTrajectory();
+        if (!Double.isNaN(getAltitude())){
+            trajectory.add(new AirbornePos(position, getAltitude()));
         }
+        previousTimestamp = getLastMessageTimeStampNs();
     }
 
     /**
@@ -157,9 +141,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     @Override
     public void setAltitude(double altitude) {
+        Preconditions.checkArgument(altitude >= 0);
         this.altitude.set(altitude);
-        if (getPosition() != null){
-            updateTrajectory();
+        if (trajectory.isEmpty()) {
+            trajectory.add(new AirbornePos(getPosition(), altitude));
+            previousTimestamp = getLastMessageTimeStampNs();
+        }
+        if (lastMessageTimeStampNs.get() == previousTimestamp) {
+            trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), altitude));
         }
     }
 
