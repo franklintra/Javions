@@ -92,7 +92,7 @@ public final class Main extends Application {
         primaryStage.show();
 
         // Start the thread responsible for getting the messages and putting them in the queue
-        Thread messageDecoding = new Thread(this::decodeMessages);
+        Thread messageDecoding = new Thread(this::realTimeMessageDecoder);
         messageDecoding.setDaemon(true); // This thread will not prevent the JVM from exiting (if we close the window)
         messageDecoding.start(); // start to fill the queue
 
@@ -114,6 +114,7 @@ public final class Main extends Application {
         messageProcessing.start(); // get the messages from the queue and update the aircraft states
 
         // Purge the aircraft state manager every second
+        // (this is done in a separate thread and won't block the UI nor block the JVM from exiting)
         newSingleThreadScheduledExecutor().scheduleAtFixedRate(aircraftStateManager::purge, 0, 1, TimeUnit.SECONDS);
     }
 
@@ -121,35 +122,60 @@ public final class Main extends Application {
      * This method reads the messages from the binary file and puts them in the queue.
      * It also sleeps to simulate real time.
      */
-    private void decodeMessages() {
-        long lastMessageTimeStampNs = 0;
-        long lastTime = 0;
+    private void realTimeMessageDecoder() {
+        long lastMessageTimeStampNs = 0; // the time stamp of the last message
+        long lastTime = 0; // the time stamp of the system at the last message decoding
         try (DataInputStream s = new DataInputStream(new BufferedInputStream(Objects.requireNonNull(getClass().getResourceAsStream("/messages_20230318_0915.bin"))))) {
-            byte[] bytes = new byte[RawMessage.LENGTH];
-            while (s.available() >= bytes.length) {
-                // Sleep to simulate real time
+            while (s.available() >= RawMessage.LENGTH) {
                 long timeStampNs = s.readLong();
-                long currentTime = System.nanoTime();
-                long messageTimeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessageTimeStampNs);
-                long programTimeDifference = TimeUnit.NANOSECONDS.toMillis(currentTime - lastTime);
-                if (messageTimeDifference > programTimeDifference) {
-                    try {
-                        Thread.sleep(messageTimeDifference-programTimeDifference);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        continue;
-                    }
-                }
-                lastTime = currentTime;
+                // Sleep to simulate real time
+                lastTime = sleepIfNecessary(timeStampNs, lastMessageTimeStampNs, lastTime);
                 lastMessageTimeStampNs = timeStampNs;
                 // End of sleep to simulate real time
-                s.readNBytes(bytes, 0, bytes.length);
-                Message m = MessageParser.parse(new RawMessage(timeStampNs, new ByteString(bytes)));
-                if (Objects.isNull(m)) continue;
-                messageQueue.add(m);
+                Message m = readAndParseMessage(s, timeStampNs);
+                if (Objects.nonNull(m)) {
+                    messageQueue.add(m); // adds the message to the end of the queue
+                }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    /**
+     * This method sleeps if necessary to simulate real time delays of messages and returns the current time.
+     * @param timeStampNs : the time stamp of the message
+     * @param lastMessageTimeStampNs : the time stamp of the last message
+     * @param lastTime : the last time the system handled a message
+     * @return : the current time of the system
+     */
+    private long sleepIfNecessary(long timeStampNs, long lastMessageTimeStampNs, long lastTime) {
+        long currentTime = System.nanoTime();
+        long messageTimeDifference = TimeUnit.NANOSECONDS.toMillis(timeStampNs - lastMessageTimeStampNs);
+        long programTimeDifference = TimeUnit.NANOSECONDS.toMillis(currentTime - lastTime);
+        if (messageTimeDifference > programTimeDifference) {
+            try {
+                Thread.sleep(messageTimeDifference - programTimeDifference);
+            } catch (InterruptedException e) {
+                // Restore the interrupted status
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+            }
+        }
+        return System.nanoTime(); // returns the current time of the system after the sleep and not currentTime (before the sleep)
+    }
+
+    /**
+     * This method reads the message from the input stream and parses it.
+     * It is extracted code from the realTimeMessageDecoder method for better readability.
+     * @param s : the input stream
+     * @param timeStampNs : the time stamp of the message
+     * @return : the parsed message
+     * @throws IOException : if the input stream is not valid
+     */
+    private Message readAndParseMessage(DataInputStream s, long timeStampNs) throws IOException {
+        byte[] bytes = new byte[RawMessage.LENGTH];
+        s.readNBytes(bytes, 0, bytes.length);
+        return MessageParser.parse(new RawMessage(timeStampNs, new ByteString(bytes)));
     }
 }
