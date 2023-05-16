@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -57,7 +58,6 @@ public final class AircraftController {
     }
 
 
-
     private void createGroup(ObservableAircraftState state) {
         // create the group
         Group group = new Group();
@@ -70,8 +70,7 @@ public final class AircraftController {
         // label and icon group creation and add it to the aircraft group
         Group labelIcon = new Group();
         group.getChildren().add(labelIcon);
-        // position the icon/label group
-        positionLabelIcon(state, labelIcon);
+
 
         // icon creation and add it to the label and icon group
         labelIcon.getChildren().add(constructIcon(state));
@@ -80,44 +79,64 @@ public final class AircraftController {
         constructTrajectory(state, group);
 
         // construct label
-        constructLabel(state,labelIcon);
+        constructLabel(state, labelIcon);
+
+        // position the icon/label group
+        positionLabelIcon(state, labelIcon);
+
     }
 
 
-
-
-
     private void positionLabelIcon(ObservableAircraftState state, Group labelIcon) {
-        // position the icon/label group
+        // TODO: 5/16/2023 positionProperty shouldnt be a dependecy but icons dont move without it, fix this 
         labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
             Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
             return screenCoordinates.getX();
-        }, mapParameters.zoomLevelProperty()));
+        }, mapParameters.zoomLevelProperty(), state.positionProperty(), mapParameters.minXProperty(), mapParameters.minYProperty()));
 
         labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
             Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
             return screenCoordinates.getY();
-        }, mapParameters.zoomLevelProperty()));
+        }, mapParameters.zoomLevelProperty(), state.positionProperty(), mapParameters.minXProperty(), mapParameters.minYProperty()));
+
+
+//        labelIcon.setOnMouseDragged(event -> {
+//
+//        });
+
     }
 
 
     private SVGPath constructIcon(ObservableAircraftState state) {
         SVGPath iconSVG = new SVGPath();
+        // associate style class with icon node
+        iconSVG.getStyleClass().add("aircraft");
+
         AircraftIcon icon = AircraftIcon.iconFor(state.aircraftData().typeDesignator(), state.aircraftData().description(), state.getCategory(), state.aircraftData().wakeTurbulenceCategory());
         // set the icon's path to the icon's SVG path
         iconSVG.setContent(icon.svgPath());
 
         // set rotation angle if the icon can rotate
-        if (icon.canRotate()) {
-            iconSVG.rotateProperty().bind(state.trackOrHeadingProperty());
-        } else {
-            iconSVG.rotateProperty().setValue(0);
-        }
+        // TODO: 5/16/2023 fix this, icons dont rotate
+        iconSVG.rotateProperty().bind(Bindings.createDoubleBinding(() -> {
+            if (icon.canRotate()) {
+                return state.trackOrHeadingProperty().get();
+            } else {
+                state.setTrackOrHeading(0);
+                return 0.0;
+            }
+        }, state.trackOrHeadingProperty()));
+
+//        // set rotation angle if the icon can rotate
+//        if (icon.canRotate()) {
+//            iconSVG.rotateProperty().bind(state.trackOrHeadingProperty());
+//        } else {
+//            iconSVG.rotateProperty().setValue(0);
+//        }
+
 
         // set fill color based on altitude
         iconSVG.fillProperty().bind(state.altitudeProperty().map(alt -> ColorRamp.PLASMA.at((Math.pow((double) alt / maxAltitude, lowAltDefiner)))));
-        // associate style class with icon node
-        iconSVG.getStyleClass().add("aircraft");
 
         // action when clicked on icon
         iconSVG.setOnMouseClicked(event -> selectedAircraft.set(state));
@@ -126,48 +145,55 @@ public final class AircraftController {
     }
 
 
-
     private void constructLabel(ObservableAircraftState state, Group labelIcon) {
-        // TODO: 5/12/2023 need a semi transparent background for the label
         // create the label and add it to the label and icon group
         Group label = new Group();
         // associate style class with label node
+        // TODO: 5/16/2023 transparency of label changes as we zoom, fix 
         label.getStyleClass().add("label");
         labelIcon.getChildren().add(label);
 
+        //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
+        //label.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get().equals(state), mapParameters.zoomLevelProperty(), selectedAircraft));
+        //label.visibleProperty().bind(selectedAircraft.isEqualTo(state));
+        label.visibleProperty().bind(selectedAircraft.isEqualTo(state).or(mapParameters.zoomLevelProperty().greaterThanOrEqualTo(11)));
+        // TODO: 5/16/2023 check optimisation of this, as in if the bindings/listeners are correct/all needed
+        label.visibleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                drawLabel(state, label);
+            } else {
+                label.getChildren().clear();
+            }
+        });
+
+        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
+            if (label.isVisible()) {
+                drawLabel(state, label);
+            } else {
+                label.getChildren().clear();
+            }
+        });
+    }
+
+    private void drawLabel(ObservableAircraftState state, Group label) {
         // create and add background and text to the group of label
         Rectangle background = new Rectangle();
         Text text = new Text();
         label.getChildren().add(background);
         label.getChildren().add(text);
 
-        // drawing of the label i.e. background and text
-        // TODO: 5/11/2023 check if correct
+        // drawing of the label i.e. background and text, also ensures that the text of altitude always is in metres and velocity is in km/h
         text.textProperty().bind(Bindings.createStringBinding(() -> {
             String velocity = Double.compare(state.getVelocity(), Double.NaN) == 0 ? "? km/h" : String.format("%f km/h", state.getVelocity());
             String altitude = Double.compare(state.getAltitude(), Double.NaN) == 0 ? "? meters" : String.format("%f meters", state.getAltitude());
+            String.format("%s\n%s\u2002%s", labelFirstLine(state), velocity, altitude);
             return labelFirstLine(state) + "\n" + velocity + "\u2002" + altitude;
         }, state.velocityProperty(), state.altitudeProperty()));
 
         // height and width should be bound to an expression whose value is equal to the height/width of the text of the label, plus 4.
         background.heightProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
         background.widthProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getWidth() + 4));
-
-        // ensures text of altitude always is in metres and velocity is in km/h
-        text.textProperty().bind(
-                Bindings.createStringBinding(
-                        () -> String.format("%f meters %f km/h",
-                                state.altitudeProperty().get(),
-                                state.velocityProperty().get()),
-                        state.altitudeProperty(), state.velocityProperty()
-                )
-        );
-
-        //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
-        label.visibleProperty().bind(Bindings.createBooleanBinding(() -> mapParameters.getZoomLevel() >= 11 || selectedAircraft.get().equals(state), mapParameters.zoomLevelProperty(), selectedAircraft));
     }
-
-
 
 
     private String labelFirstLine(ObservableAircraftState state) {
@@ -181,14 +207,10 @@ public final class AircraftController {
     }
 
 
-
-
     private void removeGroup(ObservableAircraftState state) {
         //remove the group from the pane
         states.remove(state);
     }
-
-
 
 
     private Point2D getScreenCoordinates(ObservableAircraftState state, MapParameters mapParams) {
@@ -206,6 +228,7 @@ public final class AircraftController {
 
     private void constructTrajectory(ObservableAircraftState state, Group group) {
 
+        // TODO: 5/16/2023 fix this, trajectory doesnt show 
         Group trajectory = new Group();
         // associate style class with trajectory node
         trajectory.getStyleClass().add("trajectory");
@@ -214,6 +237,7 @@ public final class AircraftController {
 
         trajectory.visibleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
+                System.out.println("draw trajectory");
                 drawTrajectory(state, trajectory);
             } else {
                 trajectory.getChildren().clear();
@@ -228,7 +252,7 @@ public final class AircraftController {
 
         state.observableTrajectoryProperty().addListener((observable, oldValue, newValue) -> {
             if (trajectory.isVisible()) {
-                    drawTrajectory(state, trajectory);
+                drawTrajectory(state, trajectory);
             }
         });
 
@@ -244,14 +268,14 @@ public final class AircraftController {
         }
 
         Line line = new Line();
-        double x = WebMercator.x(mapParameters.getZoomLevel(),positions.get(0).pos().longitude());
-        double y = WebMercator.y(mapParameters.getZoomLevel(),positions.get(0).pos().latitude());
+        double x = WebMercator.x(mapParameters.getZoomLevel(), positions.get(0).pos().longitude());
+        double y = WebMercator.y(mapParameters.getZoomLevel(), positions.get(0).pos().latitude());
         line.setStartX(x);
         line.setStartY(y);
 
-        for (int i = 1; i < positions.size() -1; i++) {
-            double endX = WebMercator.x(mapParameters.getZoomLevel(),positions.get(i).pos().longitude());
-            double endY = WebMercator.y(mapParameters.getZoomLevel(),positions.get(i).pos().latitude());
+        for (int i = 1; i < positions.size() - 1; i++) {
+            double endX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(i).pos().longitude());
+            double endY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(i).pos().latitude());
             line.setEndX(endX);
             line.setEndY(endY);
             trajectory.getChildren().add(line);
@@ -276,8 +300,8 @@ public final class AircraftController {
             }
         }
 
-        double lastX = WebMercator.x(mapParameters.getZoomLevel(),positions.get(positions.size() - 1).pos().longitude());
-        double lastY = WebMercator.y(mapParameters.getZoomLevel(),positions.get(positions.size() - 1).pos().latitude());
+        double lastX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().longitude());
+        double lastY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().latitude());
         line.setEndX(lastX);
         line.setEndY(lastY);
         trajectory.getChildren().add(line);
