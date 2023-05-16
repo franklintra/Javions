@@ -156,7 +156,7 @@ public final class AircraftController {
         // ensures text of altitude always is in metres and velocity is in km/h
         text.textProperty().bind(
                 Bindings.createStringBinding(
-                        () -> String.format("%f meters %f km/h meters",
+                        () -> String.format("%f meters %f km/h",
                                 state.altitudeProperty().get(),
                                 state.velocityProperty().get()),
                         state.altitudeProperty(), state.velocityProperty()
@@ -203,9 +203,6 @@ public final class AircraftController {
 
         return new Point2D(x, y);
     }
-
-
-
 
     private void constructTrajectory(ObservableAircraftState state, Group group) {
 
