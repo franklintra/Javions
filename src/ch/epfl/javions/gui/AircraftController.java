@@ -136,24 +136,25 @@ public final class AircraftController {
         label.getStyleClass().add("label");
         labelIcon.getChildren().add(label);
 
+        drawLabel(state, label);
         //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
         label.visibleProperty().bind(selectedAircraft.isEqualTo(state).or(mapParameters.zoomLevelProperty().greaterThanOrEqualTo(11)));
 
-        label.visibleProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                drawLabel(state, label);
-            } else {
-                label.getChildren().clear();
-            }
-        });
-
-        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
-            if (label.isVisible()) {
-                drawLabel(state, label);
-            } else {
-                label.getChildren().clear();
-            }
-        });
+//        label.visibleProperty().addListener((observable, oldValue, newValue) -> {
+//            if (newValue) {
+//                drawLabel(state, label);
+//            } else {
+//                label.getChildren().clear();
+//            }
+//        });
+//
+//        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
+//            if (label.isVisible()) {
+//                drawLabel(state, label);
+//            } else {
+//                label.getChildren().clear();
+//            }
+//        });
     }
 
     private void drawLabel(ObservableAircraftState state, Group label) {
@@ -208,8 +209,6 @@ public final class AircraftController {
     }
 
     private void constructTrajectory(ObservableAircraftState state, Group group) {
-
-        // TODO: 5/16/2023 fix this, trajectory doesnt show, problem is with method drawTrajectory
         Group trajectory = new Group();
         // associate style class with trajectory node
         trajectory.getStyleClass().add("trajectory");
@@ -217,43 +216,54 @@ public final class AircraftController {
         trajectory.visibleProperty().bind(selectedAircraft.isEqualTo(state));
 
         trajectory.layoutXProperty().bind(mapParameters.minXProperty().negate());
-        trajectory.layoutYProperty().bind(mapParameters.minXProperty().negate());
+        trajectory.layoutYProperty().bind(mapParameters.minYProperty().negate());
 
         trajectory.visibleProperty().addListener((observable, oldValue, newValue) -> {
+
             if (newValue) {
-                drawTrajectory(state, trajectory);
+                mapParameters.zoomLevelProperty().addListener((observable1, oldValue1, newValue1) -> {
+                    drawTrajectory(state, trajectory);
+                });
+                state.observableTrajectoryProperty().addListener((observable1, oldValue1, newValue1) -> {
+                    drawTrajectory(state, trajectory);
+                });
             } else {
                 trajectory.getChildren().clear();
             }
         });
 
-        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
-            if (trajectory.isVisible()) {
-                drawTrajectory(state, trajectory);
-            }
-        });
-
-        state.observableTrajectoryProperty().addListener((observable, oldValue, newValue) -> {
-            if (trajectory.isVisible()) {
-                drawTrajectory(state, trajectory);
-            }
-        });
+//        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
+//            if (trajectory.isVisible()) {
+//
+//                    drawTrajectory(state, trajectory);
+//            } else {
+//                trajectory.getChildren().clear();
+//            }
+//        });
+//
+//        state.observableTrajectoryProperty().addListener((observable, oldValue, newValue) -> {
+//            if (trajectory.isVisible()) {
+//                    drawTrajectory(state, trajectory);
+//            } else {
+//                trajectory.getChildren().clear();
+//            }
+//        });
     }
 
     private void drawTrajectory(ObservableAircraftState state, Group trajectory) {
+        trajectory.getChildren().clear();
 
         List<ObservableAircraftState.AirbornePos> positions = state.getObservableTrajectory();
-//        if (positions == null || positions.isEmpty()) {
-//            return;
-//        }
+        if (positions == null || positions.isEmpty()) {
+            return;
+        }
 
         Line line = new Line();
         double x = WebMercator.x(mapParameters.getZoomLevel(), positions.get(0).pos().longitude());
         double y = WebMercator.y(mapParameters.getZoomLevel(), positions.get(0).pos().latitude());
         line.setStartX(x);
         line.setStartY(y);
-        for (int i = 1; i < positions.size() - 1; i++) {
-
+        for (int i = 0; i < positions.size() - 1; i++) {
             double endX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(i).pos().longitude());
             double endY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(i).pos().latitude());
             line.setEndX(endX);
@@ -261,12 +271,11 @@ public final class AircraftController {
             trajectory.getChildren().add(line);
 
             line = new Line();
-            line.setStartX(x);
-            line.setStartY(y);
+            line.setStartX(endX);
+            line.setStartY(endY);
 
-
-            double p1 = positions.get(i - 1).altitude();
-            double p2 = positions.get(i).altitude();
+            double p1 = positions.get(i).altitude();
+            double p2 = positions.get(i + 1).altitude();
 
             Color c1 = ColorRamp.PLASMA.at(p1);
             if (p1 == p2) {
@@ -279,7 +288,6 @@ public final class AircraftController {
                 line.setStroke(lg);
             }
         }
-
         double lastX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().longitude());
         double lastY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().latitude());
         line.setEndX(lastX);

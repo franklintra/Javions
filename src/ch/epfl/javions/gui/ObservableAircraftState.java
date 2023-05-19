@@ -9,6 +9,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
 import java.util.*;
 
 /**
@@ -50,13 +51,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         /**
          * The constructor of the AirbornePos class
          *
-         * @param pos         the position of the aircraft
-         * @param altitude    the altitude of the aircraft
-         * @throws NullPointerException if the position is null
+         * @param pos      the position of the aircraft
+         * @param altitude the altitude of the aircraft
          */
-        public AirbornePos {
-            Preconditions.checkArgument(altitude >= 0);
-        }
     }
 
     public AircraftData aircraftData() {
@@ -120,10 +117,20 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public void setPosition(GeoPos position) {
         Objects.requireNonNull(position);
         this.position.setValue(position);
-        if (!Double.isNaN(getAltitude())){
+        if (!Double.isNaN(getAltitude())) {
             observableTrajectory.add(new AirbornePos(position, getAltitude()));
         }
         previousTimestamp = getLastMessageTimeStampNs();
+
+//        Objects.requireNonNull(position);
+//        this.position.setValue(position);
+//        if (observableTrajectory.isEmpty()) {
+//            observableTrajectory.add(new AirbornePos(position, getAltitude()));
+//            previousTimestamp = getLastMessageTimeStampNs();
+//        }
+//        if (lastMessageTimeStampNs.get() == previousTimestamp) {
+//            observableTrajectory.set(observableTrajectory.size() - 1, new AirbornePos(position, getAltitude()));
+//        }
     }
 
     /**
@@ -134,8 +141,10 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      */
     @Override
     public void setAltitude(double altitude) {
-        Preconditions.checkArgument(altitude >= 0);
         this.altitude.set(altitude);
+        if (position.getValue() == null) {
+            return;
+        }
         if (observableTrajectory.isEmpty()) {
             observableTrajectory.add(new AirbornePos(getPosition(), altitude));
             previousTimestamp = getLastMessageTimeStampNs();
@@ -144,6 +153,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
             observableTrajectory.set(observableTrajectory.size() - 1, new AirbornePos(getPosition(), altitude));
         }
     }
+
 
     @Override
     public void setVelocity(double velocity) {
