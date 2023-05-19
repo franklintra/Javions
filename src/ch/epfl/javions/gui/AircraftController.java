@@ -49,18 +49,17 @@ public final class AircraftController {
     private void createPane() {
         // Add observer to the set of observable aircraft states
         states.addListener((SetChangeListener<ObservableAircraftState>) change -> {
-            Group group = new Group();
             if (change.wasAdded()) {
-                createGroup(change.getElementAdded(), group);
+                createGroup(change.getElementAdded());
             } else if (change.wasRemoved()) {
-                removeGroup(group);
+                removeGroup(change.getElementRemoved().getIcaoAddress().string());
             }
         });
     }
 
 
-    private void createGroup(ObservableAircraftState state, Group group) {
-
+    private void createGroup(ObservableAircraftState state) {
+        Group group = new Group();
         pane.getChildren().add(group);
         group.setId(state.getIcaoAddress().string());
 
@@ -137,9 +136,6 @@ public final class AircraftController {
         drawLabel(state, label);
         //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
         label.visibleProperty().bind(selectedAircraft.isEqualTo(state).or(mapParameters.zoomLevelProperty().greaterThanOrEqualTo(11)));
-        //todo : run main. If I select a plane in the table, it doesn't show the label properly.
-        // however if i click on a plane the aircraft table controller works fins.
-        // THIS IS A BUG!!! WARNING
     }
 
     private void drawLabel(ObservableAircraftState state, Group label) {
@@ -153,7 +149,6 @@ public final class AircraftController {
         text.textProperty().bind(Bindings.createStringBinding(() -> {
             String velocity = Double.compare(state.getVelocity(), Double.NaN) == 0 ? "? km/h" : String.format("%.0f km/h", Units.convertTo(state.getVelocity(), Units.Speed.KILOMETER_PER_HOUR));
             String altitude = Double.compare(state.getAltitude(), Double.NaN) == 0 ? "? m" : String.format("%.0f m", Units.convertTo(state.getAltitude(), Units.Length.METER));
-            String.format("%s\n%s\u2002%s", labelFirstLine(state), velocity, altitude);
             return labelFirstLine(state) + "\n" + velocity + "\u2002" + altitude;
         }, state.velocityProperty(), state.altitudeProperty()));
 
@@ -174,9 +169,10 @@ public final class AircraftController {
     }
 
 
-    private void removeGroup(Group group) {
+    private void removeGroup(String groupID) {
         //remove the group from the pane
-        pane.getChildren().remove(group);
+        pane.getChildren().removeIf(group -> group.getId().equals(groupID));
+
     }
 
 

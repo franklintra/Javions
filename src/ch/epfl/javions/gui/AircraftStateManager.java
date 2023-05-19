@@ -21,7 +21,7 @@ import java.util.*;
  */
 public final class  AircraftStateManager {
     private final AircraftDatabase database;
-    private final static double maxMessageAge = 60 * 10e9;
+    private final static double maxMessageAge = 6 * 1e9;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
     private final ObservableSet<ObservableAircraftState> observableModifiableAircraftStates = FXCollections.observableSet(new HashSet<>());
     private final ObservableSet<ObservableAircraftState> observableUnmodifiableAircraftStates = FXCollections.unmodifiableObservableSet(observableModifiableAircraftStates);

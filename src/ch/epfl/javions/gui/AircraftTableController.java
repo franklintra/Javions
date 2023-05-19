@@ -6,6 +6,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.control.TableColumn;
@@ -63,6 +64,7 @@ public class AircraftTableController {
     /**
      * This public method allows the class user to set up a listener on double click of a row (aircraft)
      * @param clickOn is the consumer that will be called when a row is double-clicked
+     * todo : why is that?
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> clickOn) {
         tableView.setOnMouseClicked(event -> {
@@ -116,6 +118,12 @@ public class AircraftTableController {
             }
             if (item.wasRemoved()) {
                 tableView.getItems().remove(item.getElementRemoved());
+            }
+        });
+        //todo : check with an assistant
+        tableView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ObservableAircraftState>) c -> {
+            if (c.getList().size() == 1) {
+                selectedAircraft.set(c.getList().get(0));
             }
         });
     }

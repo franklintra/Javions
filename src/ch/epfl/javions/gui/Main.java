@@ -22,12 +22,10 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
-
 
 /**
  * @author @franklintra (362694)
@@ -125,6 +123,7 @@ public final class Main extends Application {
 
         // Now read the messages from the queue and update the aircraft states
         AnimationTimer messageProcessing = new javafx.animation.AnimationTimer() {
+            private long lastPurge = Instant.now().getEpochSecond();
             @Override
             public void handle(long now) {
                 Message m;
@@ -136,13 +135,15 @@ public final class Main extends Application {
                     }
                     messageCount.set(messageCount.get() + 1);
                 }
+                long currentSecond = Instant.now().getEpochSecond();
+                // Purge the aircraft state manager every second
+                if (currentSecond - lastPurge >= 1) { // Check if a second has passed
+                    aircraftStateManager.purge();
+                    lastPurge = currentSecond;
+                }
             }
         };
-        messageProcessing.start(); // get the messages from the queue and update the aircraft states todo: check if i can do it this way instead of AnimationTimer
-
-        // Purge the aircraft state manager every second
-        // (this is done in a separate thread and won't block the UI nor block the JVM from exiting)
-        newSingleThreadScheduledExecutor().scheduleAtFixedRate(aircraftStateManager::purge, 0, 1, TimeUnit.SECONDS);
+        messageProcessing.start(); // get the messages from the queue and update the aircraft states
     }
 
     /**
