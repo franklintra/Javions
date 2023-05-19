@@ -16,6 +16,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.BufferedInputStream;
@@ -45,6 +47,8 @@ public final class Main extends Application {
     private static final AircraftTableController table = new AircraftTableController(aircraftStateManager.states(), selectedAircraftState);
     private static final BaseMapController map = new BaseMapController(tm, mp);
     private static final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+    private final ObjectProperty<ObservableAircraftState> sap = new SimpleObjectProperty<>();
+    private final AircraftController ac = new AircraftController(mp, aircraftStateManager.states(), sap);
     /**
      * The main method of the program.
      *
@@ -66,11 +70,11 @@ public final class Main extends Application {
     public void start(Stage primaryStage) {
         StatusLineController statusLineController = new StatusLineController();
         SplitPane root = new SplitPane();
-        BorderPane mapPane = new BorderPane(map.getPane());
+        Pane mapWithPlanes = new StackPane(map.getPane(), ac.getPane());
         BorderPane aircraftTablePane = new BorderPane(table.getPane());
         // Configure the root layout
         root.setOrientation(javafx.geometry.Orientation.VERTICAL);
-        root.getItems().addAll(mapPane, aircraftTablePane);
+        root.getItems().addAll(mapWithPlanes, aircraftTablePane);
 
         // Configure the aircraft table pane
         aircraftTablePane.setTop(statusLineController.getPane());
@@ -111,7 +115,7 @@ public final class Main extends Application {
                 }
             }
         };
-        messageProcessing.start(); // get the messages from the queue and update the aircraft states
+        messageProcessing.start(); // get the messages from the queue and update the aircraft states todo: check if i can do it this way instead of AnimationTimer
 
         // Purge the aircraft state manager every second
         // (this is done in a separate thread and won't block the UI nor block the JVM from exiting)

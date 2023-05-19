@@ -149,10 +149,8 @@ public final class AircraftControllerTest extends Application {
         var db = new AircraftDatabase(f);
 
         AircraftStateManager asm = new AircraftStateManager(db);
-        ObjectProperty<ObservableAircraftState> sap =
-                new SimpleObjectProperty<>();
-        AircraftController ac =
-                new AircraftController(mp, asm.states(), sap);
+        ObjectProperty<ObservableAircraftState> sap = new SimpleObjectProperty<>();
+        AircraftController ac = new AircraftController(mp, asm.states(), sap);
         var root = new StackPane(bmc.getPane(), ac.getPane());
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
