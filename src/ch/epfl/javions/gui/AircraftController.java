@@ -49,18 +49,18 @@ public final class AircraftController {
     private void createPane() {
         // Add observer to the set of observable aircraft states
         states.addListener((SetChangeListener<ObservableAircraftState>) change -> {
+            Group group = new Group();
             if (change.wasAdded()) {
-                createGroup(change.getElementAdded());
+                createGroup(change.getElementAdded(), group);
             } else if (change.wasRemoved()) {
-                removeGroup(change.getElementRemoved());
+                removeGroup(change.getElementRemoved(),group);
             }
         });
     }
 
 
-    private void createGroup(ObservableAircraftState state) {
-        // create the group
-        Group group = new Group();
+    private void createGroup(ObservableAircraftState state, Group group) {
+
         pane.getChildren().add(group);
         group.setId(state.getIcaoAddress().string());
 
@@ -190,9 +190,9 @@ public final class AircraftController {
     }
 
 
-    private void removeGroup(ObservableAircraftState state) {
+    private void removeGroup(ObservableAircraftState state, Group group) {
         //remove the group from the pane
-        states.remove(state);
+        pane.getChildren().remove(group);
     }
 
 
