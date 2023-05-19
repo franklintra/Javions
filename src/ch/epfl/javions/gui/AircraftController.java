@@ -3,7 +3,6 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -24,7 +23,7 @@ import java.util.List;
  */
 
 public final class AircraftController {
-
+    //todo : the drawn trajectories are yellow not the right color. THIS IS A BUG. WARNING.
     private final MapParameters mapParameters;
     private final ObservableSet<ObservableAircraftState> states;
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
@@ -139,7 +138,9 @@ public final class AircraftController {
         drawLabel(state, label);
         //property visible must be bound to an expression that is only true when the zoom level is greater than or equal to 11 or selectedAircraft is one to which the label corresponds
         label.visibleProperty().bind(selectedAircraft.isEqualTo(state).or(mapParameters.zoomLevelProperty().greaterThanOrEqualTo(11)));
-
+        //todo : run main. If I select a plane in the table, it doesn't show the label properly.
+        // however if i click on a plane the aircraft table controller works fins.
+        // THIS IS A BUG!!! WARNING
 //        label.visibleProperty().addListener((observable, oldValue, newValue) -> {
 //            if (newValue) {
 //                drawLabel(state, label);

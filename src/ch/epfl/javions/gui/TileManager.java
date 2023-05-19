@@ -1,7 +1,6 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.CONFIGURATION;
-import ch.epfl.Constants;
 import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,13 +25,13 @@ public class TileManager {
     /**
      * This is the size of the side of a tile in pixels.
      */
-    public static final int TILE_SIZE = Constants.TILE_SIZE;
+    public static final int TILE_SIZE = 256;
     /**
      * This is the max size of the cache memory in tiles (not bytes).
      * It is stored as an attribute so we can change it easily.
      * @see CONFIGURATION
      */
-    private static final int MAX_CACHE_SIZE = CONFIGURATION.MAP.TILES_CACHE_SIZE;
+    private static final int MAX_CACHE_SIZE = 100;
     /**
      * This is the cache memory of the tiles. (For a given tile id, it stores the corresponding tile image)
      * it is a LinkedHashMap so we can easily remove the least recently used element.

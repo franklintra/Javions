@@ -1,6 +1,5 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.CONFIGURATION;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.adsb.MessageParser;
@@ -19,7 +18,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -38,20 +36,45 @@ import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
  * that does nothing but call launch.
  */
 public final class Main extends Application {
+    /**
+     * The messageCount property is a simple long property that counts the number of messages and is drawn on the status line.
+     */
     private final SimpleLongProperty messageCount = new SimpleLongProperty(0);
     private static final AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(Main.class.getResource("/aircraft.zip")).getPath()));
     private static final ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
     private static final Path tileCache = Path.of("tile-cache");
-    private static final TileManager tm = new TileManager(tileCache, CONFIGURATION.MAP.TILE_SERVER_URL);
-    private static final MapParameters mp = new MapParameters(17, 17_389_327, 11_867_430);
+    /**
+     * The table field is the controller of the aircraft table. It is used to create the aircraft table pane.
+     */
     private static final AircraftTableController table = new AircraftTableController(aircraftStateManager.states(), selectedAircraftState);
+    /**
+     * The tm field is a TileManager that manages the tiles of the map. It is used to create the BaseMapController.
+     */
+
+    private static final TileManager tm = new TileManager(tileCache, "tile.openstreetmap.org");
+    /**
+     * The mp field is a MapParameters that defines the parameters of the map. It is used to create the BaseMapController.
+     * It contains zoom level and allows for scrolling.
+     */
+    private static final MapParameters mp = new MapParameters(17, 17_389_327, 11_867_430);
+    /**
+     * The map field is the controller of the map. It is used to create the map pane.
+     */
     private static final BaseMapController map = new BaseMapController(tm, mp);
+    /**
+     * The ac field is the controller of the overlay of the map.
+     * It is used to draw trajectories, aircrafts and labels.
+     */
+    private final AircraftController ac = new AircraftController(mp, aircraftStateManager.states(), selectedAircraftState);
+
+    /**
+     * The messageQueue field is a concurrent linked queue that contains the messages
+     * sampled and decoded in real time from the input stream (messages.bin or radio)
+     */
     private static final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
-    private final ObjectProperty<ObservableAircraftState> sap = new SimpleObjectProperty<>();
-    private final AircraftController ac = new AircraftController(mp, aircraftStateManager.states(), sap);
+
     /**
      * The main method of the program.
-     *
      * @param args command line arguments.
      */
     public static void main(String[] args) {
