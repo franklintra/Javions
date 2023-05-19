@@ -53,7 +53,7 @@ public final class AircraftController {
             if (change.wasAdded()) {
                 createGroup(change.getElementAdded(), group);
             } else if (change.wasRemoved()) {
-                removeGroup(change.getElementRemoved(),group);
+                removeGroup(group);
             }
         });
     }
@@ -131,7 +131,6 @@ public final class AircraftController {
         // create the label and add it to the label and icon group
         Group label = new Group();
         // associate style class with label node
-        // TODO: 5/16/2023 transparency of label changes as we zoom, fix
         label.getStyleClass().add("label");
         labelIcon.getChildren().add(label);
 
@@ -141,21 +140,6 @@ public final class AircraftController {
         //todo : run main. If I select a plane in the table, it doesn't show the label properly.
         // however if i click on a plane the aircraft table controller works fins.
         // THIS IS A BUG!!! WARNING
-//        label.visibleProperty().addListener((observable, oldValue, newValue) -> {
-//            if (newValue) {
-//                drawLabel(state, label);
-//            } else {
-//                label.getChildren().clear();
-//            }
-//        });
-//
-//        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
-//            if (label.isVisible()) {
-//                drawLabel(state, label);
-//            } else {
-//                label.getChildren().clear();
-//            }
-//        });
     }
 
     private void drawLabel(ObservableAircraftState state, Group label) {
@@ -190,7 +174,7 @@ public final class AircraftController {
     }
 
 
-    private void removeGroup(ObservableAircraftState state, Group group) {
+    private void removeGroup(Group group) {
         //remove the group from the pane
         pane.getChildren().remove(group);
     }
