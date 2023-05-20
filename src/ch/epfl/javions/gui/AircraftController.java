@@ -17,6 +17,8 @@ import javafx.scene.text.Text;
 
 import java.util.List;
 
+import static javafx.scene.paint.CycleMethod.NO_CYCLE;
+
 /**
  * @author @chukla (357550)
  * @project Javions
@@ -212,23 +214,6 @@ public final class AircraftController {
                 trajectory.getChildren().clear();
             }
         });
-
-//        mapParameters.zoomLevelProperty().addListener((observable, oldValue, newValue) -> {
-//            if (trajectory.isVisible()) {
-//
-//                    drawTrajectory(state, trajectory);
-//            } else {
-//                trajectory.getChildren().clear();
-//            }
-//        });
-//
-//        state.observableTrajectoryProperty().addListener((observable, oldValue, newValue) -> {
-//            if (trajectory.isVisible()) {
-//                    drawTrajectory(state, trajectory);
-//            } else {
-//                trajectory.getChildren().clear();
-//            }
-//        });
     }
 
     private void drawTrajectory(ObservableAircraftState state, Group trajectory) {
@@ -239,40 +224,39 @@ public final class AircraftController {
             return;
         }
 
-        Line line = new Line();
         double x = WebMercator.x(mapParameters.getZoomLevel(), positions.get(0).pos().longitude());
         double y = WebMercator.y(mapParameters.getZoomLevel(), positions.get(0).pos().latitude());
-        line.setStartX(x);
-        line.setStartY(y);
         for (int i = 0; i < positions.size() - 1; i++) {
-            double endX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(i).pos().longitude());
-            double endY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(i).pos().latitude());
+            Line line = new Line();  // Create a new Line object for each line segment
+            double endX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(i+1).pos().longitude());
+            double endY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(i+1).pos().latitude());
+            line.setStartX(x);
+            line.setStartY(y);
             line.setEndX(endX);
             line.setEndY(endY);
             trajectory.getChildren().add(line);
 
-            line = new Line();
-            line.setStartX(endX);
-            line.setStartY(endY);
+            x = endX;
+            y = endY;
 
             double p1 = positions.get(i).altitude();
             double p2 = positions.get(i + 1).altitude();
 
-            Color c1 = ColorRamp.PLASMA.at(p1);
-            if (p1 == p2) {
-                line.setStroke(c1);
-            } else {
-                Color c2 = ColorRamp.PLASMA.at(p2);
+            Color c1 = ColorRamp.PLASMA.at((Math.pow((double) p1 / maxAltitude, lowAltDefiner)));
+            if (p1 != p2) {
+                Color c2 = ColorRamp.PLASMA.at((Math.pow((double) p2 / maxAltitude, lowAltDefiner)));
                 Stop s1 = new Stop(0, c1);
                 Stop s2 = new Stop(1, c2);
-                LinearGradient lg = new LinearGradient(x, y, endX, endY, true, CycleMethod.NO_CYCLE, s1, s2);
+                LinearGradient lg = new LinearGradient(x, y, endX, endY, true, NO_CYCLE, s1, s2);
                 line.setStroke(lg);
+            } else {
+                line.setStroke(c1);
             }
         }
-        double lastX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().longitude());
-        double lastY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().latitude());
-        line.setEndX(lastX);
-        line.setEndY(lastY);
-        trajectory.getChildren().add(line);
+//        double lastX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().longitude());
+//        double lastY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().latitude());
+//        line.setEndX(lastX);
+//        line.setEndY(lastY);
+//        trajectory.getChildren().add(line);
     }
 }

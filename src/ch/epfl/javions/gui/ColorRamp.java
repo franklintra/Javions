@@ -10,7 +10,7 @@ public final class ColorRamp {
         this.colours = steps.clone();
     }
 
-    public Color at(Double value) {
+    public Color at(double value) {
         if(value <= 0) {
             return colours[0];
         } else if (value >= 1) {
@@ -18,7 +18,7 @@ public final class ColorRamp {
         } else {
             double segmentSize = 1.0 / (colours.length - 1);
             int i = (int) (value / segmentSize);
-            double fraction = (value - i * segmentSize) / segmentSize;
+            double fraction = (value - (i * segmentSize)) / segmentSize;
             return colours[i].interpolate(colours[i + 1], fraction);
         }
     }
@@ -41,4 +41,5 @@ public final class ColorRamp {
             Color.valueOf( "0xfccf25ff" ), Color.valueOf( "0xf9dd24ff" ),
             Color. valueOf( "0xf5eb27ff" ), Color. valueOf( "0xf0f921ff" ));
 }
+
 
