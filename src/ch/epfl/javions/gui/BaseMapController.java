@@ -91,9 +91,12 @@ public class BaseMapController {
         double xMercator = WebMercator.x(zoomLevel, position.longitude());
         double yMercator = WebMercator.y(zoomLevel, position.latitude());
         Point2D topLeft = parameters.getTopLeftCorner();
-        Point2D center = new Point2D(getPane().getWidth() / (2 * TileManager.TILE_SIZE), getPane().getHeight() / (2 * TileManager.TILE_SIZE));
+        Point2D relativeCenter = new Point2D(-getPane().getWidth() / 2, -getPane().getHeight() / 2);
+        // move the map so that the plane is in the top left corner
         parameters.scroll(xMercator - topLeft.getX(), yMercator - topLeft.getY());
-        parameters.scroll(center.getX(), center.getY());
+        // move the top left corner to the relativeCenter of the pane (centering the plane)
+        parameters.scroll(relativeCenter.getX(), relativeCenter.getY());
+        redrawOnNextPulse();
     }
 
     /**
