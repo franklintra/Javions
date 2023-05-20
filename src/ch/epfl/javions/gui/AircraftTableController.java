@@ -6,7 +6,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.control.TableColumn;
@@ -103,16 +102,6 @@ public class AircraftTableController {
      * When an aircraft is added or removed, it is added or removed from the table
      */
     private void setUpListeners() {
-        // When an aircraft is selected in the map, it is selected in the table
-        selectedAircraft.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                tableView.getSelectionModel().select(newValue);
-                tableView.scrollTo(newValue);
-            } else {
-                tableView.getSelectionModel().clearSelection();
-            }
-        });
-
         // When an aircraft is added or removed from the set, it is added or removed from the table
         aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) item -> {
             if (item.wasAdded()) {
@@ -124,10 +113,20 @@ public class AircraftTableController {
             }
         });
 
+        // When an aircraft is selected in the map, it is selected in the table
+        selectedAircraft.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                tableView.getSelectionModel().select(newValue);
+                tableView.scrollTo(newValue);
+            } else {
+                tableView.getSelectionModel().clearSelection();
+            }
+        });
+
         // When the user selects an aircraft in the table, it is selected in the map
-        tableView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ObservableAircraftState>) c -> {
-            if (c.getList().size() == 1) {
-                selectedAircraft.set(c.getList().get(0));
+        tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                selectedAircraft.set(newValue);
             }
         });
     }
