@@ -20,6 +20,7 @@ public final class StatusLineController {
     private final LongProperty messageCount;
     private final Text aircraftText;
     private final Text messageText;
+
     /**
      * Default constructor builds the scene graph.
      */
@@ -42,6 +43,7 @@ public final class StatusLineController {
 
     /**
      * Returns the panel containing the status line.
+     *
      * @return the BorderPane panel.
      */
     public BorderPane getPane() {
@@ -50,6 +52,7 @@ public final class StatusLineController {
 
     /**
      * Returns the modifiable property containing the number of currently visible aircraft.
+     *
      * @return the aircraft count property.
      */
     public IntegerProperty aircraftCountProperty() {
@@ -58,6 +61,7 @@ public final class StatusLineController {
 
     /**
      * Returns the modifiable property containing the number of messages received since the beginning of program execution.
+     *
      * @return the message count property.
      */
     public LongProperty messageCountProperty() {

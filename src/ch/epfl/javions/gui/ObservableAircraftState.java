@@ -1,7 +1,6 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
@@ -10,7 +9,7 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * @author @franklintra (362694)
@@ -20,6 +19,7 @@ import java.util.*;
 
 
 public final class ObservableAircraftState implements AircraftStateSetter {
+    // todo : comment this whole class !!!!! @chukla
     private final IcaoAddress icaoAddress;
     private final AircraftData aircraftData;
     private final IntegerProperty category = new SimpleIntegerProperty();
@@ -47,15 +47,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.aircraftData = aircraftData;
     }
 
-    public record AirbornePos(GeoPos pos, double altitude) {
-        /**
-         * The constructor of the AirbornePos class
-         *
-         * @param pos      the position of the aircraft
-         * @param altitude the altitude of the aircraft
-         */
-    }
-
     public AircraftData aircraftData() {
         return aircraftData;
     }
@@ -64,37 +55,13 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return lastMessageTimeStampNs.get();
     }
 
-    public int getCategory() {
-        return category.get();
-    }
-
-    public CallSign getCallSign() {
-        return callSign.getValue();
-    }
-
-    public GeoPos getPosition() {
-        return position.getValue();
-    }
-
-    public double getAltitude() {
-        return altitude.get();
-    }
-
-    public double getVelocity() {
-        return velocity.get();
-    }
-
-    public double getTrackOrHeading() {
-        return trackOrHeading.get();
-    }
-
-    public ObservableList<AirbornePos> getObservableTrajectory() {
-        return observableTrajectory;
-    }
-
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         lastMessageTimeStampNs.set(timeStampNs);
+    }
+
+    public int getCategory() {
+        return category.get();
     }
 
     @Override
@@ -102,9 +69,17 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.category.set(category);
     }
 
+    public CallSign getCallSign() {
+        return callSign.getValue();
+    }
+
     @Override
     public void setCallSign(CallSign callSign) {
         this.callSign.setValue(callSign);
+    }
+
+    public GeoPos getPosition() {
+        return position.getValue();
     }
 
     /**
@@ -121,16 +96,15 @@ public final class ObservableAircraftState implements AircraftStateSetter {
             observableTrajectory.add(new AirbornePos(position, getAltitude()));
         }
         previousTimestamp = getLastMessageTimeStampNs();
+    }
 
-//        Objects.requireNonNull(position);
-//        this.position.setValue(position);
-//        if (observableTrajectory.isEmpty()) {
-//            observableTrajectory.add(new AirbornePos(position, getAltitude()));
-//            previousTimestamp = getLastMessageTimeStampNs();
-//        }
-//        if (lastMessageTimeStampNs.get() == previousTimestamp) {
-//            observableTrajectory.set(observableTrajectory.size() - 1, new AirbornePos(position, getAltitude()));
-//        }
+    /**
+     * Returns the altitude of the aircraft
+     *
+     * @return the current altitude
+     */
+    public double getAltitude() {
+        return altitude.get();
     }
 
     /**
@@ -154,15 +128,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
+    public double getVelocity() {
+        return velocity.get();
+    }
 
     @Override
     public void setVelocity(double velocity) {
         this.velocity.set(velocity);
     }
 
+    public double getTrackOrHeading() {
+        return trackOrHeading.get();
+    }
+
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading.set(trackOrHeading);
+    }
+
+    public ObservableList<AirbornePos> getObservableTrajectory() {
+        return observableTrajectory;
     }
 
     public IcaoAddress getIcaoAddress() {
@@ -199,5 +184,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
 
     public ReadOnlyListProperty<AirbornePos> observableTrajectoryProperty() {
         return trajectory;
+    }
+
+    public record AirbornePos(GeoPos pos, double altitude) {
+        /**
+         * The constructor of the AirbornePos class
+         *
+         * @param pos      the position of the aircraft
+         * @param altitude the altitude of the aircraft
+         */
     }
 }

@@ -27,9 +27,6 @@ import java.util.function.Function;
  * It offers a public method to get the JavaFX final table (getPane)
  */
 public class AircraftTableController {
-    private final TableView<ObservableAircraftState> tableView;
-    private final ObservableSet<ObservableAircraftState> aircraftStates;
-    private final ObjectProperty<ObservableAircraftState> selectedAircraft;
     private static final int ICAO_COLUMN_WIDTH = 60;
     private static final int CALLSIGN_COLUMN_WIDTH = 70;
     private static final int REGISTRATION_COLUMN_WIDTH = 90;
@@ -37,10 +34,14 @@ public class AircraftTableController {
     private static final int TYPE_COLUMN_WIDTH = 50;
     private static final int DESCRIPTION_COLUMN_WIDTH = 70;
     private static final int NUMERIC_COLUMNS_WIDTH = 85;
+    private final TableView<ObservableAircraftState> tableView;
+    private final ObservableSet<ObservableAircraftState> aircraftStates;
+    private final ObjectProperty<ObservableAircraftState> selectedAircraft;
 
     /**
      * The constructor of the controller
-     * @param aircraftStates is the set of aircraft states that will be displayed in the table (ObservableSet)
+     *
+     * @param aircraftStates   is the set of aircraft states that will be displayed in the table (ObservableSet)
      * @param selectedAircraft is the property that will be updated when a row is selected (ObjectProperty)
      */
     public AircraftTableController(ObservableSet<ObservableAircraftState> aircraftStates, ObjectProperty<ObservableAircraftState> selectedAircraft) {
@@ -63,8 +64,8 @@ public class AircraftTableController {
 
     /**
      * This public method allows the class user to set up a listener on double click of a row (aircraft)
+     *
      * @param clickOn is the consumer that will be called when a row is double-clicked
-     * todo : why is that?
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> clickOn) {
         tableView.setOnMouseClicked(event -> {
@@ -78,22 +79,22 @@ public class AircraftTableController {
 
     /**
      * This method creates all the columns of the table
-     * It uses the createTextColumn and createNumericColumn methods to do so to avoid code duplication
+     * It uses the private createTextColumn and createNumericColumn methods to do so to avoid code duplication
      */
     private void createColumns() {
         // Text columns
-        tableView.getColumns().add(createTextColumn("OACI", ICAO_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string())));
-        tableView.getColumns().add(createTextColumn("Indicatif", CALLSIGN_COLUMN_WIDTH, state -> state.callSignProperty().map(CallSign::string)));
-        tableView.getColumns().add(createTextColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().registration().string())));
-        tableView.getColumns().add(createTextColumn("Modèle", MODEL_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().model())));
-        tableView.getColumns().add(createTextColumn("Type", TYPE_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().typeDesignator().string())));
-        tableView.getColumns().add(createTextColumn("Description", DESCRIPTION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().description().string())));
+        createTextColumn("OACI", ICAO_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string()));
+        createTextColumn("Indicatif", CALLSIGN_COLUMN_WIDTH, state -> state.callSignProperty().map(CallSign::string));
+        createTextColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().registration().string()));
+        createTextColumn("Modèle", MODEL_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().model()));
+        createTextColumn("Type", TYPE_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().typeDesignator().string()));
+        createTextColumn("Description", DESCRIPTION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().description().string()));
 
         // Numeric columns
-        tableView.getColumns().add(createNumericColumn("Longitude (°)", 4, state -> state.positionProperty().map(position -> Units.convertTo(position.longitude(), Units.Angle.DEGREE))));
-        tableView.getColumns().add(createNumericColumn("Latitude (°)", 4, state -> state.positionProperty().map(position -> Units.convertTo(position.latitude(), Units.Angle.DEGREE))));
-        tableView.getColumns().add(createNumericColumn("Altitude (m)", 0, ObservableAircraftState::altitudeProperty));
-        tableView.getColumns().add(createNumericColumn("Vitesse (km/h)", 0, state -> state.velocityProperty().map(speed -> Units.convertTo((Double) speed, Units.Speed.KILOMETER_PER_HOUR))));
+        createNumericColumn("Longitude (°)", 4, state -> state.positionProperty().map(position -> Units.convertTo(position.longitude(), Units.Angle.DEGREE)));
+        createNumericColumn("Latitude (°)", 4, state -> state.positionProperty().map(position -> Units.convertTo(position.latitude(), Units.Angle.DEGREE)));
+        createNumericColumn("Altitude (m)", 0, ObservableAircraftState::altitudeProperty);
+        createNumericColumn("Vitesse (km/h)", 0, state -> state.velocityProperty().map(speed -> Units.convertTo((Double) speed, Units.Speed.KILOMETER_PER_HOUR)));
     }
 
     /**
@@ -102,6 +103,7 @@ public class AircraftTableController {
      * When an aircraft is added or removed, it is added or removed from the table
      */
     private void setUpListeners() {
+        // When an aircraft is selected in the map, it is selected in the table
         selectedAircraft.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 tableView.getSelectionModel().select(newValue);
@@ -111,6 +113,7 @@ public class AircraftTableController {
             }
         });
 
+        // When an aircraft is added or removed from the set, it is added or removed from the table
         aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) item -> {
             if (item.wasAdded()) {
                 tableView.getItems().add(item.getElementAdded());
@@ -120,7 +123,8 @@ public class AircraftTableController {
                 tableView.getItems().remove(item.getElementRemoved());
             }
         });
-        //todo : check with an assistant
+
+        // When the user selects an aircraft in the table, it is selected in the map
         tableView.getSelectionModel().getSelectedItems().addListener((ListChangeListener<ObservableAircraftState>) c -> {
             if (c.getList().size() == 1) {
                 selectedAircraft.set(c.getList().get(0));
@@ -131,28 +135,30 @@ public class AircraftTableController {
 
     /**
      * This method helps the programmer create a text column.
-     * @param title The title of the column
-     * @param prefWidth The preferred width of the column
+     * It then adds it directly to the table
+     *
+     * @param title            The title of the column
+     * @param prefWidth        The preferred width of the column
      * @param cellValueFactory The function that returns the value of the cell from the ObservableAircraftState
-     * @return The column
      */
-    private static TableColumn<ObservableAircraftState, String> createTextColumn(String title, int prefWidth,
-                                                                          Function<ObservableAircraftState, ObservableValue<String>> cellValueFactory) {
+    private void createTextColumn(String title, int prefWidth,
+                                  Function<ObservableAircraftState, ObservableValue<String>> cellValueFactory) {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(title);
         column.setPrefWidth(prefWidth);
         column.setCellValueFactory(cellData -> cellValueFactory.apply(cellData.getValue()));
-        return column;
+        tableView.getColumns().add(column);
     }
 
     /**
      * This method helps the programmer create a numeric column with a certain number of decimal places.
-     * @param title The title of the column
-     * @param decimalPlaces The number of decimal places
+     * It then adds it directly to the table
+     *
+     * @param title            The title of the column
+     * @param decimalPlaces    The number of decimal places
      * @param cellValueFactory The function that returns the value of the cell from the ObservableAircraftState
-     * @return The column
      */
-    private TableColumn<ObservableAircraftState, String> createNumericColumn(String title, int decimalPlaces,
-                                                                             Function<ObservableAircraftState, ObservableValue<Number>> cellValueFactory) {
+    private void createNumericColumn(String title, int decimalPlaces,
+                                     Function<ObservableAircraftState, ObservableValue<Number>> cellValueFactory) {
         TableColumn<ObservableAircraftState, String> column = new TableColumn<>(title);
         column.getStyleClass().add("numeric");
         NumberFormat format = NumberFormat.getInstance();
@@ -164,7 +170,8 @@ public class AircraftTableController {
             return Bindings.createStringBinding(() -> {
                 Number value = numberValue.getValue();
                 return value != null ? format.format(value) : "";
-        }, numberValue);});
+            }, numberValue);
+        });
 
         column.setComparator((s1, s2) -> {
             if (s1.isEmpty() || s2.isEmpty()) {
@@ -179,6 +186,6 @@ public class AircraftTableController {
                 throw new RuntimeException(e);
             }
         });
-        return column;
+        tableView.getColumns().add(column);
     }
 }

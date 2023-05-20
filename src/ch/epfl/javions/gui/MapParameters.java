@@ -11,10 +11,10 @@ import javafx.geometry.Point2D;
  * This class is used to store the parameters of the MAP. It is used in BaseMapController.
  * @see BaseMapController
  * This is used to:
- *  - store the zoom level of the MAP
- *  - store the x and y coordinates of the top left corner of the MAP
- *  - scroll around the MAP
- *  - zoom in and out of the MAP
+ * - store the zoom level of the MAP
+ * - store the x and y coordinates of the top left corner of the MAP
+ * - scroll around the MAP
+ * - zoom in and out of the MAP
  */
 public class MapParameters {
     /**
@@ -42,9 +42,10 @@ public class MapParameters {
 
     /**
      * The constructor of the MapParameters class
+     *
      * @param zoomLevel the zoom level of the MAP
-     * @param minX the x coordinate of the top left corner of the MAP
-     * @param minY the y coordinate of the top left corner of the MAP
+     * @param minX      the x coordinate of the top left corner of the MAP
+     * @param minY      the y coordinate of the top left corner of the MAP
      */
     public MapParameters(int zoomLevel, double minX, double minY) {
         Preconditions.checkArgument(MIN_ZOOM <= zoomLevel && zoomLevel <= MAX_ZOOM);
@@ -55,6 +56,7 @@ public class MapParameters {
 
     /**
      * A read-only property for the zoom level
+     *
      * @return the read-only property
      */
     public ReadOnlyIntegerProperty zoomLevelProperty() {
@@ -63,6 +65,7 @@ public class MapParameters {
 
     /**
      * A getter for the zoom level
+     *
      * @return the zoom level
      */
     public int getZoomLevel() {
@@ -71,6 +74,7 @@ public class MapParameters {
 
     /**
      * A read-only property for the x coordinate of the top left corner of the MAP
+     *
      * @return the read-only property
      */
     public ReadOnlyDoubleProperty minXProperty() {
@@ -79,6 +83,7 @@ public class MapParameters {
 
     /**
      * A getter for the x coordinate of the top left corner of the MAP
+     *
      * @return the x coordinate of the top left corner of the MAP
      */
     public double getMinX() {
@@ -87,6 +92,7 @@ public class MapParameters {
 
     /**
      * A read-only property for the y coordinate of the top left corner of the MAP
+     *
      * @return the read-only property
      */
     public ReadOnlyDoubleProperty minYProperty() {
@@ -95,6 +101,7 @@ public class MapParameters {
 
     /**
      * A getter for the y coordinate of the top left corner of the MAP
+     *
      * @return the y coordinate of the top left corner of the MAP
      */
     public double getMinY() {
@@ -103,6 +110,7 @@ public class MapParameters {
 
     /**
      * A method to scroll the MAP
+     *
      * @param deltaX the x coordinate of the top left corner of the MAP
      * @param deltaY the y coordinate of the top left corner of the MAP
      */
@@ -113,6 +121,7 @@ public class MapParameters {
 
     /**
      * A method to get the top left corner of the MAP. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
+     *
      * @return the top left corner of the MAP as a Point2D in javaFX.
      * This specific public method was not required in the project statement but it is used in BaseMapController to make the code easier to read.
      */
@@ -123,6 +132,7 @@ public class MapParameters {
     /**
      * A method to change the zoom level of the MAP
      * It also changes the x and y coordinates of the top left corner of the MAP so that this corner still shows the same part of the MAP
+     *
      * @param deltaZoom the change in zoom level (will always be 1 or -1;
      */
     public void changeZoomLevel(int deltaZoom) {

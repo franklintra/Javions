@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.CONFIGURATION;
 import javafx.scene.image.Image;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,15 +11,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author @franklintra (362694)
  * @project Javions
  * This class manages the tiles of the map. It is used to:
- *  - download the ones not already downloaded to the disk
- *  - cache the most recently used ones in memory
- *  - load the tiles from the disk if they are already downloaded and not in memory
+ * - download the ones not already downloaded to the disk
+ * - cache the most recently used ones in memory
+ * - load the tiles from the disk if they are already downloaded and not in memory
  * @see BaseMapController
  */
 public class TileManager {
@@ -29,12 +33,14 @@ public class TileManager {
     /**
      * This is the max size of the cache memory in tiles (not bytes).
      * It is stored as an attribute so we can change it easily.
+     *
      * @see CONFIGURATION
      */
     private static final int MAX_CACHE_SIZE = 100;
     /**
      * This is the cache memory of the tiles. (For a given tile id, it stores the corresponding tile image)
      * it is a LinkedHashMap so we can easily remove the least recently used element.
+     *
      * @see LinkedHashMap
      */
     private final Map<TileId, Image> tiles = new LinkedHashMap<>(MAX_CACHE_SIZE, .75F, false);
@@ -56,8 +62,9 @@ public class TileManager {
     /**
      * This is the constructor of the class.
      * It initializes the cache directory and the tile server url according to the parameters.
+     *
      * @param cacheDirectory the directory where the tiles are stored
-     * @param tileServerUrl the url of the tile server
+     * @param tileServerUrl  the url of the tile server
      */
     public TileManager(Path cacheDirectory, String tileServerUrl) {
         this.cacheDirectory = cacheDirectory.resolve(tileServerUrl);
@@ -66,9 +73,10 @@ public class TileManager {
 
     /**
      * This method tries to find the tile image respectively :
-     *  - in the cache memory
-     *  - on the drive
-     *  - on the server
+     * - in the cache memory
+     * - on the drive
+     * - on the server
+     *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
@@ -86,14 +94,14 @@ public class TileManager {
 
     /**
      * This method stores the tile image in the cache memory.
+     *
      * @param tileId the position and zoom level of the tile
-     * @param image the tile image
+     * @param image  the tile image
      */
     private void storeInMemory(TileId tileId, Image image) {
         if (tiles.containsKey(tileId)) {
             tiles.remove(tileId); // this is to make sure the tile is the most recently used
-        }
-        else if (tiles.size() >= MAX_CACHE_SIZE) {
+        } else if (tiles.size() >= MAX_CACHE_SIZE) {
             Iterator<TileId> it = tiles.keySet().iterator();
             if (it.hasNext()) {
                 it.next();
@@ -105,8 +113,9 @@ public class TileManager {
 
     /**
      * This method stores the tile image on the user drive cache.
+     *
      * @param tileId the position and zoom level of the tile
-     * @param image the tile image to be stored in byte[] format
+     * @param image  the tile image to be stored in byte[] format
      */
     private void storeOnDrive(TileId tileId, byte[] image) {
         Path tilePath = cacheDirectory
@@ -116,8 +125,7 @@ public class TileManager {
         try {
             Files.createDirectories(tilePath.getParent()); // create the directories if they don't exist all the way up to the file
             Files.write(tilePath, image);
-        }
-        catch (IOException ignored) {
+        } catch (IOException ignored) {
             //does not throw exception because if the file couldn't be stored on the disk, it is not critical
             //and it is an OS permission problem on the user's computer (not our fault)
         }
@@ -125,6 +133,7 @@ public class TileManager {
 
     /**
      * This method tries to find the tile image on the server.
+     *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
@@ -138,6 +147,7 @@ public class TileManager {
 
     /**
      * This method searches for the tile image on the user drive cache.
+     *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
@@ -166,6 +176,7 @@ public class TileManager {
 
     /**
      * This method searches for the tile image on the tile server.
+     *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
      */
@@ -196,6 +207,7 @@ public class TileManager {
 
     /**
      * This method creates the URL of the tile image on the tile server.
+     *
      * @param tileId the position and zoom level of the tile
      * @return the URL of the tile image
      */
@@ -203,8 +215,7 @@ public class TileManager {
         String url = String.format("https://%s/%d/%d/%d%s", tileServerUrl, tileId.zoom, tileId.x, tileId.y, tileExtension);
         try {
             return new URL(url);
-        }
-        catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             e.printStackTrace(System.err);
         }
         return null;
@@ -213,15 +224,17 @@ public class TileManager {
     /**
      * This immutable record represents the position and zoom level of a tile.
      * It is used to identify a tile.
+     *
      * @see TileManager#imageForTileAt(TileId)
      */
     public record TileId(int zoom, long x, long y) {
 
         /**
          * This constructor checks if the tile id is valid.
+         *
          * @param zoom the zoom level of the tile
-         * @param x the x position of the tile
-         * @param y the y position of the tile
+         * @param x    the x position of the tile
+         * @param y    the y position of the tile
          */
         public TileId {
             if (!isValid(zoom, x, y)) {
@@ -231,9 +244,10 @@ public class TileManager {
 
         /**
          * This method checks if the tile id is valid.
+         *
          * @param zoom the zoom level of the tile
-         * @param x the x position of the tile
-         * @param y the y position of the tile
+         * @param x    the x position of the tile
+         * @param y    the y position of the tile
          * @return true if the tile's attribute are valid, false otherwise
          */
         public static boolean isValid(int zoom, long x, long y) {

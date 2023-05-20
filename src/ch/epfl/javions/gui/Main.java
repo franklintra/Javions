@@ -18,6 +18,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -34,10 +35,6 @@ import java.util.concurrent.TimeUnit;
  * that does nothing but call launch.
  */
 public final class Main extends Application {
-    /**
-     * The messageCount property is a simple long property that counts the number of messages and is drawn on the status line.
-     */
-    private final SimpleLongProperty messageCount = new SimpleLongProperty(0);
     private static final AircraftStateManager aircraftStateManager = new AircraftStateManager(new AircraftDatabase(Objects.requireNonNull(Main.class.getResource("/aircraft.zip")).getPath()));
     private static final ObjectProperty<ObservableAircraftState> selectedAircraftState = new SimpleObjectProperty<>();
     private static final Path tileCache = Path.of("tile-cache");
@@ -60,19 +57,23 @@ public final class Main extends Application {
      */
     private static final BaseMapController map = new BaseMapController(tm, mp);
     /**
+     * The messageQueue field is a concurrent linked queue that contains the messages
+     * sampled and decoded in real time from the input stream (messages.bin or radio)
+     */
+    private static final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+    /**
+     * The messageCount property is a simple long property that counts the number of messages and is drawn on the status line.
+     */
+    private final SimpleLongProperty messageCount = new SimpleLongProperty(0);
+    /**
      * The ac field is the controller of the overlay of the map.
      * It is used to draw trajectories, aircrafts and labels.
      */
     private final AircraftController ac = new AircraftController(mp, aircraftStateManager.states(), selectedAircraftState);
 
     /**
-     * The messageQueue field is a concurrent linked queue that contains the messages
-     * sampled and decoded in real time from the input stream (messages.bin or radio)
-     */
-    private static final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
-
-    /**
      * The main method of the program.
+     *
      * @param args command line arguments.
      */
     public static void main(String[] args) {
@@ -124,6 +125,7 @@ public final class Main extends Application {
         // Now read the messages from the queue and update the aircraft states
         AnimationTimer messageProcessing = new javafx.animation.AnimationTimer() {
             private long lastPurge = Instant.now().getEpochSecond();
+
             @Override
             public void handle(long now) {
                 Message m;
@@ -172,9 +174,10 @@ public final class Main extends Application {
 
     /**
      * This method sleeps if necessary to simulate real time delays of messages and returns the current time.
-     * @param timeStampNs : the time stamp of the message
+     *
+     * @param timeStampNs            : the time stamp of the message
      * @param lastMessageTimeStampNs : the time stamp of the last message
-     * @param lastTime : the last time the system handled a message
+     * @param lastTime               : the last time the system handled a message
      * @return : the current time of the system
      */
     private long sleepIfNecessary(long timeStampNs, long lastMessageTimeStampNs, long lastTime) {
@@ -196,7 +199,8 @@ public final class Main extends Application {
     /**
      * This method reads the message from the input stream and parses it.
      * It is extracted code from the realTimeMessageDecoder method for better readability.
-     * @param s : the input stream
+     *
+     * @param s           : the input stream
      * @param timeStampNs : the time stamp of the message
      * @return : the parsed message
      * @throws IOException : if the input stream is not valid

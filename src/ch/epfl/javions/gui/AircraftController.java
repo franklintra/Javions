@@ -9,7 +9,9 @@ import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
@@ -25,12 +27,12 @@ import static javafx.scene.paint.CycleMethod.NO_CYCLE;
  */
 
 public final class AircraftController {
-    //todo : the drawn trajectories are yellow not the right color. THIS IS A BUG. WARNING.
+    //todo: comment this class !! @chukla
+    private final static double maxAltitude = 12000;
     private final MapParameters mapParameters;
     private final ObservableSet<ObservableAircraftState> states;
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
     private final Pane pane;
-    private final static double maxAltitude = 12000;
     private final double lowAltDefiner = (double) 1 / 3;
 
     public AircraftController(MapParameters mapParameters, ObservableSet<ObservableAircraftState> states, ObjectProperty<ObservableAircraftState> selectedAircraft) {
@@ -228,8 +230,8 @@ public final class AircraftController {
         double y = WebMercator.y(mapParameters.getZoomLevel(), positions.get(0).pos().latitude());
         for (int i = 0; i < positions.size() - 1; i++) {
             Line line = new Line();  // Create a new Line object for each line segment
-            double endX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(i+1).pos().longitude());
-            double endY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(i+1).pos().latitude());
+            double endX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(i + 1).pos().longitude());
+            double endY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(i + 1).pos().latitude());
             line.setStartX(x);
             line.setStartY(y);
             line.setEndX(endX);
@@ -242,9 +244,9 @@ public final class AircraftController {
             double p1 = positions.get(i).altitude();
             double p2 = positions.get(i + 1).altitude();
 
-            Color c1 = ColorRamp.PLASMA.at((Math.pow((double) p1 / maxAltitude, lowAltDefiner)));
+            Color c1 = ColorRamp.PLASMA.at((Math.pow(p1 / maxAltitude, lowAltDefiner)));
             if (p1 != p2) {
-                Color c2 = ColorRamp.PLASMA.at((Math.pow((double) p2 / maxAltitude, lowAltDefiner)));
+                Color c2 = ColorRamp.PLASMA.at((Math.pow(p2 / maxAltitude, lowAltDefiner)));
                 Stop s1 = new Stop(0, c1);
                 Stop s2 = new Stop(1, c2);
                 LinearGradient lg = new LinearGradient(x, y, endX, endY, true, NO_CYCLE, s1, s2);
@@ -253,10 +255,5 @@ public final class AircraftController {
                 line.setStroke(c1);
             }
         }
-//        double lastX = WebMercator.x(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().longitude());
-//        double lastY = WebMercator.y(mapParameters.getZoomLevel(), positions.get(positions.size() - 1).pos().latitude());
-//        line.setEndX(lastX);
-//        line.setEndY(lastY);
-//        trajectory.getChildren().add(line);
     }
 }

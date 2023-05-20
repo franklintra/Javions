@@ -59,7 +59,8 @@ public class BaseMapController {
      * It takes a tile manager and a map parameters object and stores them.
      * It also sets up the canvas and the pane.
      * It finally sets up the event handlers for JavaFX to be able to scroll and zoom.
-     * @param tileProvider The tile manager for ram and disk caching
+     *
+     * @param tileProvider  The tile manager for ram and disk caching
      * @param mapParameters The MAP parameters (zoom level, center, etc.)
      */
     public BaseMapController(TileManager tileProvider, MapParameters mapParameters) {
@@ -72,6 +73,7 @@ public class BaseMapController {
 
     /**
      * This method is a getter for the MAP pane
+     *
      * @return The MAP pane
      */
     public Pane getPane() {
@@ -81,6 +83,7 @@ public class BaseMapController {
     /**
      * This method is used to center the MAP on a given position
      * todo: test it + should it center on the center of the MAP or the mouse position?
+     *
      * @param position The position to center on
      */
     public void centerOn(GeoPos position) {
@@ -88,9 +91,9 @@ public class BaseMapController {
         double xMercator = WebMercator.x(zoomLevel, position.longitude());
         double yMercator = WebMercator.y(zoomLevel, position.latitude());
         Point2D topLeft = parameters.getTopLeftCorner();
-        Point2D center = new Point2D(getPane().getWidth() / (2*TileManager.TILE_SIZE), getPane().getHeight() / (2*TileManager.TILE_SIZE));
+        Point2D center = new Point2D(getPane().getWidth() / (2 * TileManager.TILE_SIZE), getPane().getHeight() / (2 * TileManager.TILE_SIZE));
         parameters.scroll(xMercator - topLeft.getX(), yMercator - topLeft.getY());
-        parameters.scroll(center.getX(), center.getY()); //todo: check if it is meant to be negative or not
+        parameters.scroll(center.getX(), center.getY());
     }
 
     /**
@@ -111,7 +114,7 @@ public class BaseMapController {
         // Gestion des événements de la souris
         LongProperty minScrollTime = new SimpleLongProperty();
         mapPane.setOnScroll(e -> {
-            int zoomDelta = (int) - Math.signum(e.getDeltaY());
+            int zoomDelta = (int) -Math.signum(e.getDeltaY());
             if (zoomDelta == 0) return;
 
             long currentTime = System.currentTimeMillis();
@@ -193,8 +196,6 @@ public class BaseMapController {
                 try {
                     Image tile = tiles.imageForTileAt(new TileManager.TileId(zoom, x, y));
                     gc.drawImage(tile, tilePosX, tilePosY);
-                    // Draw the coordinates of the tile in the middle of the tile for debugging purposes. (todo: to remove for production)
-                    //gc.fillText("(" + x + ", " + y + ")", tilePosX + TileManager.TILE_SIZE/2f, tilePosY + TileManager.TILE_SIZE/2f);
                 } catch (IOException e) {
                     // The tile could not be drawn, draw a grid instead.
                     // In the future if we want to still be able to move around the map as the tiles are loading,
@@ -233,7 +234,8 @@ public class BaseMapController {
 
     /**
      * This method is used to draw a grid on the canvas
-     * @param gc the graphics context to draw on
+     *
+     * @param gc    the graphics context to draw on
      * @param rectX the x coordinate of the top left corner of the rectangle to draw the grid in
      * @param rectY the y coordinate of the top left corner of the rectangle to draw the grid in
      */

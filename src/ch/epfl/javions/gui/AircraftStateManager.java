@@ -1,6 +1,7 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.adsb.*;
+import ch.epfl.javions.adsb.AircraftStateAccumulator;
+import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.aircraft.IcaoAddress;
@@ -8,7 +9,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * @author @franklintra (362694)
@@ -19,9 +22,9 @@ import java.util.*;
  * It also removes the aircrafts that have not been updated for more than 60 seconds.
  * It also gives the unmodifiable observable set of aircraft states that is used by JavaFX.
  */
-public final class  AircraftStateManager {
-    private final AircraftDatabase database;
+public final class AircraftStateManager {
     private final static double maxMessageAge = 6 * 1e9;
+    private final AircraftDatabase database;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
     private final ObservableSet<ObservableAircraftState> observableModifiableAircraftStates = FXCollections.observableSet(new HashSet<>());
     private final ObservableSet<ObservableAircraftState> observableUnmodifiableAircraftStates = FXCollections.unmodifiableObservableSet(observableModifiableAircraftStates);
@@ -60,7 +63,9 @@ public final class  AircraftStateManager {
             // In case the aircraft is not in the database, we do not add it to the observableAircraftStates
             // If the aircraft is in the database, we add it to the aicraftStateAccumulators if it wasn't already
             AircraftData data = database.get(icaoAddress);
-            if (data == null) { return;}
+            if (data == null) {
+                return; // Do not add the aircraft to the observableAircraftStates (it is not in the database) todo
+            }
             ObservableAircraftState aircraftState = new ObservableAircraftState(icaoAddress, data);
             aircraftStateAccumulators.put(icaoAddress, new AircraftStateAccumulator<>(aircraftState));
         }
