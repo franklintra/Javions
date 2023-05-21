@@ -1,6 +1,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![DeepSource](https://deepsource.io/gh/franklintra/Javions.svg/?label=resolved+issues&show_trend=false&token=CmvAJnWex2qCynvmZiepgXiK)](https://deepsource.io/gh/franklintra/Javions/?ref=repository-badge)
 [![Qodana](https://github.com/franklintra/Javions/actions/workflows/Qodana_quality_tests.yml/badge.svg)](https://github.com/franklintra/Javions/actions/workflows/Qodana_quality_tests.yml)
+[![Build and Test](https://github.com/franklintra/Javions/actions/workflows/build-and-test.yml/badge.svg?event=branch_protection_rule)](https://github.com/franklintra/Javions/actions/workflows/build-and-test.yml)
 
 # Javions
 
