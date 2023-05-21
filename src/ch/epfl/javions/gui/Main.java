@@ -64,8 +64,6 @@ public final class Main extends Application {
         } else {
             runningMode = RunningMode.RADIO;
             System.out.println("Running in " + runningMode + " mode with System.in");
-            // todo : There is a problem which makes us only show 16 aircrafts when running in radio mode instead of 18.
-            // https://edstem.org/eu/courses/237/discussion/38061?comment=70908
         }
         launch(args);
     }
