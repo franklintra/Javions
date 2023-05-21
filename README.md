@@ -70,4 +70,4 @@ This project is distributed under the MIT licence.
 <center>The logic diagram for the main class of the program. </center>
 
 For better performance, and non-blocking demodulation, the demodulation of the messages is not done on the main JavaFX thread. Instead it is done on a separate thread and the decoded messages are given to a queue which is then polled by the JavaFX thread.
-> Further improvements: Make the TileManager asynchronous by returning empty Images as long as the tile hasn't been loaded from either the memory, drive or server. This could be implemented as a bonus for week 12 of the project. 
+- [ ] Further improvements: Make the TileManager asynchronous by returning empty Images as long as the tile hasn't been loaded from either the memory, drive or server. This could be implemented as a bonus for week 12 of the project. 
