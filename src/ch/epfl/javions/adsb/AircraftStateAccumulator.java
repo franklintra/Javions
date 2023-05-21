@@ -14,7 +14,7 @@ public class AircraftStateAccumulator<T extends AircraftStateSetter> {
     // This is a buffer of size two where the even messages are stored at index 0 and the odd messages are stored at index 1.
     private final AirbornePositionMessage[] lastMessages = new AirbornePositionMessage[2];
 
-    private final static int TEN_SECONDS_IN_NS = (int) 10e9;
+    private final static long TEN_SECONDS_IN_NS = (long) 10e9;
 
     /**
      * Constructs a new AirCraftStateAccumulator object with the given state setter.

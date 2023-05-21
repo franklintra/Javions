@@ -2,7 +2,6 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.Message;
-import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.collections.FXCollections;
@@ -59,23 +58,15 @@ public final class AircraftStateManager {
         lastTimeStampNs = message.timeStampNs();
         IcaoAddress icaoAddress = message.icaoAddress();
         if (!aircraftStateAccumulators.containsKey(icaoAddress)) { // If the aircraft is not yet in the state accumulator
-        // In case the aircraft is not in the database, we do not add it to the observableAircraftStates
-        // If the aircraft is in the database, we add it to the aicraftStateAccumulators if it wasn't already
-        AircraftData data = database.get(icaoAddress);
-            if (data == null) {
-                return;
-            }
-
-            ObservableAircraftState aircraftState = new ObservableAircraftState(icaoAddress, data);
+            ObservableAircraftState aircraftState = new ObservableAircraftState(icaoAddress, database.get(icaoAddress));
             aircraftStateAccumulators.put(icaoAddress, new AircraftStateAccumulator<>(aircraftState));
         }
+        aircraftStateAccumulators.get(icaoAddress).update(message);
 
-        // We only add the aircraft to the observableAircraftStates if it has a position
+        // We only add the aircraft to the observableAircraftStates if it has a known position
         if (aircraftStateAccumulators.get(icaoAddress).stateSetter().getPosition() != null) {
             observableModifiableAircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
         }
-
-        aircraftStateAccumulators.get(icaoAddress).update(message);
     }
 
     /**

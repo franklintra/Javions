@@ -2,8 +2,10 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.CallSign;
+import ch.epfl.javions.aircraft.AircraftData;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
@@ -67,13 +69,13 @@ public class AircraftTableController {
      * @param clickOn is the consumer that will be called when a row is double-clicked
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> clickOn) {
-        tableView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) {
-                if (selectedAircraft != null && clickOn != null) {
-                    clickOn.accept(selectedAircraft.get());
+            tableView.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) {
+                    if (selectedAircraft != null && clickOn != null) {
+                        clickOn.accept(selectedAircraft.get());
+                    }
                 }
-            }
-        });
+            });
     }
 
     /**
@@ -84,10 +86,10 @@ public class AircraftTableController {
         // Text columns
         createTextColumn("OACI", ICAO_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.getIcaoAddress().string()));
         createTextColumn("Indicatif", CALLSIGN_COLUMN_WIDTH, state -> state.callSignProperty().map(CallSign::string));
-        createTextColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().registration().string()));
-        createTextColumn("Modèle", MODEL_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().model()));
-        createTextColumn("Type", TYPE_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().typeDesignator().string()));
-        createTextColumn("Description", DESCRIPTION_COLUMN_WIDTH, state -> new ReadOnlyStringWrapper(state.aircraftData().description().string()));
+        createTextColumn("Immatriculation", REGISTRATION_COLUMN_WIDTH, state -> new ReadOnlyObjectWrapper<>(state.aircraftData()).map(ad -> ad.registration().string()));
+        createTextColumn("Modèle", MODEL_COLUMN_WIDTH, state -> new ReadOnlyObjectWrapper<>(state.aircraftData()).map(AircraftData::model));
+        createTextColumn("Type", TYPE_COLUMN_WIDTH, state -> new ReadOnlyObjectWrapper<>(state.aircraftData()).map(ad -> ad.typeDesignator().string()));
+        createTextColumn("Description", DESCRIPTION_COLUMN_WIDTH, state -> new ReadOnlyObjectWrapper<>(state.aircraftData()).map(ad -> ad.description().string()));
 
         // Numeric columns
         createNumericColumn("Longitude (°)", 4, state -> state.positionProperty().map(position -> Units.convertTo(position.longitude(), Units.Angle.DEGREE)));

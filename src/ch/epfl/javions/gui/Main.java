@@ -141,7 +141,11 @@ public final class Main extends Application {
          * Also sets up the behaviour upon double-click on the table
          */
         AircraftTableController table = new AircraftTableController(aircraftStateManager.states(), selectedAircraftState);
-        table.setOnDoubleClick((state) -> map.centerOn(state.positionProperty().getValue()));
+        table.setOnDoubleClick((state) -> {
+            if (Objects.nonNull(state)) {
+                    map.centerOn(state.positionProperty().getValue());
+            }
+        });
         /*
          * The statusLineController field is the controller of the status line (middle of the window).
          * It shows the number of visible aircraft and the number of messages received.
