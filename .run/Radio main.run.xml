@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Radio main" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ch.epfl.javions.gui.Main" />
+    <module name="Javions" />
+    <option name="REDIRECT_INPUT" value="true" />
+    <option name="INPUT_FILE" value="$PROJECT_DIR$/resources/samples_20230304_1442.bin" />
+    <option name="VM_PARAMETERS" value="--module-path $JFX_PATH$ --add-modules javafx.controls" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

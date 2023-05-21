@@ -82,7 +82,6 @@ public class BaseMapController {
 
     /**
      * This method is used to center the MAP on a given position
-     * todo: test it + should it center on the center of the MAP or the mouse position?
      *
      * @param position The position to center on
      */

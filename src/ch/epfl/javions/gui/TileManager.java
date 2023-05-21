@@ -6,6 +6,7 @@ import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -23,6 +24,12 @@ import java.util.Optional;
  * - download the ones not already downloaded to the disk
  * - cache the most recently used ones in memory
  * - load the tiles from the disk if they are already downloaded and not in memory
+ * While creating this class, I made a choice to use Optional<Image> for the private methods to be able to use
+ * the Optional methods like or to simplify the only public method.
+ * However this means that if there is an IOException happening in the private methods,
+ * it will be wrapped in an UncheckedIOException and thrown by private methods.
+ * This is because in the imageForTileAt method, using the or structure of Optional means we can't catch the IOException and throw it
+ * without writing disgusting lambda expressions.
  * @see BaseMapController
  */
 public class TileManager {
@@ -88,7 +95,7 @@ public class TileManager {
         if (data.isPresent()) {
             return data.get();
         } else {
-            throw new IOException("Tile not found");
+            throw new IOException("Tile not found anywhere (Even on the server)");
         }
     }
 
@@ -113,6 +120,8 @@ public class TileManager {
 
     /**
      * This method stores the tile image on the user drive cache.
+     * wrapping the exception in an UncheckedIOException because of a design choice:
+     *              @see TileManager
      *
      * @param tileId the position and zoom level of the tile
      * @param image  the tile image to be stored in byte[] format
@@ -125,9 +134,9 @@ public class TileManager {
         try {
             Files.createDirectories(tilePath.getParent()); // create the directories if they don't exist all the way up to the file
             Files.write(tilePath, image);
-        } catch (IOException ignored) {
-            //does not throw exception because if the file couldn't be stored on the disk, it is not critical
-            //and it is an OS permission problem on the user's computer (not our fault)
+        } catch (IOException e) {
+            // This is because the file could not be written
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -147,6 +156,8 @@ public class TileManager {
 
     /**
      * This method searches for the tile image on the user drive cache.
+     * wrapping the exception in an UncheckedIOException because of a design choice:
+     *              @see TileManager
      *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
@@ -164,11 +175,9 @@ public class TileManager {
                     storeInMemory(tileId, i);
                 }
                 return Optional.of(i);
-            } catch (IOException ignored) {
-                //does not throw exception because if the file couldn't be read from the disk, it is not critical and
-                // certainly an OS permission problem on the user's computer (not our fault)
-                // or the file is corrupted (not our fault)
-                // todo: we however might want to think of a way to delete the corrupted file :)
+            } catch (IOException e) {
+                // The image could not be read from the drive.
+                throw new UncheckedIOException(e);
             }
         }
         return Optional.empty();
@@ -176,6 +185,8 @@ public class TileManager {
 
     /**
      * This method searches for the tile image on the tile server.
+     * wrapping the exception in an UncheckedIOException because of a design choice:
+     *              @see TileManager
      *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
@@ -194,7 +205,7 @@ public class TileManager {
             // this is because the tile server did not respond in time (or at all)
             // this is not an error and might happen because of internet connection issues or server overload
             // it could also be because the tile server does not have the specific tile
-            return Optional.empty();
+            throw new UncheckedIOException(e);
         }
         if (data != null) {
             Image i = new Image(new ByteArrayInputStream(data));

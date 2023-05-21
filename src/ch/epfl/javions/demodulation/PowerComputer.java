@@ -8,13 +8,9 @@ import java.io.InputStream;
 /**
  * @author @franklintra (362694)
  * @project Javions
- */
-
-/**
  * This class is used to calculate the power of a batch of samples
  * It is used by the PowerWindow class to calculate the power of the samples in the window
  * It allows to demodulate messages from the samples in combination with the PowerWindow and SamplesDecoder classes.
- * todo: check with the intermediate review if the constant N is necessary
  */
 public final class PowerComputer {
     private final SamplesDecoder decoder;

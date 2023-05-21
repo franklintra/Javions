@@ -1,0 +1,1 @@
+cat resources/samples_20230304_1442.bin | /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java --enable-preview -cp out/production/Javions/ --module-path /Library/Frameworks/JavaFX/lib --add-modules javafx.controls ch.epfl.javions.gui.Main

@@ -55,20 +55,15 @@ public final class AircraftStateManager {
      *
      * @param message the message to update the state with.
      */
-    public void updateWithMessage(Message message) {
+    public void updateWithMessage(Message message) throws IOException {
         lastTimeStampNs = message.timeStampNs();
         IcaoAddress icaoAddress = message.icaoAddress();
         if (!aircraftStateAccumulators.containsKey(icaoAddress)) { // If the aircraft is not yet in the state accumulator
-            // In case the aircraft is not in the database, we do not add it to the observableAircraftStates
-            // If the aircraft is in the database, we add it to the aicraftStateAccumulators if it wasn't already
-            AircraftData data;
-            try {
-                data = database.get(icaoAddress);
-                if (data == null) {
-                    return; // Do not add the aircraft to the observableAircraftStates (it is not in the database) todo
-                }
-            } catch (IOException e) {
-                return; // todo check this behaviour
+        // In case the aircraft is not in the database, we do not add it to the observableAircraftStates
+        // If the aircraft is in the database, we add it to the aicraftStateAccumulators if it wasn't already
+        AircraftData data = database.get(icaoAddress);
+            if (data == null) {
+                return;
             }
 
             ObservableAircraftState aircraftState = new ObservableAircraftState(icaoAddress, data);
