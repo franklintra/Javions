@@ -69,13 +69,13 @@ public class AircraftTableController {
      * @param clickOn is the consumer that will be called when a row is double-clicked
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> clickOn) {
-            tableView.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) {
-                    if (selectedAircraft != null && clickOn != null) {
-                        clickOn.accept(selectedAircraft.get());
-                    }
+        tableView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) {
+                if (selectedAircraft != null && clickOn != null) {
+                    clickOn.accept(selectedAircraft.get());
                 }
-            });
+            }
+        });
     }
 
     /**

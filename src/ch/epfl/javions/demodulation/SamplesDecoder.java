@@ -6,23 +6,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+
 /**
  * @author @franklintra (362694)
  * @project Javions
- */
-
-/**
+ *
  * The SamplesDecoder class that decodes a batch of samples from an input stream. The samples are stored in an array of shorts.
  * This class is used by PowerComputer to decode the samples from the input stream.
  * In conjunction with the PowerWindow class, it is used to decode messages from the input stream.
  */
 public final class SamplesDecoder {
+    private static final int BIAS = 2048;
+    private static final int BYTE_MASK = 0xFF;
     private final int batchSize; // the size of the batch of samples to read
     private final InputStream stream;
     private final byte[] buffer;
-
-    private static final int BIAS = 2048;
-    private static final int BYTE_MASK = 0xFF;
 
     /**
      * The constructor of the SamplesDecoder class that takes an input stream and a batch size

@@ -121,10 +121,10 @@ public class TileManager {
     /**
      * This method stores the tile image on the user drive cache.
      * wrapping the exception in an UncheckedIOException because of a design choice:
-     *              @see TileManager
      *
      * @param tileId the position and zoom level of the tile
      * @param image  the tile image to be stored in byte[] format
+     * @see TileManager
      */
     private void storeOnDrive(TileId tileId, byte[] image) {
         Path tilePath = cacheDirectory
@@ -157,10 +157,10 @@ public class TileManager {
     /**
      * This method searches for the tile image on the user drive cache.
      * wrapping the exception in an UncheckedIOException because of a design choice:
-     *              @see TileManager
      *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
+     * @see TileManager
      */
     private Optional<Image> findOnDrive(TileId tileId) {
         Path absolutePath = cacheDirectory
@@ -186,10 +186,10 @@ public class TileManager {
     /**
      * This method searches for the tile image on the tile server.
      * wrapping the exception in an UncheckedIOException because of a design choice:
-     *              @see TileManager
      *
      * @param tileId the position and zoom level of the tile
      * @return the tile image or null if the tile is not found
+     * @see TileManager
      */
     private Optional<Image> findOnServer(TileId tileId) {
         URL tileUrl = urlForTileAt(tileId);

@@ -13,10 +13,9 @@ import java.io.InputStream;
  * It allows to demodulate messages from the samples in combination with the PowerWindow and SamplesDecoder classes.
  */
 public final class PowerComputer {
+    private static final int N = 8; // the number of samples used to calculate the power
     private final SamplesDecoder decoder;
     private final short[] sampleBuffer; // this is the buffer that will contain the samples read from the input stream.
-    private static final int N = 8; // the number of samples used to calculate the power
-
     private final short[] lastNSamples = new short[N]; // this is the buffer that will contain the last 8 samples used to calculate the power
     private final int batchSize;
 
@@ -32,6 +31,21 @@ public final class PowerComputer {
         this.batchSize = batchSize;
         this.decoder = new SamplesDecoder(stream, 2 * batchSize);
         this.sampleBuffer = new short[Short.BYTES * batchSize];
+    }
+
+    /**
+     * This method is used to calculate the modulus of a number with N
+     * In our case, we need to calculate the modulus of a number with N, but the % operator in java gives the remainder instead of the modulus
+     * Hence for array indexes, we need to use this method instead of the % operator to not get negative indexes
+     * For optimization purposes, we avoid Math.floorMod() as we only care about a few negative numbers cases
+     * (The value passed to this method is always strictly between -N+1 and N)
+     * This method is much faster than Math.floorMod() as it only needs to check if the number is negative and add N to it (25% gain in performance on all Tests)
+     *
+     * @param index the number to calculate the modulus of
+     * @return the modulus of the number base 8
+     */
+    private static int baseNMod(int index) {
+        return index < 0 ? index + N : index;
     }
 
     /**
@@ -57,20 +71,5 @@ public final class PowerComputer {
             lastNIndex = (lastNIndex + 2) % N;
         }
         return read / 2;
-    }
-
-    /**
-     * This method is used to calculate the modulus of a number with N
-     * In our case, we need to calculate the modulus of a number with N, but the % operator in java gives the remainder instead of the modulus
-     * Hence for array indexes, we need to use this method instead of the % operator to not get negative indexes
-     * For optimization purposes, we avoid Math.floorMod() as we only care about a few negative numbers cases
-     * (The value passed to this method is always strictly between -N+1 and N)
-     * This method is much faster than Math.floorMod() as it only needs to check if the number is negative and add N to it (25% gain in performance on all Tests)
-     *
-     * @param index the number to calculate the modulus of
-     * @return the modulus of the number base 8
-     */
-    private static int baseNMod(int index) {
-        return index < 0 ? index + N : index;
     }
 }

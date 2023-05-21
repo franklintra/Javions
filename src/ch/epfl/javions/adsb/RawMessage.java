@@ -43,15 +43,6 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     }
 
     /**
-     * Returns the time stamp of the message.
-     *
-     * @return the time stamp of the message
-     */
-    public int downLinkFormat() {
-        return downLinkFormat((byte) bytes.byteAt(0));
-    }
-
-    /**
      * Returns the downlink format of the message from the first byte.
      *
      * @param byte0 the first byte of the message
@@ -59,6 +50,25 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     private static int downLinkFormat(byte byte0) {
         return ((byte0 >>> 3) & 0b11111);
+    }
+
+    /**
+     * Extract the 5 leftmost bits of the payload (bits 51 to 55 inclusive) that represent the type code
+     *
+     * @param payload the ME attribute of the message
+     * @return the type code of the message
+     */
+    public static int typeCode(long payload) {
+        return Bits.extractUInt(payload, 51, 5);
+    }
+
+    /**
+     * Returns the time stamp of the message.
+     *
+     * @return the time stamp of the message
+     */
+    public int downLinkFormat() {
+        return downLinkFormat((byte) bytes.byteAt(0));
     }
 
     /**
@@ -91,15 +101,5 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
      */
     public int typeCode() {
         return typeCode(payload());
-    }
-
-    /**
-     * Extract the 5 leftmost bits of the payload (bits 51 to 55 inclusive) that represent the type code
-     *
-     * @param payload the ME attribute of the message
-     * @return the type code of the message
-     */
-    public static int typeCode(long payload) {
-        return Bits.extractUInt(payload, 51, 5);
     }
 }

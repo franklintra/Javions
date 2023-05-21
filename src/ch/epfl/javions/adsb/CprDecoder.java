@@ -104,7 +104,7 @@ public final class CprDecoder {
         double cos = Math.cos(Units.convertFrom(lat, Units.Angle.TURN));
         double A = Math.acos(1 -
                 (1 - Math.cos(Units.Angle.TURN * WIDTH_OF_LATITUDE_ZONES[0]))
-                        / (cos*cos)
+                        / (cos * cos)
         );
         return (Double.isNaN(A) ? 1 : (int) Math.floor((Math.PI * 2) / A));
     }

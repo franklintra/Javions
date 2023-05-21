@@ -32,8 +32,6 @@ import java.util.function.Consumer;
  * that does nothing but call launch.
  */
 public final class Main extends Application {
-    public enum RunningMode {RADIO, SIMULATION}
-
     // Configuration variables. All are public static and final so they can be accessed from anywhere in the program.
     public static final Path tileCache = Path.of("tile-cache");
     public static final String tileServerUrl = "tile.openstreetmap.org";
@@ -42,18 +40,16 @@ public final class Main extends Application {
     public static final int defaultX = 33530;
     public static final int defaultY = 23070;
     public static final int defaultWidth = 1920;
-
     public static final int defaultHeight = 1080;
-
     public static RunningMode runningMode;
     public static String simulationPath;
-
-    // End of configuration
     /**
      * The messageQueue field is a concurrent linked queue that contains the messages
      * sampled and decoded in real time from the input stream (messages.bin or radio)
      */
     private final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+
+    // End of configuration
 
     /**
      * The main method of the program.
@@ -82,13 +78,13 @@ public final class Main extends Application {
      * based on the received messages. It purges the aircraft state manager every second.
      * It also adds behaviour on double click on the table to center the map on the selected aircraft.
      *
+     * @param stage the main window of the application.
      * @see #mainScene(BaseMapController, AircraftController, AircraftTableController, StatusLineController, IntegerProperty, LongProperty)
      * the construction of the main #Scene object.
      * @see AnimationTimer the animation timer responsible for updating the aircraft states based on the received messages.
      * @see AircraftStateManager#purge() # purge the aircraft state manager every second in the AnimationTimer.
      * @see AircraftStateManager#updateWithMessage(Message) # update the aircraft state manager with the received messages in the AnimationTimer.
      * @see AircraftTableController#setOnDoubleClick(Consumer) # double-click behaviour to center on aircraft
-     * @param stage the main window of the application.
      */
     @Override
     public void start(Stage stage) {
@@ -143,7 +139,7 @@ public final class Main extends Application {
         AircraftTableController table = new AircraftTableController(aircraftStateManager.states(), selectedAircraftState);
         table.setOnDoubleClick((state) -> {
             if (Objects.nonNull(state)) {
-                    map.centerOn(state.positionProperty().getValue());
+                map.centerOn(state.positionProperty().getValue());
             }
         });
         /*
@@ -157,17 +153,18 @@ public final class Main extends Application {
 
         // Sets up and shows the main scene
         Platform.runLater(() -> {
-                    Scene scene = mainScene(map, mapOverlay, table, statusLineController, numberOfVisibleAircraft, messageCount);
-                    stage.setScene(scene);
-                    stage.setTitle("Javions");
-                    stage.setWidth(defaultWidth);
-                    stage.setHeight(defaultHeight);
-                    stage.show();
-                });
+            Scene scene = mainScene(map, mapOverlay, table, statusLineController, numberOfVisibleAircraft, messageCount);
+            stage.setScene(scene);
+            stage.setTitle("Javions");
+            stage.setWidth(defaultWidth);
+            stage.setHeight(defaultHeight);
+            stage.show();
+        });
 
         // Now read the messages from the queue and update the aircraft states
         AnimationTimer messageProcessing = new javafx.animation.AnimationTimer() {
             private long lastPurge = 0;
+
             @Override
             public void handle(long now) {
                 Message m;
@@ -193,8 +190,8 @@ public final class Main extends Application {
     /**
      * This method creates the scene graph corresponding to the graphical interface.
      *
-     * @see #start(Stage)  the start method of the program.
      * @return the scene graph corresponding to the graphical interface.
+     * @see #start(Stage)  the start method of the program.
      */
     private Scene mainScene(BaseMapController map, AircraftController mapOverlay, AircraftTableController table, StatusLineController statusLineController, IntegerProperty numberOfVisibleAircraft, LongProperty messageCount) {
         // Bind the number of visible aircraft to the size of the aircraft state manager's set
@@ -280,6 +277,7 @@ public final class Main extends Application {
     /**
      * Extracted method to convert a raw message to a message and add it to the queue
      * from both radioSamplesDecoder and messagesDecoder.
+     *
      * @param message : the raw message to convert and add to the queue if it is not null
      */
     private void convertAndAddToQueue(RawMessage message) {
@@ -312,4 +310,6 @@ public final class Main extends Application {
         }
         return System.nanoTime(); // returns the current time of the system after the sleep and not currentTime (before the sleep)
     }
+
+    public enum RunningMode {RADIO, SIMULATION}
 }

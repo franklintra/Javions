@@ -13,9 +13,9 @@ import java.util.Objects;
 public record AircraftIdentificationMessage(long timeStampNs, IcaoAddress icaoAddress, int category,
                                             CallSign callSign) implements Message {
 
+    public static final int LETTERS_UPPER_BOUND = 26;
     private static final int CHAR_LENGTH_ENCODED = 6;
     private static final int LETTERS_LOWER_BOUND = 1;
-    public static final int LETTERS_UPPER_BOUND = 26;
     private static final int NUMBERS_LOWER_BOUND = 48;
     private static final int NUMBERS_UPPER_BOUND = 57;
 

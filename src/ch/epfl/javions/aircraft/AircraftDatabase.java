@@ -2,7 +2,10 @@ package ch.epfl.javions.aircraft;
 
 //import jdk.internal.icu.impl.Punycode;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;

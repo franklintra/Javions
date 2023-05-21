@@ -10,8 +10,8 @@ import java.util.Objects;
  */
 
 public final class ByteString {
-    private final byte[] data;
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
+    private final byte[] data;
 
     /**
      * The constructor of the ByteString class
@@ -20,6 +20,17 @@ public final class ByteString {
      */
     public ByteString(byte[] bytes) {
         data = bytes.clone();
+    }
+
+    /**
+     * @param hexString the hex description to be converted to a byte description
+     * @return the byte description corresponding to the hex description
+     * @throws IllegalArgumentException if the hex description is not valid
+     */
+    public static ByteString ofHexadecimalString(String hexString) {
+        Preconditions.checkArgument(hexString.length() % 2 == 0);
+        byte[] bytes = HEX_FORMAT.parseHex(hexString);
+        return new ByteString(bytes);
     }
 
     /**
@@ -53,17 +64,6 @@ public final class ByteString {
             result |= byteAt(i); // appending the new byte to the end of result
         }
         return result;
-    }
-
-    /**
-     * @param hexString the hex description to be converted to a byte description
-     * @return the byte description corresponding to the hex description
-     * @throws IllegalArgumentException if the hex description is not valid
-     */
-    public static ByteString ofHexadecimalString(String hexString) {
-        Preconditions.checkArgument(hexString.length() % 2 == 0);
-        byte[] bytes = HEX_FORMAT.parseHex(hexString);
-        return new ByteString(bytes);
     }
 
     /**

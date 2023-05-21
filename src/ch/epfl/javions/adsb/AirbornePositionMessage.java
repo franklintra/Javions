@@ -1,10 +1,5 @@
 package ch.epfl.javions.adsb;
 
-/**
- * @author @chukla (357550)
- * @project Javions
- */
-
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
@@ -13,6 +8,9 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import java.util.Objects;
 
 /**
+ * @author @chukla (357550)
+ * @project Javions
+ *
  * Represents an ADS-B airborne position message.
  * This is a record to avoid boilerplate code.
  *
@@ -65,40 +63,39 @@ public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress,
         double altitude;
 
         if (Q == 0) {
-                // Unscramble
-                short sortedBits = unscramble(payload);
-                //separate into two groups, 3 bits from LSB, 9 bits from MSB
-                short multipleOfHundredFoots = grayCodeToDecimal(sortedBits & 0b111);
-                short multipleOfFiveHundredFoots = grayCodeToDecimal(sortedBits >> 3);
+            // Unscramble
+            short sortedBits = unscramble(payload);
+            //separate into two groups, 3 bits from LSB, 9 bits from MSB
+            short multipleOfHundredFoots = grayCodeToDecimal(sortedBits & 0b111);
+            short multipleOfFiveHundredFoots = grayCodeToDecimal(sortedBits >> 3);
 
-                // Check if multipleOfHundredFoots is invalid, making the altitude invalid
-                if (multipleOfHundredFoots == 0 || multipleOfHundredFoots == 5 || multipleOfHundredFoots == 6) {
-                    return null;
-                }
-                // If gray code is 7 in decimal, then change it to 5 in decimal
-                if (multipleOfHundredFoots == 7) {
-                    multipleOfHundredFoots = 5;
-                }
-                // Check if the value of multipleOfFiveHundredFoots is odd, and if so,
-                // change the value of multipleOfHundredFoots as per the specification
-                if (multipleOfFiveHundredFoots % 2 == 1) {
-                    multipleOfHundredFoots = (short) (6 - multipleOfHundredFoots);
-                }
+            // Check if multipleOfHundredFoots is invalid, making the altitude invalid
+            if (multipleOfHundredFoots == 0 || multipleOfHundredFoots == 5 || multipleOfHundredFoots == 6) {
+                return null;
+            }
+            // If gray code is 7 in decimal, then change it to 5 in decimal
+            if (multipleOfHundredFoots == 7) {
+                multipleOfHundredFoots = 5;
+            }
+            // Check if the value of multipleOfFiveHundredFoots is odd, and if so,
+            // change the value of multipleOfHundredFoots as per the specification
+            if (multipleOfFiveHundredFoots % 2 == 1) {
+                multipleOfHundredFoots = (short) (6 - multipleOfHundredFoots);
+            }
 
-                altitude = -1300 + (multipleOfHundredFoots * 100) + (multipleOfFiveHundredFoots * 500);
-            }
-            else {
-                // calculate the altitude directly from the bits
-                /*
-                 * This removes the Q-bit that is on the 4th position from the right, starting from 0, of the altitude bits in the ME attribute
-                 * Then it converts the remaining 11 bits to decimal, and multiplies it by 25 to get the altitude in foots
-                 * Finally, it subtracts 1000 to get the altitude from the ground (as it's stored as the altitude from 1000 foots)
-                 */
-                int value = Bits.extractUInt(payload, ALT_INDEX_START, NUM_ALT_BITS);
-                final long mask = ~(-1L << 4);
-                long alt =  (value & mask) | ((value >>> 1) & ~mask);
-                altitude = 25 * alt - 1000;
-            }
+            altitude = -1300 + (multipleOfHundredFoots * 100) + (multipleOfFiveHundredFoots * 500);
+        } else {
+            // calculate the altitude directly from the bits
+            /*
+             * This removes the Q-bit that is on the 4th position from the right, starting from 0, of the altitude bits in the ME attribute
+             * Then it converts the remaining 11 bits to decimal, and multiplies it by 25 to get the altitude in foots
+             * Finally, it subtracts 1000 to get the altitude from the ground (as it's stored as the altitude from 1000 foots)
+             */
+            int value = Bits.extractUInt(payload, ALT_INDEX_START, NUM_ALT_BITS);
+            final long mask = ~(-1L << 4);
+            long alt = (value & mask) | ((value >>> 1) & ~mask);
+            altitude = 25 * alt - 1000;
+        }
 
         return new AirbornePositionMessage(
                 rawMessage.timeStampNs(),
