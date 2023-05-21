@@ -8,7 +8,7 @@
 The instruction set provided by our instructor, [Michel Schinz](https://people.epfl.ch/michel.schinz), was grounded on the book [The 1090 Megahertz Riddle](https://mode-s.org/decode) authored by [Junzi Sun](https://junzis.com/).
 
 ![Preview of the GUI](https://cs108.epfl.ch/p/i/javions-final;64.png)
-<center>Figure 1: Interface graphique finale de Javions</center>
+<center>Figure 1: Final graphic interface of Javions</center>
 
 ### Main contributors
 >- [@franklintra](https://www.github.com/franklintra)
