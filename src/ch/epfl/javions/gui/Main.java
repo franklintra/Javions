@@ -172,7 +172,7 @@ public final class Main extends Application {
                     messageCount.set(messageCount.get() + 1);
                 }
                 // Purge the aircraft state manager every second
-                if (now - lastPurge >= 1) { // Check if a second has passed since the last purge
+                if (now - lastPurge >= 1e9) { // Check if a second has passed since the last purge (1e9 nanoseconds = 1 second)
                     aircraftStateManager.purge();
                     lastPurge = now;
                 }
