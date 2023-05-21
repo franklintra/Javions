@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * that does nothing but call launch.
  */
 public final class Main extends Application {
-    // Configuration variables. All are public static and final so they can be accessed from anywhere in the program.
+    // Configuration variables. All are public static and final, so they can be accessed from anywhere in the program.
     public static final Path tileCache = Path.of("tile-cache");
     public static final String tileServerUrl = "tile.openstreetmap.org";
     public static final String aircraftDatabasePath = Objects.requireNonNull(Main.class.getResource("/aircraft.zip")).getPath();
@@ -74,7 +74,7 @@ public final class Main extends Application {
      * starting the thread responsible for getting the messages,
      * and finally overriding part of the "animation timer" responsible for updating the aircraft states
      * based on the received messages. It purges the aircraft state manager every second.
-     * It also adds behaviour on double click on the table to center the map on the selected aircraft.
+     * It also adds behaviour on double-click on the table to center the map on the selected aircraft.
      *
      * @param stage the main window of the application.
      * @see #mainScene(BaseMapController, AircraftController, AircraftTableController, StatusLineController, IntegerProperty, LongProperty)
@@ -92,7 +92,7 @@ public final class Main extends Application {
         configureAndStartMessageDecodingThread();
 
         /*
-         * This field contains access to the database of all aircrafts.
+         * This field contains access to the database of all aircraft.
          * It is polled to get additional aircraft's information.
          */
         AircraftDatabase database = new AircraftDatabase(aircraftDatabasePath);
@@ -127,7 +127,7 @@ public final class Main extends Application {
         BaseMapController map = new BaseMapController(tileManager, mapParameters);
         /*
          * The ac field is the controller of the overlay of the map.
-         * It is used to draw trajectories, aircrafts and labels.
+         * It is used to draw trajectories, aircraft and labels.
          */
         AircraftController mapOverlay = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftState);
         /*
