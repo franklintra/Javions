@@ -16,6 +16,7 @@ import javafx.scene.input.MouseButton;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -71,7 +72,7 @@ public class AircraftTableController {
     public void setOnDoubleClick(Consumer<ObservableAircraftState> clickOn) {
         tableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) {
-                if (selectedAircraft != null && clickOn != null) {
+                if (Objects.nonNull(selectedAircraft.get()) && Objects.nonNull(clickOn)) {
                     clickOn.accept(selectedAircraft.get());
                 }
             }
