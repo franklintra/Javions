@@ -55,60 +55,6 @@ public class MapParameters {
     }
 
     /**
-     * A read-only property for the zoom level
-     *
-     * @return the read-only property
-     */
-    public ReadOnlyIntegerProperty zoomLevelProperty() {
-        return zoomLevel;
-    }
-
-    /**
-     * A getter for the zoom level
-     *
-     * @return the zoom level
-     */
-    public int getZoomLevel() {
-        return zoomLevel.get();
-    }
-
-    /**
-     * A read-only property for the x coordinate of the top left corner of the MAP
-     *
-     * @return the read-only property
-     */
-    public ReadOnlyDoubleProperty minXProperty() {
-        return minX;
-    }
-
-    /**
-     * A getter for the x coordinate of the top left corner of the MAP
-     *
-     * @return the x coordinate of the top left corner of the MAP
-     */
-    public double getMinX() {
-        return minX.get();
-    }
-
-    /**
-     * A read-only property for the y coordinate of the top left corner of the MAP
-     *
-     * @return the read-only property
-     */
-    public ReadOnlyDoubleProperty minYProperty() {
-        return minY;
-    }
-
-    /**
-     * A getter for the y coordinate of the top left corner of the MAP
-     *
-     * @return the y coordinate of the top left corner of the MAP
-     */
-    public double getMinY() {
-        return minY.get();
-    }
-
-    /**
      * A method to scroll the MAP
      *
      * @param deltaX the x coordinate of the top left corner of the MAP
@@ -117,16 +63,6 @@ public class MapParameters {
     public void scroll(double deltaX, double deltaY) {
         minX.set(minX.get() + deltaX);
         minY.set(minY.get() + deltaY);
-    }
-
-    /**
-     * A method to get the top left corner of the MAP. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
-     *
-     * @return the top left corner of the MAP as a Point2D in javaFX.
-     * This specific public method was not required in the project statement but it is used in BaseMapController to make the code easier to read.
-     */
-    public Point2D getTopLeftCorner() {
-        return new Point2D(minX.get(), minY.get());
     }
 
     /**
@@ -141,5 +77,69 @@ public class MapParameters {
         minX.set(minX.get() * scaleFactor);
         minY.set(minY.get() * scaleFactor);
         zoomLevel.set(newZoom);
+    }
+
+    /**
+     * A method to get the top left corner of the MAP. It is entirely defined by minX and minY. This makes it easier to read the code in BaseMapController.
+     *
+     * @return the top left corner of the MAP as a Point2D in javaFX.
+     * This specific public method was not required in the project statement but it is used in BaseMapController to make the code easier to read.
+     */
+    public Point2D getTopLeftCorner() {
+        return new Point2D(minX.get(), minY.get());
+    }
+
+    /**
+     * A read-only property for the zoom level
+     *
+     * @return the read-only property
+     */
+    public ReadOnlyIntegerProperty zoomLevelProperty() {
+        return zoomLevel;
+    }
+
+    /**
+     * A read-only property for the x coordinate of the top left corner of the MAP
+     *
+     * @return the read-only property
+     */
+    public ReadOnlyDoubleProperty minXProperty() {
+        return minX;
+    }
+
+    /**
+     * A read-only property for the y coordinate of the top left corner of the MAP
+     *
+     * @return the read-only property
+     */
+    public ReadOnlyDoubleProperty minYProperty() {
+        return minY;
+    }
+
+    /**
+     * A getter for the zoom level
+     *
+     * @return the zoom level
+     */
+    public int getZoomLevel() {
+        return zoomLevel.get();
+    }
+
+    /**
+     * A getter for the x coordinate of the top left corner of the MAP
+     *
+     * @return the x coordinate of the top left corner of the MAP
+     */
+    public double getMinX() {
+        return minX.get();
+    }
+
+    /**
+     * A getter for the y coordinate of the top left corner of the MAP
+     *
+     * @return the y coordinate of the top left corner of the MAP
+     */
+    public double getMinY() {
+        return minY.get();
     }
 }

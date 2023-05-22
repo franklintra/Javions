@@ -51,44 +51,42 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public AircraftData aircraftData() {
         return aircraftData;
     }
+
     public IcaoAddress getIcaoAddress() {
         return icaoAddress;
     }
+
     public long getLastMessageTimeStampNs() {
         return lastMessageTimeStampNs.get();
     }
-    public int getCategory() {
-        return category.get();
-    }
-    public CallSign getCallSign() {
-        return callSign.getValue();
-    }
-    public GeoPos getPosition() {
-        return position.getValue();
-    }
-    public double getAltitude() {
-        return altitude.get();
-    }
-    public double getVelocity() {
-        return velocity.get();
-    }
-    public double getTrackOrHeading() {
-        return trackOrHeading.get();
-    }
-
 
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         lastMessageTimeStampNs.set(timeStampNs);
     }
+
+    public int getCategory() {
+        return category.get();
+    }
+
     @Override
     public void setCategory(int category) {
         this.category.set(category);
     }
+
+    public CallSign getCallSign() {
+        return callSign.getValue();
+    }
+
     @Override
     public void setCallSign(CallSign callSign) {
         this.callSign.setValue(callSign);
     }
+
+    public GeoPos getPosition() {
+        return position.getValue();
+    }
+
     /**
      * Sets the position of the aircraft
      *
@@ -104,6 +102,11 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
         previousTimestamp = getLastMessageTimeStampNs();
     }
+
+    public double getAltitude() {
+        return altitude.get();
+    }
+
     /**
      * Sets the altitude of the aircraft
      *
@@ -124,10 +127,20 @@ public final class ObservableAircraftState implements AircraftStateSetter {
             trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), altitude));
         }
     }
+
+    public double getVelocity() {
+        return velocity.get();
+    }
+
     @Override
     public void setVelocity(double velocity) {
         this.velocity.set(velocity);
     }
+
+    public double getTrackOrHeading() {
+        return trackOrHeading.get();
+    }
+
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading.set(trackOrHeading);
@@ -136,24 +149,31 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
         return lastMessageTimeStampNs;
     }
+
     public ReadOnlyIntegerProperty categoryProperty() {
         return category;
     }
+
     public ReadOnlyProperty<CallSign> callSignProperty() {
         return callSign;
     }
+
     public ReadOnlyProperty<GeoPos> positionProperty() {
         return position;
     }
+
     public ObservableList<AirbornePos> getTrajectory() {
         return observableUnmodifiableTrajectory;
     }
+
     public ReadOnlyDoubleProperty altitudeProperty() {
         return altitude;
     }
+
     public ReadOnlyDoubleProperty velocityProperty() {
         return velocity;
     }
+
     public ReadOnlyDoubleProperty trackOrHeadingProperty() {
         return trackOrHeading;
     }

@@ -14,6 +14,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * It uses a MapParameters to store the zoom level, the center of the MAP and the top left corner of the MAP.
  * You can get a Pane from this class that you can add to your scene in java fx.
  * Therefore, the main usage of this class is to
- * represent the usable MAP (with scroll, zoom etc) as a Pane Object for java fx.
+ * represent the usable MAP (with scroll, zoom, etc...) as a Pane Object for java fx.
  */
 public class BaseMapController {
     /**
@@ -110,7 +111,7 @@ public class BaseMapController {
         canvas.sceneProperty().addListener((p, oldS, newS) -> {
             assert oldS == null;
             newS.addPreLayoutPulseListener(this::redrawIfNeeded);
-        }); // This is to redraw the canvas only when the scene is ready and it is needed
+        }); // This is to redraw the canvas only when the scene is ready,  and it is needed
 
 
         // Gestion des événements de la souris
@@ -160,7 +161,8 @@ public class BaseMapController {
     }
 
     /**
-     * This method is used to request a redraw on the next pulse of the scene and request a next pulse to the Platform (Operating System)
+     * This method is used to request a redraw of the map on the next pulse of the scene,
+     * and request a next pulse to the Platform (Operating System)
      */
     private void redrawOnNextPulse() {
         redrawNeeded = true;
@@ -190,7 +192,7 @@ public class BaseMapController {
         long lastTileY = firstTileY + heightInTiles;
 
 
-        // These imbricated loops draw the tiles on the canvas
+        // These overlapping loops draw the tiles on the canvas
         for (long x = firstTileX; x <= lastTileX; x++) {
             for (long y = firstTileY; y <= lastTileY; y++) {
                 double tilePosX = x * TileManager.TILE_SIZE - topLeftMercator.getX();
@@ -199,8 +201,9 @@ public class BaseMapController {
                     Image tile = tiles.imageForTileAt(new TileManager.TileId(zoom, x, y));
                     gc.drawImage(tile, tilePosX, tilePosY);
                 } catch (IOException e) {
-                    // The tile could not be drawn, draw a grid instead.
-                    // In the future if we want to still be able to move around the map as the tiles are loading,
+                    // The tile could not be drawn, draw a grid instead. This behaviour wasn't specified in the assignment
+                    // but was added to not have old tiles displayed because the canvas isn't cleared between redraws.
+                    // In the future if we want to still be able to move around the map as the tiles are loading, (multi-threading)
                     // we could draw the grid first and then draw the tiles over it when they are loaded for performance reasons.
                     drawGrid(gc, tilePosX, tilePosY);
                 }
@@ -208,41 +211,46 @@ public class BaseMapController {
         }
     }
 
-
-    private void ensureGridImageCreated() {
+    /**
+     * This method is used to draw a grid on the canvas at the given position
+     * It creates the image of the grid if it does not exist yet.
+     * This is stored as an image to avoid creating it every time we draw it.
+     * Because image display is handled by the GPU, it is much faster than drawing the grid with the GraphicsContext
+     */
+    private void createGridImage() {
         int gridSize = 256;
         int rectWidth = TileManager.TILE_SIZE;
         int rectHeight = TileManager.TILE_SIZE;
-
-        if (gridImage == null) {
-            Canvas canvas = new Canvas(rectWidth, rectHeight);
-            GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.setStroke(Color.GRAY);
-            gc.setLineWidth(1);
-            // Draw vertical lines within the given rectangle
-            for (int x = 0; x <= rectWidth; x += gridSize) {
-                gc.strokeLine(x, 0, x, rectHeight);
-            }
-            // Draw horizontal lines within the given rectangle
-            for (int y = 0; y <= rectHeight; y += gridSize) {
-                gc.strokeLine(0, y, rectWidth, y);
-            }
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT);
-            gridImage = canvas.snapshot(params, null);
+        Canvas canvas = new Canvas(rectWidth, rectHeight);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setStroke(Color.GRAY);
+        gc.setLineWidth(1);
+        // Draw vertical lines within the given rectangle
+        for (int x = 0; x <= rectWidth; x += gridSize) {
+            gc.strokeLine(x, 0, x, rectHeight);
         }
+        // Draw horizontal lines within the given rectangle
+        for (int y = 0; y <= rectHeight; y += gridSize) {
+            gc.strokeLine(0, y, rectWidth, y);
+        }
+        SnapshotParameters params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+        gridImage = canvas.snapshot(params, null);
     }
 
 
     /**
-     * This method is used to draw a grid on the canvas
+     * This method is used to draw a grid on the canvas if the tile could not be loaded
+     * from the TileManager and an IOException was thrown.
      *
      * @param gc    the graphics context to draw on
      * @param rectX the x coordinate of the top left corner of the rectangle to draw the grid in
      * @param rectY the y coordinate of the top left corner of the rectangle to draw the grid in
      */
     private void drawGrid(GraphicsContext gc, double rectX, double rectY) {
-        ensureGridImageCreated();
+        if (Objects.isNull(gridImage)) {
+            createGridImage();
+        }
         gc.clearRect(rectX, rectY, TileManager.TILE_SIZE, TileManager.TILE_SIZE);
         gc.drawImage(gridImage, rectX, rectY);
     }

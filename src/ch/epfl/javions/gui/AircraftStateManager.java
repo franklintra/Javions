@@ -17,9 +17,9 @@ import java.util.Map;
  * @author @franklintra (362694)
  * @author @chukla (357550)
  * @project Javions
- * This class is responsible for managing the state of the aircrafts.
- * It links the aircrafts to their state accumulators.
- * It also removes the aircrafts that have not been updated for more than 60 seconds.
+ * This class is responsible for managing the state of the aircraft.
+ * It links the aircraft to their state accumulators.
+ * It also removes the aircraft that have not been updated for more than 60 seconds.
  * It also gives the unmodifiable observable set of aircraft states that is used by JavaFX.
  */
 public final class AircraftStateManager {
@@ -62,7 +62,7 @@ public final class AircraftStateManager {
 
         aircraftStateAccumulators.putIfAbsent(icaoAddress,
                 new AircraftStateAccumulator<>(
-                new ObservableAircraftState(icaoAddress, database.get(icaoAddress)))
+                        new ObservableAircraftState(icaoAddress, database.get(icaoAddress)))
         );
         aircraftStateAccumulators.get(icaoAddress).update(message);
 
@@ -75,6 +75,7 @@ public final class AircraftStateManager {
     /**
      * Removes all the aircraft states that have not been updated for more than 60 seconds.
      * This method is called in the AnimationTimer of the main JavaFX thread.
+     *
      * @see Main#start(Stage)
      */
     public void purge() {
