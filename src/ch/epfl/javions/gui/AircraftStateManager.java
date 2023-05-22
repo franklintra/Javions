@@ -6,6 +6,7 @@ import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,11 +23,12 @@ import java.util.Map;
  * It also gives the unmodifiable observable set of aircraft states that is used by JavaFX.
  */
 public final class AircraftStateManager {
-    private final static double maxMessageAge = 6 * 1e9;
+    // todo : check the comments on this class @chukla @issue
+    public final static double maxMessageAge = 60 * 1e9;
     private final AircraftDatabase database;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;
-    private final ObservableSet<ObservableAircraftState> observableModifiableAircraftStates = FXCollections.observableSet(new HashSet<>());
-    private final ObservableSet<ObservableAircraftState> observableUnmodifiableAircraftStates = FXCollections.unmodifiableObservableSet(observableModifiableAircraftStates);
+    private final ObservableSet<ObservableAircraftState> aircraftStates = FXCollections.observableSet(new HashSet<>());
+    private final ObservableSet<ObservableAircraftState> observableUnmodifiableAircraftStates = FXCollections.unmodifiableObservableSet(aircraftStates);
     private long lastTimeStampNs;
 
 
@@ -57,23 +59,26 @@ public final class AircraftStateManager {
     public void updateWithMessage(Message message) throws IOException {
         lastTimeStampNs = message.timeStampNs();
         IcaoAddress icaoAddress = message.icaoAddress();
-        if (!aircraftStateAccumulators.containsKey(icaoAddress)) { // If the aircraft is not yet in the state accumulator
-            ObservableAircraftState aircraftState = new ObservableAircraftState(icaoAddress, database.get(icaoAddress));
-            aircraftStateAccumulators.put(icaoAddress, new AircraftStateAccumulator<>(aircraftState));
-        }
+
+        aircraftStateAccumulators.putIfAbsent(icaoAddress,
+                new AircraftStateAccumulator<>(
+                new ObservableAircraftState(icaoAddress, database.get(icaoAddress)))
+        );
         aircraftStateAccumulators.get(icaoAddress).update(message);
 
         // We only add the aircraft to the observableAircraftStates if it has a known position
         if (aircraftStateAccumulators.get(icaoAddress).stateSetter().getPosition() != null) {
-            observableModifiableAircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
+            aircraftStates.add(aircraftStateAccumulators.get(icaoAddress).stateSetter());
         }
     }
 
     /**
      * Removes all the aircraft states that have not been updated for more than 60 seconds.
+     * This method is called in the AnimationTimer of the main JavaFX thread.
+     * @see Main#start(Stage)
      */
     public void purge() {
-        observableModifiableAircraftStates.removeIf(state -> {
+        aircraftStates.removeIf(state -> {
             if (lastTimeStampNs - state.getLastMessageTimeStampNs() > maxMessageAge) {
                 // If the last message is too old: Remove the aircraft from the accumulator as well
                 aircraftStateAccumulators.remove(state.getIcaoAddress());

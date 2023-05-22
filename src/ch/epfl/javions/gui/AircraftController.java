@@ -4,6 +4,7 @@ import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
@@ -206,12 +207,8 @@ public final class AircraftController {
         trajectory.visibleProperty().addListener((observable, oldValue, newValue) -> {
 
             if (newValue) {
-                mapParameters.zoomLevelProperty().addListener((observable1, oldValue1, newValue1) -> {
-                    drawTrajectory(state, trajectory);
-                });
-                state.observableTrajectoryProperty().addListener((observable1, oldValue1, newValue1) -> {
-                    drawTrajectory(state, trajectory);
-                });
+                mapParameters.zoomLevelProperty().addListener((observable1, oldValue1, newValue1) -> drawTrajectory(state, trajectory));
+                state.getTrajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) c -> drawTrajectory(state, trajectory));
             } else {
                 trajectory.getChildren().clear();
             }
@@ -221,7 +218,7 @@ public final class AircraftController {
     private void drawTrajectory(ObservableAircraftState state, Group trajectory) {
         trajectory.getChildren().clear();
 
-        List<ObservableAircraftState.AirbornePos> positions = state.getObservableTrajectory();
+        List<ObservableAircraftState.AirbornePos> positions = state.getTrajectory();
         if (positions == null || positions.isEmpty()) {
             return;
         }
