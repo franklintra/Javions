@@ -157,7 +157,7 @@ public final class Submit {
                         .map(Path::toString)
                         .collect(Collectors.joining("/", ZIP_ENTRY_NAME_PREFIX, ""));
                 zipStream.putNextEntry(new ZipEntry(entryPath));
-                try (var fileStream = Files.newInputStream(path)){
+                try (var fileStream = Files.newInputStream(path)) {
                     fileStream.transferTo(zipStream);
                 }
                 zipStream.closeEntry();

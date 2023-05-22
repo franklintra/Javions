@@ -122,7 +122,7 @@ public final class AircraftController {
         }, state.trackOrHeadingProperty()));
 
         // set fill color based on altitude
-        iconSVG.fillProperty().bind(state.altitudeProperty().map(alt -> ColorRamp.PLASMA.at((Math.pow((double) alt / maxAltitude, lowAltDefiner)))));
+        iconSVG.fillProperty().bind(state.altitudeProperty().map(alt -> ColorRamp.PLASMA.at(Math.pow((double) alt / maxAltitude, lowAltDefiner))));
 
         // action when clicked on icon
         iconSVG.setOnMouseClicked(event -> selectedAircraft.set(state));
@@ -188,8 +188,8 @@ public final class AircraftController {
         double longitude = state.getPosition().longitude();
         double latitude = state.getPosition().latitude();
 
-        double x = (WebMercator.x(zoomLevel, longitude) - minX);
-        double y = (WebMercator.y(zoomLevel, latitude) - minY);
+        double x = WebMercator.x(zoomLevel, longitude) - minX;
+        double y = WebMercator.y(zoomLevel, latitude) - minY;
 
         return new Point2D(x, y);
     }
@@ -241,9 +241,9 @@ public final class AircraftController {
             double p1 = positions.get(i).altitude();
             double p2 = positions.get(i + 1).altitude();
 
-            Color c1 = ColorRamp.PLASMA.at((Math.pow(p1 / maxAltitude, lowAltDefiner)));
+            Color c1 = ColorRamp.PLASMA.at(Math.pow(p1 / maxAltitude, lowAltDefiner));
             if (p1 != p2) {
-                Color c2 = ColorRamp.PLASMA.at((Math.pow(p2 / maxAltitude, lowAltDefiner)));
+                Color c2 = ColorRamp.PLASMA.at(Math.pow(p2 / maxAltitude, lowAltDefiner));
                 Stop s1 = new Stop(0, c1);
                 Stop s2 = new Stop(1, c2);
                 LinearGradient lg = new LinearGradient(x, y, endX, endY, true, NO_CYCLE, s1, s2);

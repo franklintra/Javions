@@ -6,7 +6,7 @@ import ch.epfl.javions.GeoPos;
 /**
  * @author @franklintra (362694)
  * @project Javions
- *
+ * <p>
  * An AircraftStateSetter is an object that can change the state of an aircraft.
  */
 public interface AircraftStateSetter {

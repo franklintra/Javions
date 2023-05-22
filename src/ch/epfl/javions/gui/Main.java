@@ -41,6 +41,7 @@ public final class Main extends Application {
     public static final int defaultY = 23070;
     public static final int defaultWidth = 1920;
     public static final int defaultHeight = 1080;
+    // End of configuration variables.
     public static RunningMode runningMode;
     public static String simulationPath;
     /**
@@ -48,8 +49,6 @@ public final class Main extends Application {
      * sampled and decoded in real time from the input stream (messages.bin or radio)
      */
     private final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
-
-    // End of configuration
 
     /**
      * The main method of the program.
@@ -297,8 +296,7 @@ public final class Main extends Application {
             try {
                 Thread.sleep(messageTimeDifference - programTimeDifference);
             } catch (InterruptedException e) {
-                // Restore the interrupted status
-                e.printStackTrace();
+                // Restore the interrupted status. This way, code higher up on the call stack can still react appropriately
                 Thread.currentThread().interrupt();
             }
         }

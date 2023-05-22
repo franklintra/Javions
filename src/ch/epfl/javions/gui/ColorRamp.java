@@ -23,7 +23,9 @@ public final class ColorRamp {
     private final Color[] colours;
 
     public ColorRamp(Color... steps) {
-        if (steps.length < 2) throw new IllegalArgumentException();
+        if (steps.length < 2) {
+            throw new IllegalArgumentException();
+        }
         this.colours = steps.clone();
     }
 

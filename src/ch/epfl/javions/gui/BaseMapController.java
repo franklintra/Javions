@@ -118,10 +118,14 @@ public class BaseMapController {
         LongProperty minScrollTime = new SimpleLongProperty();
         mapPane.setOnScroll(e -> {
             int zoomDelta = (int) -Math.signum(e.getDeltaY());
-            if (zoomDelta == 0) return;
+            if (zoomDelta == 0) {
+                return;
+            }
 
             long currentTime = System.currentTimeMillis();
-            if (currentTime < minScrollTime.get()) return;
+            if (currentTime < minScrollTime.get()) {
+                return;
+            }
             minScrollTime.set(currentTime + 200);
             parameters.scroll(e.getX(), e.getY());
             parameters.changeZoomLevel(zoomDelta);

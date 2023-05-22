@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * @author @franklintra (362694)
  * @project Javions
- *
+ * <p>
  * The SamplesDecoder class that decodes a batch of samples from an input stream. The samples are stored in an array of shorts.
  * This class is used by PowerComputer to decode the samples from the input stream.
  * In conjunction with the PowerWindow class, it is used to decode messages from the input stream.

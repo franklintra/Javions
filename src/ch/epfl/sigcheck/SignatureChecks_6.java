@@ -6,7 +6,20 @@ package ch.epfl.sigcheck;
 // pour cette étape du projet sont corrects.
 
 final class SignatureChecks_6 {
-    private SignatureChecks_6() {}
+    ch.epfl.javions.adsb.AirborneVelocityMessage v01;
+    long v02;
+    ch.epfl.javions.aircraft.IcaoAddress v03;
+    double v04;
+    ch.epfl.javions.adsb.RawMessage v05;
+    java.lang.Object v06;
+    boolean v07;
+    int v08;
+    java.lang.String v09;
+    ch.epfl.javions.adsb.AircraftStateAccumulator<ch.epfl.javions.adsb.AircraftStateSetter> v10;
+    ch.epfl.javions.adsb.AircraftStateSetter v11;
+    ch.epfl.javions.adsb.Message v12;
+    private SignatureChecks_6() {
+    }
 
     void checkAirborneVelocityMessage() throws Exception {
         v01 = new ch.epfl.javions.adsb.AirborneVelocityMessage(v02, v03, v04, v04);
@@ -29,17 +42,4 @@ final class SignatureChecks_6 {
     void checkMessageParser() throws Exception {
         v12 = ch.epfl.javions.adsb.MessageParser.parse(v05);
     }
-
-    ch.epfl.javions.adsb.AirborneVelocityMessage v01;
-    long v02;
-    ch.epfl.javions.aircraft.IcaoAddress v03;
-    double v04;
-    ch.epfl.javions.adsb.RawMessage v05;
-    java.lang.Object v06;
-    boolean v07;
-    int v08;
-    java.lang.String v09;
-    ch.epfl.javions.adsb.AircraftStateAccumulator<ch.epfl.javions.adsb.AircraftStateSetter> v10;
-    ch.epfl.javions.adsb.AircraftStateSetter v11;
-    ch.epfl.javions.adsb.Message v12;
 }

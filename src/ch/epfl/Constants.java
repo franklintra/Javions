@@ -5,8 +5,6 @@ package ch.epfl;
  * @project Javions
  */
 public final class Constants {
-    private Constants() {}
-
     /**
      * The size of a tile in pixels.
      */
@@ -15,4 +13,6 @@ public final class Constants {
      * The size of a tile in bytes.
      */
     public static final int TILE_MEMORY_SIZE = TILE_SIZE * TILE_SIZE * 4;
+    private Constants() {
+    }
 }

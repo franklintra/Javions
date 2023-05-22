@@ -80,7 +80,9 @@ public class TileManager {
      * @return the tile image or null if the tile is not found
      */
     public Image imageForTileAt(TileId tileId) throws IOException {
-        if (!(TileId.isValid(tileId.zoom, tileId.x, tileId.y))) throw new IOException("Invalid tile id");
+        if (!(TileId.isValid(tileId.zoom, tileId.x, tileId.y))) {
+            throw new IOException("Invalid tile id");
+        }
         Image data;
         if (Objects.nonNull(data = findInMemory(tileId))) {
             return data;
@@ -177,7 +179,9 @@ public class TileManager {
      */
     private Image downloadAndStore(TileId tileId) throws IOException {
         URL tileUrl = urlForTileAt(tileId);
-        if (tileUrl == null) return null;
+        if (tileUrl == null) {
+            return null;
+        }
         byte[] data;
         try {
             URLConnection connection = tileUrl.openConnection();

@@ -6,7 +6,18 @@ package ch.epfl.sigcheck;
 // pour cette étape du projet sont corrects.
 
 final class SignatureChecks_1 {
-    private SignatureChecks_1() {}
+    boolean v01;
+    double v02;
+    int v03;
+    long v04;
+    ch.epfl.javions.ByteString v05;
+    byte[] v06;
+    java.lang.String v07;
+    java.lang.Object v08;
+    ch.epfl.javions.GeoPos v09;
+
+    private SignatureChecks_1() {
+    }
 
     void checkPreconditions() throws Exception {
         ch.epfl.javions.Preconditions.checkArgument(v01);
@@ -84,14 +95,4 @@ final class SignatureChecks_1 {
         v03 = v09.longitudeT32();
         v07 = v09.toString();
     }
-
-    boolean v01;
-    double v02;
-    int v03;
-    long v04;
-    ch.epfl.javions.ByteString v05;
-    byte[] v06;
-    java.lang.String v07;
-    java.lang.Object v08;
-    ch.epfl.javions.GeoPos v09;
 }

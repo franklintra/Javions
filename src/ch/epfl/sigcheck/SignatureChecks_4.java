@@ -6,7 +6,25 @@ package ch.epfl.sigcheck;
 // pour cette étape du projet sont corrects.
 
 final class SignatureChecks_4 {
-    private SignatureChecks_4() {}
+    ch.epfl.javions.demodulation.AdsbDemodulator v01;
+    java.io.InputStream v02;
+    ch.epfl.javions.adsb.RawMessage v03;
+    long v04;
+    ch.epfl.javions.ByteString v05;
+    int v06;
+    byte[] v07;
+    byte v08;
+    java.lang.Object v09;
+    boolean v10;
+    ch.epfl.javions.aircraft.IcaoAddress v11;
+    java.lang.String v12;
+    ch.epfl.javions.adsb.AircraftStateSetter v13;
+    double v14;
+    ch.epfl.javions.adsb.CallSign v15;
+    ch.epfl.javions.GeoPos v16;
+    ch.epfl.javions.adsb.Message v17;
+    private SignatureChecks_4() {
+    }
 
     void checkAdsbDemodulator() throws Exception {
         v01 = new ch.epfl.javions.demodulation.AdsbDemodulator(v02);
@@ -44,22 +62,4 @@ final class SignatureChecks_4 {
         v11 = v17.icaoAddress();
         v04 = v17.timeStampNs();
     }
-
-    ch.epfl.javions.demodulation.AdsbDemodulator v01;
-    java.io.InputStream v02;
-    ch.epfl.javions.adsb.RawMessage v03;
-    long v04;
-    ch.epfl.javions.ByteString v05;
-    int v06;
-    byte[] v07;
-    byte v08;
-    java.lang.Object v09;
-    boolean v10;
-    ch.epfl.javions.aircraft.IcaoAddress v11;
-    java.lang.String v12;
-    ch.epfl.javions.adsb.AircraftStateSetter v13;
-    double v14;
-    ch.epfl.javions.adsb.CallSign v15;
-    ch.epfl.javions.GeoPos v16;
-    ch.epfl.javions.adsb.Message v17;
 }

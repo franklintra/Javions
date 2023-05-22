@@ -8,18 +8,17 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import java.util.Objects;
 
 /**
- * @author @chukla (357550)
- * @project Javions
- *
- * Represents an ADS-B airborne position message.
- * This is a record to avoid boilerplate code.
- *
  * @param timeStampNs the time stamp of the message in nanoseconds
  * @param icaoAddress the ICAO address of the aircraft
  * @param altitude    the altitude of the aircraft in meters
  * @param parity      the parity of the message
  * @param x           the x coordinate of the aircraft in the ADS-B reference frame
  * @param y           the y coordinate of the aircraft in the ADS-B reference frame
+ * @author @chukla (357550)
+ * @project Javions
+ * <p>
+ * Represents an ADS-B airborne position message.
+ * This is a record to avoid boilerplate code.
  */
 public record AirbornePositionMessage(long timeStampNs, IcaoAddress icaoAddress, double altitude, int parity,
                                       double x, double y) implements Message {
