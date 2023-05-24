@@ -18,11 +18,15 @@ import java.util.Objects;
  * @project Javions
  */
 
-
+/**
+ * The ObservableAircraftState class represents the observable state of an aircraft. It provides properties for various
+ * attributes such as ICAO address, aircraft data, last message timestamp, category, call sign, position, altitude,
+ * velocity, and track or heading. It also maintains an observable trajectory list that tracks the aircraft's position
+ * over time.
+ *
+ * This class implements the AircraftStateSetter interface to set the state attributes.
+ */
 public final class ObservableAircraftState implements AircraftStateSetter {
-    // todo : comment this whole class !!!!! @chukla
-
-
     private final IcaoAddress icaoAddress;
     private final AircraftData aircraftData;
     private final LongProperty lastMessageTimeStampNs = new SimpleLongProperty();
@@ -32,23 +36,20 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitude = new SimpleDoubleProperty(Double.NaN);
     private final DoubleProperty velocity = new SimpleDoubleProperty(Double.NaN);
     private final DoubleProperty trackOrHeading = new SimpleDoubleProperty(Double.NaN);
-    private final ObjectProperty<AircraftRegistration> registrationProperty = new SimpleObjectProperty<>();
-
     private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     private final ObservableList<AirbornePos> observableUnmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
     private long previousTimestamp;
 
     /**
-     * The constructor of the ObservableAircraftState class
+     * Constructs an ObservableAircraftState object with the given ICAO address and aircraft data.
      *
-     * @param icaoAddress the ICAO address of the aircraft
+     * @param icaoAddress  the ICAO address of the aircraft
+     * @param aircraftData the aircraft data
      * @throws NullPointerException if the ICAO address is null
      */
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
         this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
-        if (aircraftData == null) return;
-        registrationProperty.setValue(aircraftData.registration());
     }
 
     public AircraftData aircraftData() {
@@ -100,6 +101,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public void setPosition(GeoPos position) {
         Objects.requireNonNull(position);
         this.position.setValue(position);
+        //If the position is different from the last element in the trajectory, the current position and altitude are added as a new element to the trajectory.
         if (!Double.isNaN(getAltitude())) {
             trajectory.add(new AirbornePos(position, getAltitude()));
         }
@@ -111,10 +113,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     }
 
     /**
-     * Sets the altitude of the aircraft
+     * Sets the altitude of the aircraft.
      *
      * @param altitude the altitude of the aircraft
-     * @throws IllegalArgumentException if the altitude is negative
      */
     @Override
     public void setAltitude(double altitude) {
@@ -122,25 +123,15 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         if (position.getValue() == null) {
             return;
         }
+        // If the trajectory is empty, the current position and altitude are added as a new element to the trajectory.
         if (trajectory.isEmpty()) {
             trajectory.add(new AirbornePos(getPosition(), altitude));
             previousTimestamp = getLastMessageTimeStampNs();
         }
+        // If the timestamps of the current and previous messages match, the last trajectory element is updated with the current position and altitude.
         if (lastMessageTimeStampNs.get() == previousTimestamp) {
             trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), altitude));
         }
-    }
-
-    public AircraftRegistration getRegistration() {
-        return registrationProperty.get();
-    }
-
-    public ObjectProperty<AircraftRegistration> registrationProperty() {
-        return registrationProperty;
-    }
-
-    public void setRegistrationProperty(AircraftRegistration registrationProperty) {
-        this.registrationProperty.set(registrationProperty);
     }
 
     public double getVelocity() {
@@ -155,7 +146,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public double getTrackOrHeading() {
         return trackOrHeading.get();
     }
-
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading.set(trackOrHeading);
@@ -172,7 +162,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ReadOnlyProperty<CallSign> callSignProperty() {
         return callSign;
     }
-
     public ReadOnlyProperty<GeoPos> positionProperty() {
         return position;
     }
@@ -192,7 +181,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ReadOnlyDoubleProperty trackOrHeadingProperty() {
         return trackOrHeading;
     }
-
 
     /**
      * The AirbornePos record class

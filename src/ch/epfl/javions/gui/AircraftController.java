@@ -195,7 +195,7 @@ public final class AircraftController {
         // drawing of the label i.e. background and text, also ensures that the text of altitude always is in metres and velocity is in km/h and converts the values to the correct units
         text.textProperty().bind(Bindings.createStringBinding(() -> {
             return labelFirstLine(state) + "\n" + labelSecondLine(state);
-        }, state.velocityProperty(), state.altitudeProperty(), state.registrationProperty(), state.callSignProperty()));
+        }, state.velocityProperty(), state.altitudeProperty(), state.callSignProperty()));
 
         // height and width should be bound to an expression whose value is equal to the height/width of the text of the label, plus 4.
         background.heightProperty().bind(text.layoutBoundsProperty().map(bounds -> bounds.getHeight() + 4));
@@ -210,13 +210,13 @@ public final class AircraftController {
      * @return The first line of the label.
      */
     private String labelFirstLine(ObservableAircraftState state) {
-        if (state.getRegistration() != null) {
-            return state.getRegistration().string();
-        } else if (state.getCallSign() != null) {
-            return state.getCallSign().string();
-        } else {
-            return state.getIcaoAddress().string();
-        }
+            if (state.aircraftData() != null) {
+                return state.aircraftData().registration().string();
+            } else if (state.getCallSign() != null) {
+                return state.getCallSign().string();
+            } else {
+                return state.getIcaoAddress().string();
+            }
     }
 
     private String labelSecondLine(ObservableAircraftState state) {
