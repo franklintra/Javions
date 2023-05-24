@@ -4,6 +4,7 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
+import ch.epfl.javions.aircraft.AircraftRegistration;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -31,6 +32,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitude = new SimpleDoubleProperty(Double.NaN);
     private final DoubleProperty velocity = new SimpleDoubleProperty(Double.NaN);
     private final DoubleProperty trackOrHeading = new SimpleDoubleProperty(Double.NaN);
+    private final ObjectProperty<AircraftRegistration> registrationProperty = new SimpleObjectProperty<>();
 
     private final ObservableList<AirbornePos> trajectory = FXCollections.observableArrayList();
     private final ObservableList<AirbornePos> observableUnmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
@@ -43,9 +45,10 @@ public final class ObservableAircraftState implements AircraftStateSetter {
      * @throws NullPointerException if the ICAO address is null
      */
     public ObservableAircraftState(IcaoAddress icaoAddress, AircraftData aircraftData) {
-        Objects.requireNonNull(icaoAddress);
         this.icaoAddress = icaoAddress;
         this.aircraftData = aircraftData;
+        if (aircraftData == null) return;
+        registrationProperty.setValue(aircraftData.registration());
     }
 
     public AircraftData aircraftData() {
@@ -126,6 +129,18 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         if (lastMessageTimeStampNs.get() == previousTimestamp) {
             trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), altitude));
         }
+    }
+
+    public AircraftRegistration getRegistration() {
+        return registrationProperty.get();
+    }
+
+    public ObjectProperty<AircraftRegistration> registrationProperty() {
+        return registrationProperty;
+    }
+
+    public void setRegistrationProperty(AircraftRegistration registrationProperty) {
+        this.registrationProperty.set(registrationProperty);
     }
 
     public double getVelocity() {
