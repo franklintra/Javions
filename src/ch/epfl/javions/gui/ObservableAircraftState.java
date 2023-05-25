@@ -51,41 +51,87 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.aircraftData = aircraftData;
     }
 
+    /**
+     * Returns the aircraft data associated with this observable state.
+     *
+     * @return the aircraft data
+     */
     public AircraftData aircraftData() {
         return aircraftData;
     }
 
+    /**
+     * Returns the ICAO address of the aircraft.
+     *
+     * @return the ICAO address
+     */
     public IcaoAddress getIcaoAddress() {
         return icaoAddress;
     }
 
+    /**
+     * Returns the timestamp of the last received message in nanoseconds.
+     *
+     * @return the last message timestamp in nanoseconds
+     */
     public long getLastMessageTimeStampNs() {
         return lastMessageTimeStampNs.get();
     }
 
+    /**
+     * Sets the timestamp of the last received message in nanoseconds.
+     *
+     * @param timeStampNs the last message timestamp in nanoseconds
+     */
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         lastMessageTimeStampNs.set(timeStampNs);
     }
 
+    /**
+     * Returns the category of the aircraft.
+     *
+     * @return the category
+     */
     public int getCategory() {
         return category.get();
     }
 
+    /**
+     * Sets the category of the aircraft.
+     *
+     * @param category the category
+     */
     @Override
     public void setCategory(int category) {
         this.category.set(category);
     }
 
+    /**
+     * Returns the call sign of the aircraft.
+     *
+     * @return the call sign
+     */
+
     public CallSign getCallSign() {
         return callSign.getValue();
     }
 
+    /**
+     * Sets the call sign of the aircraft.
+     *
+     * @param callSign the call sign
+     */
     @Override
     public void setCallSign(CallSign callSign) {
         this.callSign.setValue(callSign);
     }
 
+    /**
+     * Returns the position of the aircraft.
+     *
+     * @return the position
+     */
     public GeoPos getPosition() {
         return position.getValue();
     }
@@ -107,6 +153,11 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         previousTimestamp = getLastMessageTimeStampNs();
     }
 
+    /**
+     * Returns the altitude of the aircraft.
+     *
+     * @return the altitude
+     */
     public double getAltitude() {
         return altitude.get();
     }
@@ -133,52 +184,112 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         }
     }
 
+    /**
+     * Returns the velocity of the aircraft.
+     *
+     * @return the velocity
+     */
     public double getVelocity() {
         return velocity.get();
     }
 
+    /**
+     * Sets the velocity of the aircraft.
+     *
+     * @param velocity the velocity
+     */
     @Override
     public void setVelocity(double velocity) {
         this.velocity.set(velocity);
     }
 
+    /**
+     * Returns the track or heading of the aircraft.
+     *
+     * @return the track or heading
+     */
     public double getTrackOrHeading() {
         return trackOrHeading.get();
     }
 
+    /**
+     * Sets the track or heading of the aircraft.
+     *
+     * @param trackOrHeading the track or heading
+     */
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading.set(trackOrHeading);
     }
 
+    /**
+     * Returns the read-only property for the last message timestamp in nanoseconds.
+     *
+     * @return the last message timestamp property
+     */
     public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
         return lastMessageTimeStampNs;
     }
 
+    /**
+     * Returns the read-only property for the category.
+     *
+     * @return the category property
+     */
     public ReadOnlyIntegerProperty categoryProperty() {
         return category;
     }
 
+    /**
+     * Returns the read-only property for the call sign.
+     *
+     * @return the call sign property
+     */
     public ReadOnlyProperty<CallSign> callSignProperty() {
         return callSign;
     }
 
+    /**
+     * Returns the read-only property for the position.
+     *
+     * @return the position property
+     */
     public ReadOnlyProperty<GeoPos> positionProperty() {
         return position;
     }
 
+    /**
+     * Returns the trajectory of the aircraft.
+     *
+     * @return the trajectory
+     */
     public ObservableList<AirbornePos> getTrajectory() {
         return observableUnmodifiableTrajectory;
     }
 
+    /**
+     * Returns the read-only property for the altitude.
+     *
+     * @return the altitude property
+     */
     public ReadOnlyDoubleProperty altitudeProperty() {
         return altitude;
     }
 
+    /**
+     * Returns the read-only property for the velocity.
+     *
+     * @return the velocity property
+     */
     public ReadOnlyDoubleProperty velocityProperty() {
         return velocity;
     }
 
+    /**
+     * Returns the read-only property for the track or heading.
+     *
+     * @return the track or heading property
+     */
     public ReadOnlyDoubleProperty trackOrHeadingProperty() {
         return trackOrHeading;
     }
