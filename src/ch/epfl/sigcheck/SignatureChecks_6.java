@@ -18,6 +18,7 @@ final class SignatureChecks_6 {
     ch.epfl.javions.adsb.AircraftStateAccumulator<ch.epfl.javions.adsb.AircraftStateSetter> v10;
     ch.epfl.javions.adsb.AircraftStateSetter v11;
     ch.epfl.javions.adsb.Message v12;
+
     private SignatureChecks_6() {
     }
 

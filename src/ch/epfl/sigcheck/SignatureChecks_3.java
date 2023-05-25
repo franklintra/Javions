@@ -15,6 +15,7 @@ final class SignatureChecks_3 {
     ch.epfl.javions.demodulation.PowerWindow v07;
     boolean v08;
     long v09;
+
     private SignatureChecks_3() {
     }
 

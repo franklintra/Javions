@@ -23,6 +23,7 @@ final class SignatureChecks_4 {
     ch.epfl.javions.adsb.CallSign v15;
     ch.epfl.javions.GeoPos v16;
     ch.epfl.javions.adsb.Message v17;
+
     private SignatureChecks_4() {
     }
 

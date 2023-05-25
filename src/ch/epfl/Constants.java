@@ -13,6 +13,7 @@ public final class Constants {
      * The size of a tile in bytes.
      */
     public static final int TILE_MEMORY_SIZE = TILE_SIZE * TILE_SIZE * 4;
+
     private Constants() {
     }
 }

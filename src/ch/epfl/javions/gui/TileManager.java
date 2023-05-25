@@ -1,6 +1,5 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.CONFIGURATION;
 import javafx.scene.image.Image;
 
 import java.io.ByteArrayInputStream;
@@ -32,8 +31,6 @@ public class TileManager {
     /**
      * This is the max size of the cache memory in tiles (not bytes).
      * It is stored as an attribute, so we can change it easily.
-     *
-     * @see CONFIGURATION
      */
     private static final int MAX_CACHE_SIZE = 100;
     /**

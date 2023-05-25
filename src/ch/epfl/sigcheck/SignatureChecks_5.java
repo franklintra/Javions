@@ -18,6 +18,7 @@ final class SignatureChecks_5 {
     boolean v10;
     java.lang.String v11;
     ch.epfl.javions.adsb.AirbornePositionMessage v12;
+
     private SignatureChecks_5() {
     }
 

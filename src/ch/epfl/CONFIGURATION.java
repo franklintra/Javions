@@ -31,6 +31,7 @@ public final class CONFIGURATION {
          * The url of the tile server.
          */
         public static final String TILE_SERVER_URL = "tile.openstreetmap.org";
+
         private MAP() {
         }
 

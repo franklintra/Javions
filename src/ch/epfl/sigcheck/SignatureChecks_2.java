@@ -21,6 +21,7 @@ final class SignatureChecks_2 {
     ch.epfl.javions.aircraft.WakeTurbulenceCategory[] v13;
     ch.epfl.javions.aircraft.AircraftData v14;
     ch.epfl.javions.aircraft.AircraftDatabase v15;
+
     private SignatureChecks_2() {
     }
 

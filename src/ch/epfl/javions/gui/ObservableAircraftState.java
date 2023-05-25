@@ -4,7 +4,6 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
-import ch.epfl.javions.aircraft.AircraftRegistration;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -23,7 +22,7 @@ import java.util.Objects;
  * attributes such as ICAO address, aircraft data, last message timestamp, category, call sign, position, altitude,
  * velocity, and track or heading. It also maintains an observable trajectory list that tracks the aircraft's position
  * over time.
- *
+ * <p>
  * This class implements the AircraftStateSetter interface to set the state attributes.
  */
 public final class ObservableAircraftState implements AircraftStateSetter {
@@ -146,6 +145,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public double getTrackOrHeading() {
         return trackOrHeading.get();
     }
+
     @Override
     public void setTrackOrHeading(double trackOrHeading) {
         this.trackOrHeading.set(trackOrHeading);
@@ -162,6 +162,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public ReadOnlyProperty<CallSign> callSignProperty() {
         return callSign;
     }
+
     public ReadOnlyProperty<GeoPos> positionProperty() {
         return position;
     }
