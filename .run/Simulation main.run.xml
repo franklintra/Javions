@@ -2,7 +2,7 @@
   <configuration default="false" name="Simulation main" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="ch.epfl.javions.gui.Main" />
     <module name="Javions" />
-    <option name="PROGRAM_PARAMETERS" value="resources/messages_20230318_0915.bin" />
+    <option name="PROGRAM_PARAMETERS" value="resources/messages_20230520_1725.bin" />
     <option name="VM_PARAMETERS" value="--module-path $JFX_PATH$ --add-modules javafx.controls" />
     <extension name="coverage">
       <pattern>
