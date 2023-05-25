@@ -18,8 +18,6 @@ public final class StatusLineController {
     private final BorderPane pane;
     private final IntegerProperty aircraftCount;
     private final LongProperty messageCount;
-    private final Text aircraftText;
-    private final Text messageText;
 
     /**
      * Default constructor builds the scene graph.
@@ -31,14 +29,14 @@ public final class StatusLineController {
         this.aircraftCount = new SimpleIntegerProperty(0);
         this.messageCount = new SimpleLongProperty(0L);
 
-        this.aircraftText = new Text();
-        this.messageText = new Text();
+        Text aircraftText = new Text();
+        Text messageText = new Text();
 
-        this.pane.setLeft(this.aircraftText);
-        this.pane.setRight(this.messageText);
+        this.pane.setLeft(aircraftText);
+        this.pane.setRight(messageText);
 
-        this.aircraftText.textProperty().bind(this.aircraftCount.asString("Aircraft visible: %d"));
-        this.messageText.textProperty().bind(this.messageCount.asString("Messages received: %d"));
+        aircraftText.textProperty().bind(this.aircraftCount.asString("Aircraft visible: %d"));
+        messageText.textProperty().bind(this.messageCount.asString("Messages received: %d"));
     }
 
     /**

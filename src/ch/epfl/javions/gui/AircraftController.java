@@ -22,6 +22,7 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 
 import java.util.List;
+import java.util.Objects;
 
 import static javafx.scene.paint.CycleMethod.NO_CYCLE;
 
@@ -129,7 +130,7 @@ public final class AircraftController {
     private SVGPath constructIcon(ObservableAircraftState state) {
         SVGPath iconSVG = new SVGPath();
         iconSVG.getStyleClass().add("aircraft"); // associate style class with icon node
-        AircraftIcon icon = state.aircraftData() == null ?
+        AircraftIcon icon = Objects.isNull(state.aircraftData()) ?
                 AircraftIcon.UNKNOWN :
                 AircraftIcon.iconFor(state.aircraftData().typeDesignator(), state.aircraftData().description(), state.getCategory(), state.aircraftData().wakeTurbulenceCategory());
         iconSVG.setContent(icon.svgPath()); // set the icon's path to the icon's SVG path
@@ -211,11 +212,11 @@ public final class AircraftController {
      */
     private ObservableStringValue aircraftIdentificationLabelLine(ObservableAircraftState state) {
         StringProperty labelFirstLine = new SimpleStringProperty();
-        if (state.aircraftData() != null) {
+        if (Objects.nonNull(state.aircraftData())) {
             labelFirstLine.set(state.aircraftData().registration().string());
         } else {
             labelFirstLine.bind(Bindings.createStringBinding(() -> {
-                if (state.getCallSign() != null) {
+                if (Objects.nonNull(state.getCallSign())) {
                     return state.getCallSign().string();
                 } else {
                     return state.getIcaoAddress().string();
@@ -302,7 +303,7 @@ public final class AircraftController {
         trajectory.getChildren().clear();
 
         List<ObservableAircraftState.AirbornePos> positions = state.getTrajectory();
-        if (positions == null || positions.isEmpty()) {
+        if (positions.isEmpty()) {
             return;
         }
 

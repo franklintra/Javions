@@ -71,10 +71,11 @@ public class AircraftTableController {
      */
     public void setOnDoubleClick(Consumer<ObservableAircraftState> clickOn) {
         tableView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) {
-                if (Objects.nonNull(selectedAircraft.get()) && Objects.nonNull(clickOn)) {
+            if (event.getClickCount() == 2 &&
+                event.getButton() == MouseButton.PRIMARY &&
+                Objects.nonNull(selectedAircraft.get()) &&
+                Objects.nonNull(clickOn)) {
                     clickOn.accept(selectedAircraft.get());
-                }
             }
         });
     }
