@@ -21,6 +21,7 @@ public final class StatusLineController {
 
     /**
      * Default constructor builds the scene graph.
+     * Also adds the text bindings to the left and right of the pane.
      */
     public StatusLineController() {
         this.pane = new BorderPane();

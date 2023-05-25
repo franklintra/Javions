@@ -186,7 +186,7 @@ public class AircraftTableController {
                 return Double.compare(n1.doubleValue(), n2.doubleValue());
             } catch (ParseException e) {
                 // This should never happen but the try-catch structure is required by the parse method
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Error while parsing a number", e);
             }
         });
         tableView.getColumns().add(column);

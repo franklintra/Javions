@@ -32,17 +32,50 @@ import java.util.function.Consumer;
  * that does nothing but call launch.
  */
 public final class Main extends Application {
+    private static final double ONE_SECOND_IN_NANOSECONDS = TimeUnit.SECONDS.toNanos(1);
     // Configuration variables. All are public static and final, so they can be accessed from anywhere in the program.
+    /**
+     * The path of the cache directory.
+     */
     public static final Path tileCache = Path.of("tile-cache");
+    /**
+     * The url of the tile server.
+     */
     public static final String tileServerUrl = "tile.openstreetmap.org";
+    /**
+     * The default path to the aircraft database.
+     */
     public static final String aircraftDatabasePath = Objects.requireNonNull(Main.class.getResource("/aircraft.zip")).getPath();
+    /**
+     * The default zoom level of the map.
+     */
     public static final int defaultZoomLevel = 8;
+    /**
+     * The default X coord of the center of the map.
+     */
     public static final int defaultX = 33530;
+    /**
+     * The default Y coord of the center of the map.
+     */
     public static final int defaultY = 23070;
+    /**
+     * The default width of the window.
+     */
     public static final int defaultWidth = 1920;
+    /**
+     * The default height of the window.
+     */
     public static final int defaultHeight = 1080;
     // End of configuration variables.
+    /**
+     * The running mode of the program.
+     *  - RADIO: the program reads messages from System.in
+     *  - SIMULATION: the program reads messages from a file (already demodulated)
+     */
     public static RunningMode runningMode;
+    /**
+     * The path of the simulation file.
+     */
     public static String simulationPath;
     /**
      * The messageQueue field is a concurrent linked queue that contains the messages
@@ -155,7 +188,7 @@ public final class Main extends Application {
         });
 
         // Now read the messages from the queue and update the aircraft states
-        AnimationTimer messageProcessing = new javafx.animation.AnimationTimer() {
+        AnimationTimer messageProcessing = new AnimationTimer() {
             private long lastPurge = 0;
 
             @Override
@@ -171,7 +204,7 @@ public final class Main extends Application {
                     messageCount.set(messageCount.get() + 1);
                 }
                 // Purge the aircraft state manager every second
-                if (now - lastPurge >= 1e9) { // Check if a second has passed since the last purge (1e9 nanoseconds = 1 second)
+                if (now - lastPurge >= ONE_SECOND_IN_NANOSECONDS) { // Check if a second has passed since the last purge (1e9 nanoseconds = 1 second)
                     aircraftStateManager.purge();
                     lastPurge = now;
                 }
