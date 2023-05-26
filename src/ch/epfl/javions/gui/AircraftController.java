@@ -270,21 +270,16 @@ public final class AircraftController {
         Group trajectory = new Group();
         trajectory.getStyleClass().add("trajectory");// associate style class with trajectory node
         group.getChildren().add(trajectory);
-        trajectory.visibleProperty().bind(selectedAircraft.isEqualTo(state)); // property visible must be bound to an expression that is only true when the selectedAircraft is the one to which the trajectory corresponds
-
+        // property visible must be bound to an expression that is only true when the selectedAircraft is the one to which the trajectory corresponds
+        // Therefore the trajectory is only visible when the selectedAircraft is the one to which the trajectory corresponds
+        trajectory.visibleProperty().bind(selectedAircraft.isEqualTo(state));
+        // if zoom level changes, redraw the trajectory
+        mapParameters.zoomLevelProperty().addListener((observable1, oldValue1, newValue1) -> drawTrajectory(state, trajectory));
+        // if the trajectory changes, redraw the trajectory
+        state.getTrajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) c -> drawTrajectory(state, trajectory));
         // bind the layoutX and layoutY properties of the trajectory to the negation of the min x and min y properties of the map parameters
         trajectory.layoutXProperty().bind(mapParameters.minXProperty().negate());
         trajectory.layoutYProperty().bind(mapParameters.minYProperty().negate());
-
-        // has to redraw the trajectory every time the zoom level changes or the trajectory itself changes
-        trajectory.visibleProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                mapParameters.zoomLevelProperty().addListener((observable1, oldValue1, newValue1) -> drawTrajectory(state, trajectory));
-                state.getTrajectory().addListener((ListChangeListener<ObservableAircraftState.AirbornePos>) c -> drawTrajectory(state, trajectory));
-            } else {
-                trajectory.getChildren().clear();
-            }
-        });
     }
 
     /**
