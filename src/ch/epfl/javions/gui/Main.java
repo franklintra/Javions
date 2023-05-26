@@ -270,7 +270,7 @@ public final class Main extends Application {
             while (s.available() >= RawMessage.LENGTH) {
                 long timeStampNs = s.readLong();
                 // Sleep to simulate real time
-                //lastTime = sleepIfNecessary(timeStampNs, lastMessageTimeStampNs, lastTime);
+                lastTime = sleepIfNecessary(timeStampNs, lastMessageTimeStampNs, lastTime);
                 lastMessageTimeStampNs = timeStampNs;
                 // End of sleep to simulate real time
                 s.readNBytes(bytes, 0, bytes.length);

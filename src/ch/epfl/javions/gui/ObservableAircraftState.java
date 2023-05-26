@@ -15,9 +15,6 @@ import java.util.Objects;
  * @author @franklintra (362694)
  * @author @chukla (357550)
  * @project Javions
- */
-
-/**
  * The ObservableAircraftState class represents the observable state of an aircraft. It provides properties for various
  * attributes such as ICAO address, aircraft data, last message timestamp, category, call sign, position, altitude,
  * velocity, and track or heading. It also maintains an observable trajectory list that tracks the aircraft's position

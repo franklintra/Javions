@@ -34,14 +34,15 @@ import static javafx.scene.paint.CycleMethod.NO_CYCLE;
  * It also handles the necessary actions when an aircraft is selected and the movement/rotation of the aircraft.
  */
 public final class AircraftController {
-    private final static double maxAltitude = 12000; // highest approximate altitude at which airliners fly
-    private final MapParameters mapParameters;
     private final ObservableSet<ObservableAircraftState> states;
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
     private final Pane pane;
+    private final MapParameters mapParameters;
+    private final static double maxAltitude = 12000; // highest approximate altitude at which airliners fly
     private final double lowAltDefiner = (double) 1 / 3; // power that distinguishes more finely the low altitudes
 
-    public AircraftController(MapParameters mapParameters, ObservableSet<ObservableAircraftState> states, ObjectProperty<ObservableAircraftState> selectedAircraft) {
+    public AircraftController(MapParameters mapParameters, ObservableSet<ObservableAircraftState> states,
+                              ObjectProperty<ObservableAircraftState> selectedAircraft) {
         this.selectedAircraft = selectedAircraft;
         this.states = states;
         this.mapParameters = mapParameters;
@@ -61,7 +62,8 @@ public final class AircraftController {
 
     /**
      * Adds an observer to the set of observable aircraft states.
-     * This observer is responsible handling additions and removals of aircraft states in the set and creates/removes the entire Aircraft GUI accordingly
+     * This observer is responsible handling additions and removals of aircraft states in the set and creates/removes
+     * the entire Aircraft GUI accordingly
      */
     private void createPane() {
         // Add observer to the set of observable aircraft states
@@ -88,36 +90,16 @@ public final class AircraftController {
         // set the view order property to the negation of the altitude
         aircraftGUI.viewOrderProperty().bind(state.altitudeProperty().negate());
         // label and icon group creation and add it to the aircraft group
-        Group labelIcon = new Group();
-        aircraftGUI.getChildren().add(labelIcon);
+        Group labelIconGUI = new Group();
+        aircraftGUI.getChildren().add(labelIconGUI);
         // icon creation and add it to the label and icon group
-        labelIcon.getChildren().add(constructIcon(state));
+        labelIconGUI.getChildren().add(constructIcon(state));
+        // construct label
+        constructLabel(state, labelIconGUI);
+        // position the icon/label group
+        positionLabelIcon(state, labelIconGUI);
         // construct trajectory
         constructTrajectory(state, aircraftGUI);
-        // construct label
-        constructLabel(state, labelIcon);
-        // position the icon/label group
-        positionLabelIcon(state, labelIcon);
-    }
-
-    /**
-     * Positions the label and icon group according to the specified aircraft state.
-     * The position of the group is bound to the screen coordinates calculated based on the state's position
-     * and the map parameters, such as zoom level and minimum X/Y values.
-     *
-     * @param state     The observable aircraft state for which to position the label and icon group.
-     * @param labelIcon The group representing the label and icon.
-     */
-    private void positionLabelIcon(ObservableAircraftState state, Group labelIcon) {
-        labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
-            Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
-            return screenCoordinates.getX();
-        }, mapParameters.zoomLevelProperty(), state.positionProperty(), mapParameters.minXProperty()));
-
-        labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
-            Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
-            return screenCoordinates.getY();
-        }, mapParameters.zoomLevelProperty(), state.positionProperty(), mapParameters.minYProperty()));
     }
 
     /**
@@ -135,18 +117,32 @@ public final class AircraftController {
                 AircraftIcon.iconFor(state.aircraftData().typeDesignator(), state.aircraftData().description(), state.getCategory(), state.aircraftData().wakeTurbulenceCategory());
         iconSVG.setContent(icon.svgPath()); // set the icon's path to the icon's SVG path
 
-        // set rotation based on track or heading if the icon can rotate else don't rotate
-        if (icon.canRotate()) {
-            iconSVG.rotateProperty().bind(state.trackOrHeadingProperty().map((val) -> Units.convertTo((Double) val, Units.Angle.DEGREE)));
-        } else {
-            iconSVG.setRotate(0);
-        }
+        // rotate the icon
+        rotateIcon(iconSVG, icon, state);
 
         // set fill color based on altitude
         iconSVG.fillProperty().bind(state.altitudeProperty().map(alt -> ColorRamp.PLASMA.at(Math.pow((double) alt / maxAltitude, lowAltDefiner))));
         // sets the current aircraft state as the selected aircraft when the icon is clicked
         iconSVG.setOnMouseClicked(event -> selectedAircraft.set(state));
         return iconSVG;
+    }
+
+    /**
+     * Rotates the specified SVG icon based on the track or heading of the aircraft state.
+     * If the icon supports rotation, the rotation is set to match the track or heading value.
+     * If the icon does not support rotation, the rotation is set to 0 degrees.
+     *
+     * @param iconSVG the SVGPath object representing the icon to rotate
+     * @param icon    the AircraftIcon object associated with the icon
+     * @param state   the ObservableAircraftState object representing the state of the aircraft
+     */
+    private void rotateIcon(SVGPath iconSVG, AircraftIcon icon, ObservableAircraftState state) {
+        // set rotation based on track or heading if the icon can rotate else don't rotate
+        if (icon.canRotate()) {
+            iconSVG.rotateProperty().bind(state.trackOrHeadingProperty().map((val) -> Units.convertTo((Double) val, Units.Angle.DEGREE)));
+        } else {
+            iconSVG.setRotate(0);
+        }
     }
 
     /**
@@ -245,25 +241,23 @@ public final class AircraftController {
     }
 
     /**
-     * Removes a group from the pane based on its ID.
+     * Positions the label and icon group according to the specified aircraft state.
+     * The position of the group is bound to the screen coordinates calculated based on the state's position
+     * and the map parameters, such as zoom level and minimum X/Y values.
      *
-     * @param groupID The ID of the group to be removed.
+     * @param state     The observable aircraft state for which to position the label and icon group.
+     * @param labelIcon The group representing the label and icon.
      */
-    private void removeGroup(String groupID) {
-        pane.getChildren().removeIf(group -> group.getId().equals(groupID));
-    }
+    private void positionLabelIcon(ObservableAircraftState state, Group labelIcon) {
+        labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
+            Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
+            return screenCoordinates.getX();
+        }, mapParameters.zoomLevelProperty(), state.positionProperty(), mapParameters.minXProperty()));
 
-    /**
-     * Calculates the screen coordinates for an aircraft state on the map based on the zoomLevel and top left corner of the map.
-     *
-     * @param state     The observable aircraft state.
-     * @param mapParams The map parameters used for calculations.
-     * @return The screen coordinates as a Point2D object.
-     */
-    private Point2D getScreenCoordinates(ObservableAircraftState state, MapParameters mapParams) {
-        double x = WebMercator.x(mapParams.getZoomLevel(), state.getPosition().longitude()) - mapParams.getMinX();
-        double y = WebMercator.y(mapParams.getZoomLevel(), state.getPosition().latitude()) - mapParams.getMinY();
-        return new Point2D(x, y);
+        labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
+            Point2D screenCoordinates = getScreenCoordinates(state, mapParameters);
+            return screenCoordinates.getY();
+        }, mapParameters.zoomLevelProperty(), state.positionProperty(), mapParameters.minYProperty()));
     }
 
     /**
@@ -325,23 +319,61 @@ public final class AircraftController {
             line.setEndY(endY);
             trajectory.getChildren().add(line);
 
-            double p1 = positions.get(i).altitude();
-            double p2 = positions.get(i + 1).altitude();
-
-            // Set the colour of the line based on the altitude of the aircraft
-            // If the altitude between two points is the same it will be a constant colour, otherwise it will be a gradient.
-            Color c1 = ColorRamp.PLASMA.at(Math.pow(p1 / maxAltitude, lowAltDefiner));
-            if (p1 != p2) {
-                Color c2 = ColorRamp.PLASMA.at(Math.pow(p2 / maxAltitude, lowAltDefiner));
-                Stop s1 = new Stop(0, c1);
-                Stop s2 = new Stop(1, c2);
-                LinearGradient lg = new LinearGradient(x, y, endX, endY, true, NO_CYCLE, s1, s2);
-                line.setStroke(lg);
-            } else {
-                line.setStroke(c1);
-            }
+            colourTrajectory(i, positions, x, y, endX, endY, line);
             x = endX;
             y = endY;
         }
+    }
+
+    /**
+     * Colours the trajectory based on the altitude of the aircraft.
+     *
+     * @param i         The index of the current position in the trajectory.
+     * @param positions The list of positions in the trajectory.
+     * @param x         The x coordinate of the start of the line.
+     * @param y         The y coordinate of the start of the line.
+     * @param endX      The x coordinate of the end of the line.
+     * @param endY      The y coordinate of the end of the line.
+     * @param line      The line to be coloured.
+     */
+    private void colourTrajectory(int i, List<ObservableAircraftState.AirbornePos> positions, double x, double y,
+                                  double endX, double endY, Line line) {
+        double p1 = positions.get(i).altitude();
+        double p2 = positions.get(i + 1).altitude();
+
+        // Set the colour of the line based on the altitude of the aircraft
+        // If the altitude between two points is the same it will be a constant colour, otherwise it will be a gradient.
+        Color c1 = ColorRamp.PLASMA.at(Math.pow(p1 / maxAltitude, lowAltDefiner));
+        if (p1 != p2) {
+            Color c2 = ColorRamp.PLASMA.at(Math.pow(p2 / maxAltitude, lowAltDefiner));
+            Stop s1 = new Stop(0, c1);
+            Stop s2 = new Stop(1, c2);
+            LinearGradient lg = new LinearGradient(x, y, endX, endY, true, NO_CYCLE, s1, s2);
+            line.setStroke(lg);
+        } else {
+            line.setStroke(c1);
+        }
+    }
+
+    /**
+     * Removes a group from the pane based on its ID.
+     *
+     * @param groupID The ID of the group to be removed.
+     */
+    private void removeGroup(String groupID) {
+        pane.getChildren().removeIf(group -> group.getId().equals(groupID));
+    }
+
+    /**
+     * Calculates the screen coordinates for an aircraft state on the map based on the zoomLevel and top left corner of the map.
+     *
+     * @param state     The observable aircraft state.
+     * @param mapParams The map parameters used for calculations.
+     * @return The screen coordinates as a Point2D object.
+     */
+    private Point2D getScreenCoordinates(ObservableAircraftState state, MapParameters mapParams) {
+        double x = WebMercator.x(mapParams.getZoomLevel(), state.getPosition().longitude()) - mapParams.getMinX();
+        double y = WebMercator.y(mapParams.getZoomLevel(), state.getPosition().latitude()) - mapParams.getMinY();
+        return new Point2D(x, y);
     }
 }
