@@ -8,6 +8,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 
 /**
  * @author @chukla (357550)
+ * @author @franklintra (362694)
  * @project Javions
  */
 public record RawMessage(long timeStampNs, ByteString bytes) {

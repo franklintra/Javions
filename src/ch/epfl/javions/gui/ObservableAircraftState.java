@@ -19,7 +19,6 @@ import java.util.Objects;
  * attributes such as ICAO address, aircraft data, last message timestamp, category, call sign, position, altitude,
  * velocity, and track or heading. It also maintains an observable trajectory list that tracks the aircraft's position
  * over time.
- * <p>
  * This class implements the AircraftStateSetter interface to set the state attributes.
  */
 public final class ObservableAircraftState implements AircraftStateSetter {

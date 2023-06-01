@@ -20,11 +20,9 @@ import java.util.Map;
  * The AircraftStateManager class is responsible for managing the state of aircraft.
  * It links the aircraft to their state accumulators, removes aircraft that have not been updated for more than 60 seconds,
  * and provides an unmodifiable observable set of aircraft states that is used by JavaFX.
- * <p>
  * This class is used to update and track the states of multiple aircraft based on received messages.
  */
 public final class AircraftStateManager {
-    // todo : check the comments on this class @chukla @issue
     public final static double maxMessageAge = 60 * 1e9;
     private final AircraftDatabase database;
     private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> aircraftStateAccumulators;

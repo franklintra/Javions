@@ -15,6 +15,7 @@ import java.util.Objects;
  * @param x           the x coordinate of the aircraft in the ADS-B reference frame
  * @param y           the y coordinate of the aircraft in the ADS-B reference frame
  * @author @chukla (357550)
+ * @author @franklintra (362694)
  * @project Javions
  * <p>
  * Represents an ADS-B airborne position message.

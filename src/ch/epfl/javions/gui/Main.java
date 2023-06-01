@@ -11,6 +11,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
@@ -233,7 +234,7 @@ public final class Main extends Application {
 
         SplitPane root = new SplitPane();
         // Configure the root layout
-        root.setOrientation(javafx.geometry.Orientation.VERTICAL);
+        root.setOrientation(Orientation.VERTICAL);
         root.getItems().addAll(mapWithPlanes, aircraftTablePane);
 
         return new Scene(root);

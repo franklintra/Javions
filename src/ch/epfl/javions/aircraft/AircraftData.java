@@ -3,7 +3,7 @@ package ch.epfl.javions.aircraft;
 import java.util.Objects;
 
 /**
- * @author @chukla (357550)
+ * @author @franklintra (362694)
  * @project Javions
  */
 public record AircraftData(AircraftRegistration registration, AircraftTypeDesignator typeDesignator, String model,
