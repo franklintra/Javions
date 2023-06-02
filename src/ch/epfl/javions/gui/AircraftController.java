@@ -2,14 +2,11 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Units;
 import ch.epfl.javions.WebMercator;
+import ch.epfl.javions.adsb.CallSign;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.beans.value.ObservableStringValue;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableSet;
-import javafx.collections.SetChangeListener;
+import javafx.collections.*;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
@@ -20,9 +17,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
-
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static javafx.scene.paint.CycleMethod.NO_CYCLE;
 
@@ -38,6 +33,7 @@ public final class AircraftController {
     private final ObjectProperty<ObservableAircraftState> selectedAircraft;
     private final Pane pane;
     private final MapParameters mapParameters;
+    ApiController apiController = ApiController.getInstance();
     private final static double maxAltitude = 12000; // highest approximate altitude at which airliners fly
     private final double lowAltDefiner = (double) 1 / 3; // power that distinguishes more finely the low altitudes
 
@@ -49,8 +45,14 @@ public final class AircraftController {
         pane = new Pane();
         pane.getStylesheets().add("aircraft.css"); // add the css file to the pane
         pane.setPickOnBounds(false); // allows map to receive mouse events when user clicks on transparent part of aircraft
-
         createPane();
+
+        selectedAircraft.addListener((observable, oldValue, newValue) -> {
+            CallSign key = newValue.getCallSign();
+            if (key != null) {
+                apiController.memory.computeIfAbsent(key, ApiController::getData);
+            }
+        });
     }
 
     /**
@@ -193,7 +195,8 @@ public final class AircraftController {
     private ObservableStringValue labelText(ObservableAircraftState state) {
         ObservableStringValue firstLine = aircraftIdentificationLabelLine(state);
         ObservableStringValue secondLine = aircraftSpeedAndAltitudeLine(state);
-        return Bindings.createStringBinding(() -> firstLine.get() + "\n" + secondLine.get(), firstLine, secondLine);
+        ObservableStringValue nextLinesIfAvailable = apiDataLine(state);
+        return Bindings.createStringBinding(() -> firstLine.get() + "\n" + secondLine.get() + nextLinesIfAvailable.get(), firstLine, secondLine, nextLinesIfAvailable);
     }
 
     /**
@@ -220,6 +223,18 @@ public final class AircraftController {
             }, state.callSignProperty()));
         }
         return labelFirstLine;
+    }
+
+    /**
+     * Constructs the next lines of the label for the specified aircraft state.
+     * @param state : the current aircraft state
+     * @return an observable string containing the data from the api if loaded
+     */
+    private ObservableStringValue apiDataLine(ObservableAircraftState state) {
+        return Bindings.createStringBinding(() -> {
+            ApiController.ApiData data = apiController.memory.get(state.getCallSign());
+            return data == null ? "" : "\n" + data;
+        }, selectedAircraft, apiController.memory); // state is the observed value.
     }
 
     /**
