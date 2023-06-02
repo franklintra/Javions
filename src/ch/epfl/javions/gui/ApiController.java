@@ -52,8 +52,8 @@ public class ApiController {
         try {
             HttpResponse<String> response = sendRequest(callSign);
             return parseJson(response.body());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
